@@ -1,5 +1,5 @@
 import docker
-from load_balancer import loadbalancer
+from deployer.load_balancer import loadbalancer
 
 def Deploy(path, container_name):
     server = loadbalancer.get_server()

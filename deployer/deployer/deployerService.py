@@ -5,9 +5,9 @@ import shutil
 
 from flask import Flask, request
 from pymongo import MongoClient
-from ai_deployer import aiDeployer
-from app_deployer import appDeployer
-from deploy import Deploy
+from deployer.ai_deployer import aiDeployer
+from deployer.app_deployer import appDeployer
+from deployer.deploy import Deploy
 
 app = Flask(__name__)
 client = MongoClient('localhost', 27017)
@@ -51,5 +51,3 @@ def start(kafka_ip, kafka_port, mongo_ip, mongo_port):
     app.run(port=9999,host='0.0.0.0')
     print("Deployer is running")
 
-if __name__ == "__main__":
-    app.run(port=9999,host='0.0.0.0')

@@ -3,7 +3,7 @@ import json
 import random
 import importlib.resources as pkg_resources
 
-servers = pkg_resources.read_binary('load_balancer', 'machines.json')
+servers = pkg_resources.read_binary('deployer.load_balancer', 'machines.json')
 servers = json.loads(servers)
 
 def get_server():
