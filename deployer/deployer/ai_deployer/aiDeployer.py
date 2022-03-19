@@ -1,11 +1,12 @@
 import json
 
+
 def run(package):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('ai_deployer')
     print("Extracted package")
-    
+
     contract = json.load(open('ai_deployer/model/model_contract.json'))
     port = contract['port']
     endpoint = contract['endpoint']

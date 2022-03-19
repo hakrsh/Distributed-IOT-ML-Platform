@@ -1,6 +1,7 @@
-import json 
+import json
 
-def run(package,sensor_id):
+
+def run(package, sensor_id):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('app_deployer')
