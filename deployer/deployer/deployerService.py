@@ -1,17 +1,10 @@
 import os
 import shutil
-
-from flask import Flask, request
-from pymongo import MongoClient
+from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
 from deployer.deploy import Deploy
-
-app = Flask(__name__)
-client = MongoClient('localhost', 27017)
-db = client.repo
-applications = db.applications
-models = db.models
+from . import app, db
 
 
 @app.route('/')
@@ -22,7 +15,7 @@ def index():
 @app.route('/model', methods=['POST'])
 def deploy_model():
     ModelId = request.json['ModelId']
-    model = models.find_one({"ModelId": ModelId})
+    model = db.models.find_one({"ModelId": ModelId})
     with open('/tmp/model.zip', 'wb') as f:
         f.write(model['content'])
     container_name = aiDeployer.run('/tmp/model.zip')
@@ -47,7 +40,5 @@ def deploy_app():
     return res
 
 
-def start(kafka_ip, kafka_port, mongo_ip, mongo_port):
-    kafka_server = "{}:{}".format(kafka_ip, kafka_port)
-    mongo_server = "{}:{}".format(mongo_ip, mongo_port)
+def start():
     app.run(port=9999, host='0.0.0.0')
