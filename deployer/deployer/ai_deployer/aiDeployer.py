@@ -1,11 +1,13 @@
 import json
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 def run(package):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('ai_deployer')
-    print("Extracted package")
+    logging.info('Extracted package: {}'.format(package))
 
     contract = json.load(open('ai_deployer/model/model_contract.json'))
     port = contract['port']
@@ -33,8 +35,10 @@ def run(package):
     server_code += "\n"
     server_code += "if __name__ == \"__main__\":\n"
     server_code += f"    app.run(host='0.0.0.0', port={int(port)})\n"
+    logging.info('Generated server.py')
 
     with open('ai_deployer/model/server.py', 'w') as f:
         f.write(server_code)
-
+    logging.info('Wrote server.py')
+    logging.info('Ready to build the model image')
     return container_name
