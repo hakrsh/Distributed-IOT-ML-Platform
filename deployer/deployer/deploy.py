@@ -14,6 +14,7 @@ def Deploy(path, container_name):
     logging.info('Building the image')
     client.images.build(path=path, tag=container_name+':latest')
     logging.info('Built image: ' + container_name)
+
     try:
         container = client.containers.run(
             container_name+':latest', detach=True, network_mode='host')

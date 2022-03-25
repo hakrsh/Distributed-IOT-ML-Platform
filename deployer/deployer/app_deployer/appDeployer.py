@@ -10,6 +10,7 @@ def run(package, sensor_id):
         zip_ref.extractall('/tmp/app_deployer')
     logging.info('Extracted package: ' + package)
     contract = json.load(open('/tmp/app_deployer/app/app_contract.json'))
+
     container_name = contract['name']
     # generate getdata.py inside app/src
     sensorStub = ''

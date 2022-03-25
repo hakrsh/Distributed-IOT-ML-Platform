@@ -51,4 +51,5 @@ CMD [ "python3","server.py" ]"""
         f.write(dockerfile)
     logging.info('Wrote Dockerfile')
     logging.info('Ready to build the model image')
+
     return container_name
