@@ -6,10 +6,10 @@ logging.basicConfig(level=logging.INFO)
 def run(package):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
-        zip_ref.extractall('ai_deployer')
-    logging.info('Extracted package: {}'.format(package))
+        zip_ref.extractall('/tmp/ai_deployer')
+    logging.info('Extracted package: ' + package)
 
-    contract = json.load(open('ai_deployer/model/model_contract.json'))
+    contract = json.load(open('/tmp/ai_deployer/model/model_contract.json'))
     port = contract['port']
     endpoint = contract['endpoint']
     container_name = contract['name']
@@ -37,8 +37,18 @@ def run(package):
     server_code += f"    app.run(host='0.0.0.0', port={int(port)})\n"
     logging.info('Generated server.py')
 
-    with open('ai_deployer/model/server.py', 'w') as f:
+    with open('/tmp/ai_deployer/model/server.py', 'w') as f:
         f.write(server_code)
     logging.info('Wrote server.py')
+
+    dockerfile = """FROM python:3
+ADD model model
+WORKDIR /model
+RUN pip install -r requirements.txt
+CMD [ "python3","server.py" ]"""
+
+    with open('/tmp/ai_deployer/Dockerfile', 'w') as f:
+        f.write(dockerfile)
+    logging.info('Wrote Dockerfile')
     logging.info('Ready to build the model image')
     return container_name
