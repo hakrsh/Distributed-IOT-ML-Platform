@@ -10,8 +10,8 @@ module_config = json.loads(
 
 
 # kafka_server = "{}:{}".format(module_config['kafka_ip'], module_config['kafka_port'])
-mongo_server = "{}:{}".format(
-    module_config['mongo_ip'], module_config['mongo_port'])
+# mongo_server = "{}:{}".format(
+#     module_config['mongo_ip'], module_config['mongo_port'])
 
-client = MongoClient(mongo_server)
+client = MongoClient(module_config['mongo_server'])
 db = client.repo

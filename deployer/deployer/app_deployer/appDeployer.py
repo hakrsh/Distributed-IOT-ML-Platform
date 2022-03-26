@@ -1,5 +1,6 @@
 from cmath import log
 import json
+from deployer import module_config
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -17,7 +18,7 @@ def run(package, sensor_id):
     sensorStub += "import requests\n"
     sensorStub += "import json\n"
     sensorStub += 'def get_data():\n'
-    sensorStub += "    url = 'http://10.1.38.47:7000/data/" + sensor_id + "'\n"
+    sensorStub += '    url = "{}/{}"\n'.format(module_config['sensor_api'], sensor_id)
     sensorStub += "    r = requests.get(url)\n"
     sensorStub += "    return json.loads(r.text)\n"
     logging.info('Generated getdata.py')

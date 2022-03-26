@@ -47,9 +47,9 @@ def producerStart(numberOfThread, sensor_config, producer):
         thread1.start()
 
 
-def run(kafka_ip, kafka_port, mongo_ip, mongo_port):
+def run(kafka_ip, kafka_port, mongo_server):
     kafka_server = "{}:{}".format(kafka_ip, kafka_port)
-    mongo_server = "{}:{}".format(mongo_ip, mongo_port)
+    # mongo_server = "{}:{}".format(mongo_ip, mongo_port)
 
     producer = KafkaProducer(bootstrap_servers=[kafka_server],api_version=(0,10,1))
     logging.info('Connected to kafka')
