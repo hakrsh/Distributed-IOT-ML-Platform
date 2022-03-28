@@ -1,32 +1,31 @@
 import docker
 from deployer.load_balancer import loadbalancer
 import logging
+import time
 
 logging.basicConfig(level=logging.INFO)
 
 
-def Deploy(path, container_name):
+def Deploy(dockerfile_path, image_tag):
     server = loadbalancer.get_server()
     url = 'ssh://' + server['user'] + '@' + server['ip'] + ':' + server['port']
     logging.info('Connecting to: ' + url)
     client = docker.DockerClient(base_url=url)
     logging.info('Connected to: ' + url)
-    logging.info('Building the image')
-    client.images.build(path=path, tag=container_name+':latest')
-    logging.info('Built image: ' + container_name)
+    if client.images.list(name=image_tag):
+        logging.info('Image already exists: ' + image_tag)
+    else:
+        logging.info('Image does not exist: ' + image_tag)
+        logging.info('Building image: ' + image_tag)
+        client.images.build(path=dockerfile_path, tag=image_tag)
+        logging.info('Built image: ' + image_tag)
+    
+    container = client.containers.run(
+        image_tag, detach=True, network_mode='host')
 
-    try:
-        container = client.containers.run(
-            container_name+':latest', detach=True, network_mode='host')
-    except:
-        logging.info('Container already running')
-        container = client.containers.get(container_name)
-        container.restart()
-        logging.info('Restarted container: ' + container_name)
-    logging.info('Container: ' + container_name +
+    logging.info('Container: ' + container.id +
                  ' status: ' + container.status)
     return {
         'container_id': container.id,
-        'conatiner_name': container.name,
         'container_status': container.status
     }
