@@ -1,6 +1,5 @@
 import json
 import logging
-from tkinter import image_names
 logging.basicConfig(level=logging.INFO)
 
 
@@ -11,7 +10,6 @@ def run(package, model_id):
     logging.info('Extracted package: ' + package)
 
     contract = json.load(open(f'/tmp/{model_id}/model/model_contract.json'))
-    port = contract['port']
     endpoint = contract['endpoint']
     image_name = contract['name']
     # generate server.py
@@ -35,7 +33,7 @@ def run(package, model_id):
     server_code += "    return postprocess(pred)\n"
     server_code += "\n"
     server_code += "if __name__ == \"__main__\":\n"
-    server_code += f"    app.run(host='0.0.0.0', port={int(port)})\n"
+    server_code += f"    app.run(host='0.0.0.0', port=80)\n"
     logging.info('Generated server.py')
 
     with open(f'/tmp/{model_id}/model/server.py', 'w') as f:
@@ -46,6 +44,7 @@ def run(package, model_id):
 ADD model model
 WORKDIR /model
 RUN pip install -r requirements.txt
+EXPOSE 80
 CMD [ "python3","server.py" ]"""
 
     with open(f'/tmp/{model_id}/Dockerfile', 'w') as f:

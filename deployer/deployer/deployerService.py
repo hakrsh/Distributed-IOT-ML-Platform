@@ -17,7 +17,7 @@ def index():
     return 'Deployer is running!'
 
 
-def deploy_model_thread(model_id,instance_id):
+def deploy_model_thread(model_id, instance_id):
     model = db.models.find_one({"ModelId": model_id})
     logging.info("ModelId: " + model_id)
     with open(f'/tmp/{model_id}.zip', 'wb') as f:
@@ -33,10 +33,12 @@ def deploy_model_thread(model_id,instance_id):
     logging.info('Removed temporary directory /tmp/'+model_id+'/')
     # update instance status
     db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'], 
+                            "status": res['container_status'],
                             "container_id": res['container_id'],
-                            "ip": res['ip']}})
+                            "ip": res['ip'],
+                            "port": res['port']}})
     logging.info('Updated instance status')
+
 
 @app.route('/model', methods=['POST'])
 def deploy_model():
@@ -45,9 +47,10 @@ def deploy_model():
     instance_id = str(int(time.time()))
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "model",
-                            "model_id": model_id, "status": "pending", "container_id": "", "ip": ""})
+                            "model_id": model_id, "status": "pending"})
     logging.info("Created deployment record")
-    threading.Thread(target=deploy_model_thread, args=(model_id, instance_id)).start()
+    threading.Thread(target=deploy_model_thread,
+                     args=(model_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
 
 
@@ -68,9 +71,10 @@ def deploy_app_thread(application_id, sensor_id, instance_id):
     logging.info('Removed temporary directory /tmp/'+application_id+'/')
     # update instance status
     db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'], 
+                            "status": res['container_status'],
                             "container_id": res['container_id'],
-                            "ip": res['ip']}})
+                            "ip": res['ip'],
+                            "port": res['port']}})
     logging.info('Updated instance status')
 
 
@@ -83,7 +87,7 @@ def deploy_app():
     instance_id = str(int(time.time()))
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "app",
-                            "application_id": application_id, "status": "pending", "container_id": "", "ip": ""})
+                            "application_id": application_id, "status": "pending"})
     logging.info("Created deployment record")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensor_id, instance_id)).start()

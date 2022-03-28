@@ -1,4 +1,3 @@
-from cmath import log
 import json
 from deployer import module_config
 import logging
@@ -30,6 +29,7 @@ def run(package, sensor_id, app_id):
 ADD app app
 WORKDIR /app
 RUN pip install -r requirements.txt
+EXPOSE 80
 CMD ["python3", "src/app.py","model_contract.json"]"""
 
     with open(f'/tmp/{app_id}/Dockerfile', 'w') as f:
