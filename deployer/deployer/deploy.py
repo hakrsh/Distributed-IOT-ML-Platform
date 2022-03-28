@@ -1,7 +1,7 @@
+from time import sleep
 import docker
 from deployer.load_balancer import loadbalancer
 import logging
-import time
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,13 +19,14 @@ def Deploy(dockerfile_path, image_tag):
         logging.info('Building image: ' + image_tag)
         client.images.build(path=dockerfile_path, tag=image_tag)
         logging.info('Built image: ' + image_tag)
-    
+
     container = client.containers.run(
         image_tag, detach=True, network_mode='host')
-
+    container = client.containers.get(container.id)
     logging.info('Container: ' + container.id +
                  ' status: ' + container.status)
     return {
+        'ip': server['ip'],
         'container_id': container.id,
         'container_status': container.status
     }
