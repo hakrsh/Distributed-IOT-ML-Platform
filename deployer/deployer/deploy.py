@@ -19,8 +19,7 @@ def postDeploy(instance_id, package, res):
                             "status": res['container_status'],
                             "container_id": res['container_id'],
                             "ip": res['ip'],
-                            "port": res['port'],
-                            "user": res['user']}})
+                            "port": res['port']}})
     logging.info('Updated instance db status')
 
 
