@@ -31,11 +31,6 @@ def deploy_model():
     logging.info('ModelID: ' + model_id)
     instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
-    db.instances.insert_one({"instance_id": instance_id, "type": "model",
-                            "model_id": model_id, "status": "pending",
-                             "hostname": module_config['host_name'],
-                             "ip": module_config['host_ip']})
-    logging.info("Created deployment record")
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
@@ -59,12 +54,6 @@ def deploy_app():
 
     logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
-    logging.info("InstanceID: " + instance_id)
-    db.instances.insert_one({"instance_id": instance_id, "type": "app",
-                            "application_id": application_id, "status": "pending",
-                             "hostname": module_config['host_name'],
-                             "ip": module_config['host_ip']})
-    logging.info("Created deployment record")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensor_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
