@@ -75,8 +75,9 @@ def stopInstance():
         return {"InstanceID": instance_id, "Status": "not found"}
     if instance['status'] != 'running':
         return {"InstanceID": instance_id, "Status": "not running"}
-    res = requests.post('http://localhost:9898/stop-instance', json={'InstanceID': instance_id, 'ContainerID': instance['container_id']})
-    return {"InstanceID": instance_id, "Status": "stopped"}
+    ip = instance['ip']
+    res = requests.post(f'http://{ip}:9898/stop-instance', json={'InstanceID': instance_id, 'ContainerID': instance['container_id']})
+    return res.text
 
 if __name__ == '__main__':
     app.run(port=9999, host='0.0.0.0')
