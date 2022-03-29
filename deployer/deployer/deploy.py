@@ -18,16 +18,17 @@ def postDeploy(instance_id, package, res):
                             "status": res['container_status'],
                             "container_id": res['container_id'],
                             "ip": res['ip'],
-                            "port": res['port']}})
+                            "port": res['port'],
+                            "user": res['user']}})
     logging.info('Updated instance db status')
 
 
 def Deploy(dockerfile_path, image_tag, instance_id, package):
     server = loadbalancer.get_server()
-    url = 'ssh://' + server['user'] + '@' + server['ip'] + ':' + server['port']
-    logging.info('Connecting to: ' + url)
-    client = docker.DockerClient(base_url=url)
-    logging.info('Connected to: ' + url)
+    host = 'ssh://' + server['user'] + '@' + server['ip'] 
+    logging.info('Connecting to: ' + host)
+    client = docker.DockerClient(base_url=host)
+    logging.info('Connected to: ' + host)
     logging.info('Building image: ' + image_tag)
     client.images.build(path=dockerfile_path, tag=image_tag)
     logging.info('Built image: ' + image_tag)
@@ -42,7 +43,20 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
     res = {
         'ip': server['ip'],
         'port': port,
+        'user': server['user'],
         'container_id': container.id,
         'container_status': container.status
     }
     postDeploy(instance_id, package, res)
+
+def stopInstance(instance_id):
+    instance = db.instances.find_one({"instance_id": instance_id})
+    logging.info('Stopping instance: ' + instance_id)
+    host = 'ssh://' + instance['user'] + '@' + instance['ip']
+    client = docker.DockerClient(base_url=host)
+    container = client.containers.get(instance['container_id'])
+    container.stop()
+    logging.info('Stopped instance: ' + instance_id)
+    db.instances.update_one({"instance_id": instance_id}, {"$set": {
+                            "status": "stopped"}})
+    logging.info('Updated instance db status')

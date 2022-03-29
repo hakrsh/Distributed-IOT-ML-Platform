@@ -3,8 +3,8 @@ import shutil
 from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
-from deployer.deploy import Deploy
-from . import app, db
+from deployer.deploy import Deploy,stopInstance
+from deployer import app, db
 import logging
 import time
 import threading
@@ -68,6 +68,17 @@ def deploy_app():
         application_id, sensor_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
 
-
+@app.route('/stop-instance', methods=['POST'])
+def stop_instance():
+    instance_id = request.json['InstanceID']
+    logging.info("InstanceID: " + instance_id)
+    instance = db.instances.find_one({"instance_id": instance_id})
+    if instance is None:
+        return {"InstanceID": instance_id, "Status": "not found"}
+    if instance['status'] != 'running':
+        return {"InstanceID": instance_id, "Status": "not running"}
+    stopInstance(instance_id)
+    return {"InstanceID": instance_id, "Status": "stopped"}
+    
 def start():
     app.run(port=9999, host='0.0.0.0')
