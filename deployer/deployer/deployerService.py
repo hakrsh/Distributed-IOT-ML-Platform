@@ -20,24 +20,12 @@ def index():
 def deploy_model_thread(model_id, instance_id):
     model = db.models.find_one({"ModelId": model_id})
     logging.info("ModelId: " + model_id)
-    with open(f'/tmp/{model_id}.zip', 'wb') as f:
+    with open(f'/tmp/{instance_id}.zip', 'wb') as f:
         f.write(model['content'])
     logging.info('Got model: ' + model_id + ' from database')
-    image_name = aiDeployer.run(f'/tmp/{model_id}.zip', model_id)
-    res = Deploy(dockerfile_path=f'/tmp/{model_id}', image_tag=image_name)
-    logging.info('Deployed model: ' + model_id +
-                 ' to container: ' + res['container_id'])
-    os.remove(f'/tmp/{model_id}.zip')
-    logging.info('Removed temporary file: /tmp/'+model_id+'.zip')
-    shutil.rmtree(f'/tmp/{model_id}/')
-    logging.info('Removed temporary directory /tmp/'+model_id+'/')
-    # update instance status
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'],
-                            "container_id": res['container_id'],
-                            "ip": res['ip'],
-                            "port": res['port']}})
-    logging.info('Updated instance status')
+    image_name = aiDeployer.run(f'/tmp/{instance_id}.zip', instance_id)
+    threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
+                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id}).start()
 
 
 @app.route('/model', methods=['POST'])
@@ -56,26 +44,13 @@ def deploy_model():
 
 def deploy_app_thread(application_id, sensor_id, instance_id):
     application = db.applications.find_one({"ApplicationID": application_id})
-    with open(f'/tmp/{application_id}.zip', 'wb') as f:
+    with open(f'/tmp/{instance_id}.zip', 'wb') as f:
         f.write(application['content'])
     logging.info('Got application: ' + application_id + ' from database')
     image_name = appDeployer.run(
-        f'/tmp/{application_id}.zip', sensor_id, application_id)
-    res = Deploy(
-        dockerfile_path=f'/tmp/{application_id}', image_tag=image_name)
-    logging.info('Deployed application: ' + application_id +
-                 ' to container: ' + res['container_id'])
-    os.remove(f'/tmp/{application_id}.zip')
-    logging.info('Removed temporary file /tmp/'+application_id+'.zip')
-    shutil.rmtree(f'/tmp/{application_id}')
-    logging.info('Removed temporary directory /tmp/'+application_id+'/')
-    # update instance status
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'],
-                            "container_id": res['container_id'],
-                            "ip": res['ip'],
-                            "port": res['port']}})
-    logging.info('Updated instance status')
+        f'/tmp/{instance_id}.zip', sensor_id, instance_id)
+    threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
+                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id}).start()
 
 
 @app.route('/app', methods=['POST'])
