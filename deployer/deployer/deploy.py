@@ -52,6 +52,6 @@ def stopInstance(container_id,instance_id):
     logging.info('Removing container: ' + container_id)
     container.remove()
     logging.info('Removed container: ' + container_id)
-    requests.post(module_config['deployer_master']+'/stopped', json={'instance_id': instance_id, 'container_status  ': 'stopped'})
+    requests.post(module_config['deployer_master']+'/stopped', json={'instance_id': instance_id, 'container_status': 'stopped'})
     logging.info('Sent update to master')
     
