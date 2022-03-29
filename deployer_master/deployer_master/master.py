@@ -8,12 +8,15 @@ import uuid
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority')
+client = MongoClient(
+    'mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority')
 db = client.repo
+
 
 @app.route('/')
 def index():
     return 'Deployer Master is running'
+
 
 @app.route('/model', methods=['POST'])
 def deploy_model():
@@ -21,12 +24,20 @@ def deploy_model():
     logging.info('ModelID: ' + model_id)
     instance_id = str(uuid.uuid4())
     logging.info("InstanceID: " + instance_id)
-    db.instances.insert_one({"instance_id": instance_id, "type": "model",
-                            "model_id": model_id, "status": "pending"})
+    db.instances.insert_one({"instance_id": instance_id,
+                            "type": "model",
+                             "model_id": model_id,
+                             "status": "pending",
+                             "container_id": "",
+                             "hostname": "",
+                             "ip": "",
+                             "port": ""})
     logging.info("Created deployment record")
-    res = requests.post('http://localhost:9898/model', json={'ModelId': model_id, 'InstanceId': instance_id})
+    res = requests.post('http://localhost:9898/model',
+                        json={'ModelId': model_id, 'InstanceId': instance_id})
     logging.info("Sent request to model service")
     return res.text
+
 
 @app.route('/app', methods=['POST'])
 def deploy_app():
@@ -35,13 +46,21 @@ def deploy_app():
     logging.info("ApplicationID: " + application_id)
     instance_id = str(uuid.uuid4())
     logging.info("InstanceID: " + instance_id)
-    db.instances.insert_one({"instance_id": instance_id, "type": "app",
-                            "model_id": application_id, "status": "pending"})
+    db.instances.insert_one({"instance_id": instance_id,
+                            "type": "app",
+                             "model_id": application_id,
+                             "status": "pending",
+                             "container_id": "",
+                             "hostname": "",
+                             "ip": "",
+                             "port": ""})
     logging.info("Created deployment record")
-    res = requests.post('http://localhost:9898/app', json={'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids})
+    res = requests.post('http://localhost:9898/app', json={
+                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids})
     logging.info("Sent request to app service")
     return res.text
-    
+
+
 @app.route('/deployed', methods=['POST'])
 def update_deployed_status():
     instance_id = request.json['instance_id']
@@ -56,6 +75,7 @@ def update_deployed_status():
     logging.info('Updated instance db status')
     return {"Status": "success"}
 
+
 @app.route('/stopped', methods=['POST'])
 def update_stopped_status():
     instance_id = request.json['instance_id']
@@ -66,6 +86,7 @@ def update_stopped_status():
     db.instances.delete_one({"instance_id": instance_id})
     logging.info('Removed instance from db')
     return {"Status": "success"}
+
 
 @app.route('/stop-instance', methods=['POST'])
 def stopInstance():
@@ -78,8 +99,10 @@ def stopInstance():
         return {"InstanceID": instance_id, "Status": "not running"}
     ip = instance['ip']
     logging.info('Connecting to ' + ip)
-    res = requests.post(f'http://{ip}:9898/stop-instance', json={'InstanceID': instance_id, 'ContainerID': instance['container_id']})
+    res = requests.post(f'http://{ip}:9898/stop-instance', json={
+                        'InstanceID': instance_id, 'ContainerID': instance['container_id']})
     return res.text
+
 
 if __name__ == '__main__':
     app.run(port=9999, host='0.0.0.0')
