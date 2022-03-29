@@ -44,7 +44,7 @@ def deploy_app():
     
 @app.route('/deployed', methods=['POST'])
 def update_deployed_status():
-    instance_id = request.json['InstanceId']
+    instance_id = request.json['instance_id']
     res = request.json['res']
     # update instance status
     db.instances.update_one({"instance_id": instance_id}, {"$set": {
@@ -58,7 +58,7 @@ def update_deployed_status():
 
 @app.route('/stopped', methods=['POST'])
 def update_stopped_status():
-    instance_id = request.json['InstanceId']
+    instance_id = request.json['instance_id']
     res = request.json['res']
     # update instance status
     db.instances.update_one({"instance_id": instance_id}, {"$set": {
@@ -68,7 +68,7 @@ def update_stopped_status():
 
 @app.route('/stop-instance', methods=['POST'])
 def stopInstance():
-    instance_id = request.json['InstanceID']
+    instance_id = request.json['instance_id']
     logging.info("InstanceID: " + instance_id)
     instance = db.instances.find_one({"instance_id": instance_id})
     if instance is None:
