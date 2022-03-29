@@ -1,3 +1,4 @@
+from http import client
 import docker
 from deployer.load_balancer import loadbalancer
 import logging
@@ -24,15 +25,11 @@ def postDeploy(instance_id, package, res):
 
 
 def Deploy(dockerfile_path, image_tag, instance_id, package):
-    server = loadbalancer.get_server()
-    host = 'ssh://' + server['user'] + '@' + server['ip'] 
-    logging.info('Connecting to: ' + host)
-    client = docker.DockerClient(base_url=host)
-    logging.info('Connected to: ' + host)
+    client = docker.from_env()
     logging.info('Building image: ' + image_tag)
     client.images.build(path=dockerfile_path, tag=image_tag)
     logging.info('Built image: ' + image_tag)
-    port = loadbalancer.get_free_port(server['ip'])
+    port = loadbalancer.get_free_port()
     logging.info('Free port: ' + str(port))
     logging.info('Creating container: ' + image_tag)
     container = client.containers.run(
@@ -41,19 +38,18 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
     logging.info('Container: ' + container.id +
                  ' status: ' + container.status)
     res = {
-        'ip': server['ip'],
+        'ip': container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'],
         'port': port,
-        'user': server['user'],
         'container_id': container.id,
         'container_status': container.status
     }
     postDeploy(instance_id, package, res)
 
+
 def stopInstance(instance_id):
     instance = db.instances.find_one({"instance_id": instance_id})
     logging.info('Stopping instance: ' + instance_id)
-    host = 'ssh://' + instance['user'] + '@' + instance['ip']
-    client = docker.DockerClient(base_url=host)
+    client = docker.from_env()
     container = client.containers.get(instance['container_id'])
     container.stop()
     logging.info('Stopped instance: ' + instance_id)

@@ -1,5 +1,3 @@
-import os
-import shutil
 from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
