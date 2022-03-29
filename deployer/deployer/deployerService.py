@@ -2,7 +2,7 @@ from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
 from deployer.deploy import Deploy,stopInstance
-from deployer import app, db
+from deployer import app, db , module_config
 import logging
 import time
 import threading
@@ -33,7 +33,9 @@ def deploy_model():
     instance_id = str(int(time.time()))
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "model",
-                            "model_id": model_id, "status": "pending"})
+                            "model_id": model_id, "status": "pending",
+                            "hostname": module_config['host_name'],
+                            "ip": module_config['host_ip']})
     logging.info("Created deployment record")
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id)).start()
@@ -60,7 +62,9 @@ def deploy_app():
     instance_id = str(int(time.time()))
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "app",
-                            "application_id": application_id, "status": "pending"})
+                            "application_id": application_id, "status": "pending",
+                            "hostname": module_config['host_name'],
+                            "ip": module_config['host_ip']})
     logging.info("Created deployment record")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensor_id, instance_id)).start()

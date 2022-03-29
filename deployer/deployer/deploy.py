@@ -18,7 +18,6 @@ def postDeploy(instance_id, package, res):
     db.instances.update_one({"instance_id": instance_id}, {"$set": {
                             "status": res['container_status'],
                             "container_id": res['container_id'],
-                            "ip": res['ip'],
                             "port": res['port']}})
     logging.info('Updated instance db status')
 
@@ -37,7 +36,6 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
     logging.info('Container: ' + container.id +
                  ' status: ' + container.status)
     res = {
-        'ip': container.attrs['NetworkSettings']['Networks']['bridge']['IPAddress'],
         'port': port,
         'container_id': container.id,
         'container_status': container.status
