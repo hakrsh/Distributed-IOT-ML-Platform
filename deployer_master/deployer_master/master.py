@@ -16,7 +16,7 @@ def index():
     return 'Deployer Master is running'
 
 @app.route('/model', methods=['POST'])
-def model():
+def deploy_model():
     model_id = request.json['ModelId']
     logging.info('ModelID: ' + model_id)
     instance_id = str(uuid.uuid4())
@@ -29,7 +29,7 @@ def model():
     return res.text
 
 @app.route('/app', methods=['POST'])
-def app():
+def deploy_app():
     application_id = request.json['ApplicationID']
     sensor_ids = request.json['sensor_ids']
     logging.info("ApplicationID: " + application_id)
@@ -43,7 +43,7 @@ def app():
     return res.text
     
 @app.route('/deployed', methods=['POST'])
-def deployed():
+def update_deployed_status():
     instance_id = request.json['InstanceId']
     res = request.json['res']
     # update instance status
@@ -57,7 +57,7 @@ def deployed():
     return {"Status": "success"}
 
 @app.route('/stopped', methods=['POST'])
-def stopped():
+def update_stopped_status():
     instance_id = request.json['InstanceId']
     res = request.json['res']
     # update instance status
@@ -67,7 +67,7 @@ def stopped():
     return {"Status": "success"}
 
 @app.route('/stop-instance', methods=['POST'])
-def stop_instance():
+def stopInstance():
     instance_id = request.json['InstanceID']
     logging.info("InstanceID: " + instance_id)
     instance = db.instances.find_one({"instance_id": instance_id})
@@ -77,3 +77,6 @@ def stop_instance():
         return {"InstanceID": instance_id, "Status": "not running"}
     res = requests.post('http://localhost:9898/stop-instance', json={'InstanceID': instance_id, 'ContainerID': instance['container_id']})
     return {"InstanceID": instance_id, "Status": "stopped"}
+
+if __name__ == '__main__':
+    app.run(port=9999, host='0.0.0.0')
