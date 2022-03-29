@@ -59,11 +59,12 @@ def update_deployed_status():
 @app.route('/stopped', methods=['POST'])
 def update_stopped_status():
     instance_id = request.json['instance_id']
-    res = request.json['res']
-    # update instance status
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'],}})
-    logging.info('Updated instance db status')
+    container_status = request.json['container_status']
+    logging.info('InstanceID: ' + instance_id)
+    logging.info('Container status: ' + container_status)
+    # remove instance from db
+    db.instances.delete_one({"instance_id": instance_id})
+    logging.info('Removed instance from db')
     return {"Status": "success"}
 
 @app.route('/stop-instance', methods=['POST'])
@@ -76,6 +77,7 @@ def stopInstance():
     if instance['status'] != 'running':
         return {"InstanceID": instance_id, "Status": "not running"}
     ip = instance['ip']
+    logging.info('Connecting to ' + ip)
     res = requests.post(f'http://{ip}:9898/stop-instance', json={'InstanceID': instance_id, 'ContainerID': instance['container_id']})
     return res.text
 
