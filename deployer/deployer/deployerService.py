@@ -1,8 +1,9 @@
+from typing import Container
 from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
-from deployer.deploy import Deploy,stopInstance
-from deployer import app, db , module_config
+from deployer.deploy import Deploy, stopInstance
+from deployer import app, db, module_config
 import logging
 import time
 import threading
@@ -12,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def index():
-    return 'Deployer is running on ' +  request.host_url
+    return 'Deployer is running on ' + module_config['host_name'] + '@' + module_config['host_ip']
 
 
 def deploy_model_thread(model_id, instance_id):
@@ -34,8 +35,8 @@ def deploy_model():
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "model",
                             "model_id": model_id, "status": "pending",
-                            "hostname": module_config['host_name'],
-                            "ip": module_config['host_ip']})
+                             "hostname": module_config['host_name'],
+                             "ip": module_config['host_ip']})
     logging.info("Created deployment record")
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id)).start()
@@ -63,24 +64,23 @@ def deploy_app():
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "app",
                             "application_id": application_id, "status": "pending",
-                            "hostname": module_config['host_name'],
-                            "ip": module_config['host_ip']})
+                             "hostname": module_config['host_name'],
+                             "ip": module_config['host_ip']})
     logging.info("Created deployment record")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensor_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
 
+
 @app.route('/stop-instance', methods=['POST'])
 def stop_instance():
     instance_id = request.json['InstanceID']
+    container_id = request.json['ContainerID']
     logging.info("InstanceID: " + instance_id)
-    instance = db.instances.find_one({"instance_id": instance_id})
-    if instance is None:
-        return {"InstanceID": instance_id, "Status": "not found"}
-    if instance['status'] != 'running':
-        return {"InstanceID": instance_id, "Status": "not running"}
-    stopInstance(instance_id)
-    return {"InstanceID": instance_id, "Status": "stopped"}
-    
+    logging.info("ContainerID: " + container_id)
+    threading.Thread(target=stopInstance, kwargs={'instance_id': instance_id, 'container_id': container_id}).start()
+    return {"InstanceID": instance_id, "Status": "stopping"}
+
+
 def start():
-    app.run(port=9999, host='0.0.0.0')
+    app.run(port=9898, host='0.0.0.0')

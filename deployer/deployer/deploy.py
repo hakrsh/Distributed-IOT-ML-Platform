@@ -1,25 +1,11 @@
-from http import client
 import docker
 from deployer.load_balancer import loadbalancer
 import logging
-from deployer import db
+from deployer import module_config
 import os
 import shutil
+import requests
 logging.basicConfig(level=logging.INFO)
-
-
-def postDeploy(instance_id, package, res):
-    logging.info('Deployed instance: ' + instance_id)
-    os.remove(f'/tmp/{package}.zip')
-    logging.info('Removed temporary file: /tmp/'+package+'.zip')
-    shutil.rmtree(f'/tmp/{package}/')
-    logging.info('Removed temporary directory /tmp/'+package+'/')
-    # update instance status
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'],
-                            "container_id": res['container_id'],
-                            "port": res['port']}})
-    logging.info('Updated instance db status')
 
 
 def Deploy(dockerfile_path, image_tag, instance_id, package):
@@ -38,18 +24,34 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
     res = {
         'port': port,
         'container_id': container.id,
-        'container_status': container.status
+        'container_status': container.status,
+        'host_ip': module_config['host_ip'],
+        'host_name': module_config['host_name']
     }
-    postDeploy(instance_id, package, res)
+    logging.info('Deployed instance: ' + instance_id)
+    os.remove(f'/tmp/{package}.zip')
+    logging.info('Removed temporary file: /tmp/'+package+'.zip')
+    shutil.rmtree(f'/tmp/{package}/')
+    logging.info('Removed temporary directory /tmp/'+package+'/')
+    requests.post(module_config['deployer_master']+'/deployed', json={
+        'instance_id': instance_id,
+        'res': res
+    })
+    logging.info('Sent update to master')
 
 
-def stopInstance(instance_id):
-    instance = db.instances.find_one({"instance_id": instance_id})
-    logging.info('Stopping instance: ' + instance_id)
+def stopInstance(container_id,instance_id):
+    logging.info('Got stop request for instance: ' + instance_id)
+    logging.info('Connecting to Docker')
     client = docker.from_env()
-    container = client.containers.get(instance['container_id'])
+    logging.info('Getting container: ' + container_id)
+    container = client.containers.get(container_id)
+    logging.info('Stopping container: ' + container_id)
     container.stop()
-    logging.info('Stopped instance: ' + instance_id)
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": "stopped"}})
-    logging.info('Updated instance db status')
+    logging.info('Stopped container: ' + container_id)
+    logging.info('Removing container: ' + container_id)
+    container.remove()
+    logging.info('Removed container: ' + container_id)
+    requests.post(module_config['deployer_master']+'/stopped', json={'instance_id': instance_id, 'container_status  ': 'stopped'})
+    logging.info('Sent update to master')
+    
