@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def index():
-    return 'Deployer is running!'
+    return 'Deployer is running on ' +  request.host_url
 
 
 def deploy_model_thread(model_id, instance_id):
