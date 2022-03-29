@@ -1,11 +1,9 @@
-from typing import Container
 from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
 from deployer.deploy import Deploy, stopInstance
 from deployer import app, db, module_config
 import logging
-import time
 import threading
 
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +29,7 @@ def deploy_model_thread(model_id, instance_id):
 def deploy_model():
     model_id = request.json['ModelId']
     logging.info('ModelID: ' + model_id)
-    instance_id = str(int(time.time()))
+    instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "model",
                             "model_id": model_id, "status": "pending",
@@ -60,7 +58,7 @@ def deploy_app():
     sensor_id = str(request.json['sensor_ids'][0])
 
     logging.info("ApplicationID: " + application_id)
-    instance_id = str(int(time.time()))
+    instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id, "type": "app",
                             "application_id": application_id, "status": "pending",

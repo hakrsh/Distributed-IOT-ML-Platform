@@ -3,7 +3,7 @@ from flask import request, render_template
 from bson.json_util import dumps
 import requests
 import time
-from . import app,db
+from platform_manager import app,db,module_config
 
 
 @app.route('/')
@@ -19,7 +19,7 @@ def upload_model():
         ModelId = str(round(time.time()))
         content = request.files['file'].read()
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name, "content": content})
-        url = 'http://localhost:9999/model'
+        url = module_config['deployer'] + '/model'
         response = requests.post(url, json={"ModelId":ModelId}).content
         return response.decode('ascii')
 
