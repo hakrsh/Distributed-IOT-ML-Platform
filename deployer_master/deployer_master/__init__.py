@@ -6,7 +6,7 @@ import importlib.resources as pkg_resources
 
 app = Flask(__name__)
 module_config = json.loads(
-    pkg_resources.read_binary('deployer-master', 'config.json'))
+    pkg_resources.read_binary('deployer_master', 'config.json'))
 
 client = MongoClient(module_config['mongo_server'])
 db = client.repo
