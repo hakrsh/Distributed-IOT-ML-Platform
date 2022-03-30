@@ -108,3 +108,6 @@ def getLoad():
         res = requests.get(f'http://{ip}:9898/get-load')
         system_load[worker['name']] = res.json()
     return system_load
+
+def start():
+    app.run(port=9999, host='0.0.0.0')
