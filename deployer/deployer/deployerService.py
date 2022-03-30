@@ -1,7 +1,7 @@
 from flask import request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
-from deployer.deploy import Deploy, stopInstance
+from deployer.deploy import Deploy, stopInstance,systemStats
 from deployer import app, db, module_config
 import logging
 import threading
@@ -68,6 +68,9 @@ def stop_instance():
     threading.Thread(target=stopInstance, kwargs={'instance_id': instance_id, 'container_id': container_id}).start()
     return {"InstanceID": instance_id, "Status": "stopping"}
 
+@app.route('/get-load', methods=['GET'])
+def get_load():
+    return systemStats()
 
 def start():
     app.run(port=9898, host='0.0.0.0')
