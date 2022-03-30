@@ -1,6 +1,8 @@
+from concurrent.futures import thread
 import json
 from pydoc import cli
 import stat
+import threading
 import docker
 from deployer.load_balancer import loadbalancer
 import logging
@@ -43,7 +45,7 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
     logging.info('Sent update to master')
 
 
-def stopInstance(container_id,instance_id):
+def stopInstance(container_id, instance_id):
     logging.info('Got stop request for instance: ' + instance_id)
     logging.info('Connecting to Docker')
     client = docker.from_env()
@@ -55,32 +57,48 @@ def stopInstance(container_id,instance_id):
     logging.info('Removing container: ' + container_id)
     container.remove()
     logging.info('Removed container: ' + container_id)
-    requests.post(module_config['deployer_master']+'/stopped', json={'instance_id': instance_id, 'container_status': 'stopped'})
+    requests.post(module_config['deployer_master']+'/stopped',
+                  json={'instance_id': instance_id, 'container_status': 'stopped'})
     logging.info('Sent update to master')
 
+
 def calculate_mem_percentage(stats):
-    mem_used = stats["memory_stats"]["usage"] - stats["memory_stats"]["stats"]["cache"] + stats["memory_stats"]["stats"]["active_file"]
+    mem_used = stats["memory_stats"]["usage"] - stats["memory_stats"]["stats"]["cache"] + \
+        stats["memory_stats"]["stats"]["active_file"]
     limit = stats['memory_stats']['limit']
     return round(mem_used / limit * 100, 2)
+
 
 def calculate_cpu_percentage(stats):
     cpu_stats = stats['cpu_stats']
     total_usage = cpu_stats['cpu_usage']['total_usage']
     system_cpu_usage = cpu_stats['system_cpu_usage']
-    cpu_percent = (total_usage /system_cpu_usage) * 1000
+    cpu_percent = (total_usage / system_cpu_usage) * 1000
     return round(cpu_percent, 2)
+
+
+def get_container_data(container):
+    stat = container.stats(stream=False)
+    temp = {}
+    temp['container_id'] = container.id
+    temp['image_name'] = container.attrs['Config']['Image']
+    temp['cpu_usage'] = calculate_cpu_percentage(stat)
+    temp['mem_usage'] = calculate_mem_percentage(stat)
+    return temp
+
 
 def systemStats():
     logging.info('Getting system status')
     client = docker.from_env()
     logging.info('Connecting to Docker')
     stats = []
+    threads = []
     for container in client.containers.list():
-        stat = container.stats(stream=False)
-        temp = {}
-        temp['container_id'] = container.id
-        temp['cpu_usage'] = calculate_cpu_percentage(stat)
-        temp['mem_usage'] = calculate_mem_percentage(stat)
-        stats.append(temp)
+        t = threading.Thread(target=lambda: stats.append(
+            get_container_data(container)))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
     logging.info('Got system status')
     return stats
