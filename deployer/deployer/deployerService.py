@@ -1,4 +1,4 @@
-from flask import request
+from flask import jsonify, request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
 from deployer.deploy import Deploy, stopInstance,systemStats
@@ -70,7 +70,7 @@ def stop_instance():
 
 @app.route('/get-load', methods=['GET'])
 def get_load():
-    return systemStats()
+    return jsonify(systemStats())
 
 def start():
     app.run(port=9898, host='0.0.0.0')
