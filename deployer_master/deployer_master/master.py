@@ -1,10 +1,10 @@
-from http import client
-from flask import Flask, request
-from pymongo import MongoClient
+from flask import jsonify, request
 import requests
 import logging
 import uuid
 from deployer_master import app, db, module_config
+import threading
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -98,16 +98,23 @@ def stopInstance():
                         'InstanceID': instance_id, 'ContainerID': instance['container_id']})
     return res.text
 
+def get_load_thread(worker):
+    ip = worker['ip']
+    logging.info('Connecting to ' + ip)
+    res = requests.get(f'http://{ip}:9898/get-load')
+    return {"worker": worker, "load": res.json()}
 
 @app.route('/get-load', methods=['GET'])
 def getLoad():
-    system_load = {}
+    system_load = []
+    threads = []
     for worker in module_config['workers']:
-        ip = worker['ip']
-        logging.info('Connecting to ' + ip)
-        res = requests.get(f'http://{ip}:9898/get-load')
-        system_load[worker['name']] = res.json()
-    return system_load
+        t = threading.Thread(target=lambda: system_load.append(get_load_thread(worker)))
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+    return jsonify(system_load)
 
 def start():
     app.run(port=9999, host='0.0.0.0')
