@@ -1,9 +1,14 @@
 import json
 from flask import request, render_template
-from bson.json_util import dumps
 import requests
-import time
+import uuid
 from platform_manager import app,db,module_config
+import logging
+import zipfile
+import os
+import shutil
+
+logging.basicConfig(level=logging.INFO)
 
 
 @app.route('/')
@@ -16,10 +21,28 @@ def upload_model():
         return render_template('upload_model.html')
     elif request.method == 'POST':
         model_name = request.form['model_name']
-        ModelId = str(round(time.time()))
+        ModelId = str(uuid.uuid4())
+        logging.info('ModelId: ' + ModelId)
         content = request.files['file'].read()
-        db.models.insert_one({"ModelId": ModelId, "ModelName": model_name, "content": content})
+        with open('/tmp/' + ModelId + '.zip', 'wb') as f:
+            f.write(content)
+        logging.info('Model saved to /tmp/' + ModelId + '.zip')
+        with zipfile.ZipFile('/tmp/' + ModelId + '.zip', 'r') as zip_ref:
+            zip_ref.extractall('/tmp/' + ModelId)
+        logging.info('Model extracted to /tmp/' + ModelId)
+        model_contract = {}
+        with open('/tmp/' + ModelId + '/model/model_contract.json', 'r') as f:
+            model_contract = json.load(f)
+            
+        logging.info('Model contract uploaded successfully')
+        os.remove('/tmp/' + ModelId + '.zip')
+        logging.info('Model zip removed')
+        shutil.rmtree('/tmp/' + ModelId)
+        logging.info('Model temp directory removed')
+        db.models.insert_one({"ModelId": ModelId, "ModelName": model_name, "content": content, "model_contract": model_contract})
+        logging.info('Model uploaded successfully')
         url = module_config['deployer'] + '/model'
+        logging.info('Sending model to deployer')
         response = requests.post(url, json={"ModelId":ModelId}).content
         return response.decode('ascii')
 
@@ -29,11 +52,24 @@ def upload_app():
         return render_template('upload_app.html')
     if request.method == 'POST':
         data = request.form
-        ApplicationID = str(round(time.time()))
-        print(ApplicationID)
+        ApplicationID = str(uuid.uuid4())
         ApplicationName = data['ApplicationName']
         content = request.files['file'].read()
-        db.applications.insert_one({"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "content": content})
+        with open('/tmp/' + ApplicationID + '.zip', 'wb') as f:
+            f.write(content)
+        logging.info('Application saved to /tmp/' + ApplicationID + '.zip')
+        with zipfile.ZipFile('/tmp/' + ApplicationID + '.zip', 'r') as zip_ref:
+            zip_ref.extractall('/tmp/' + ApplicationID)
+        logging.info('Application extracted to /tmp/' + ApplicationID)
+        app_contract = {}
+        with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
+            app_contract = json.load(f)
+        os.remove('/tmp/' + ApplicationID + '.zip')
+        logging.info('Application zip removed')
+        shutil.rmtree('/tmp/' + ApplicationID)
+        logging.info('Application temp directory removed')
+        db.applications.insert_one({"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "content": content, "app_contract": app_contract})
+        logging.info('Application uploaded successfully')
         return 'Application stored successfully'
 
 @app.route('/api/get-applications', methods=['GET'])
@@ -44,13 +80,14 @@ def fetch_applications():
         temp = {}
         temp['ApplicationID'] = application['ApplicationID']
         temp['ApplicationName'] = application['ApplicationName']
+        temp['Contract'] = application['app_contract']
         data.append(temp)
     return json.dumps(data)
 
 @app.route('/api/get-application/<ApplicationID>', methods=['GET'])
 def fetch_application(ApplicationID):
     application = db.applications.find_one({"ApplicationID": ApplicationID})
-    data = {'ApplicationID': application['ApplicationID'], 'ApplicationName': application['ApplicationName']}
+    data = {'ApplicationID': application['ApplicationID'], 'ApplicationName': application['ApplicationName'], 'Contract': application['app_contract']}
     return json.dumps(data)
 
 def start():
