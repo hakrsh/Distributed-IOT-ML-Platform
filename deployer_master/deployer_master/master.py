@@ -4,6 +4,7 @@ import logging
 import uuid
 from deployer_master import app, db, module_config
 import threading
+import time 
 
 logging.basicConfig(level=logging.INFO)
 
@@ -106,14 +107,19 @@ def get_load_thread(worker):
 
 @app.route('/get-load', methods=['GET'])
 def getLoad():
+    logging.info('Getting load')
+    start = time.time()
     system_load = []
     threads = []
     for worker in module_config['workers']:
+        logging.info('Getting load for worker: ' + worker['name'])
         t = threading.Thread(target=lambda: system_load.append(get_load_thread(worker)))
         threads.append(t)
         t.start()
     for t in threads:
         t.join()
+    time_taken = time.time() - start
+    logging.info('Got load in ' + str(time_taken) + ' seconds')
     return jsonify(system_load)
 
 def start():
