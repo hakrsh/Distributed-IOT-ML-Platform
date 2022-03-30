@@ -76,11 +76,11 @@ def systemStats():
     logging.info('Connecting to Docker')
     stats = []
     for container in client.containers.list():
-        stat = client.api.stats(container.id, stream=False)
+        stat = container.stats(stream=False)
         temp = {}
         temp['container_id'] = container.id
         temp['cpu_usage'] = calculate_cpu_percentage(stat)
         temp['mem_usage'] = calculate_mem_percentage(stat)
-        stats.append(json.dumps(temp))
+        stats.append(temp)
     logging.info('Got system status')
     return stats
