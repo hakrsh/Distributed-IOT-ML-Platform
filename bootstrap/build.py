@@ -11,7 +11,7 @@ logging.info('load config.json')
 client = docker.from_env()
 def build(image_name):
     logging.info('building image ' + image_name)
-    image = client.images.build(path=service['path'], tag=image)[0]
+    image = client.images.build(path=service['path'], tag=image_name)[0]
     logging.info('build image ' + image_name)
     logging.info('saving image ' + image_name)
     with open(f'{image_name}.tar', 'wb') as f:
