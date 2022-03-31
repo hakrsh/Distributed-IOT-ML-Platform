@@ -4,32 +4,32 @@
     "services" : [
         {
             "name": "deployer",
-            "path": "deployer/Dockerfile",
+            "path": "../deployer",
             "version": "1.0.0"
         },
         {
             "name": "deployer_master",
-            "path": "deployer_master/Dockerfile",
+            "path": "../deployer_master",
             "version": "1.0.0"
         },
         {
             "name": "platform_manager",
-            "path": "platform_manager/Dockerfile",
+            "path": "../platform_manager",
             "version": "1.0.0"
         },
         {
             "name":"schduler",
-            "path": "schduler/Dockerfile",
+            "path": "../schduler",
             "version": "1.0.0"
         },
         {
             "name":"sensor_manager",
-            "path": "sensor_manager/Dockerfile",
+            "path": "../sensor_manager",
             "version": "1.0.0"
         },
         {
             "name":"sensor_request_handler",
-            "path": "sensor_request_handler/Dockerfile",
+            "path": "../sensor_request_handler",
             "version": "1.0.0"
         }
     ]
