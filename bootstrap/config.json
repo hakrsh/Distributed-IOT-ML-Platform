@@ -33,6 +33,10 @@
             "version": "1.0.0"
         }
     ],
+    "master": {
+        "user": "vm1",
+        "ip":"20.232.42.212"
+    },
     "workers":[
 		{
 			"user":"vm2",

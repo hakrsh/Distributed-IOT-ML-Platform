@@ -7,10 +7,11 @@ logging.basicConfig(level=logging.INFO)
 services = json.loads(open('config.json').read())
 logging.info('load config.json')
 
-def build(path,image_tag,container_name,host='unix://var/run/docker.sock'):
-    client = docker.DockeClient(base_url=host)
+def build(host,path,image_tag,container_name):
+    logging.info('Connecing to ' + host)
+    client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
-    logging.info('Starting build')
+    logging.info('Building ' + image_tag)
     client.images.build(path=path, tag=image_tag)
     logging.info('Built image: ' + image_tag)
     try:
@@ -35,9 +36,11 @@ def build(path,image_tag,container_name,host='unix://var/run/docker.sock'):
 for service in services['services']:
     image_name = f'{service["name"]}:{service["version"]}'
     logging.info('building image ' + image_name)
-    if service['container_name'] == 'deployer':
+    # host = 'ssh://' + services['master']['user'] + '@' + services['master']['ip']
+    host = 'unix://var/run/docker.sock'
+    if service['name'] == 'deployer':
         for worker in services['workers']:
             host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
-            build(service['path'],image_name,service['name'],host=host)
+            build(host,service['path'],image_name,service['name'])
     else:
-        build(service['path'],image_name,service['name'])
+        build(host,service['path'],image_name,service['name'])
