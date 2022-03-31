@@ -1,6 +1,4 @@
 {   
-    "username":"harium",
-    "password":"Docker@7525#",
     "version": "1.0.0",
     "tar_file": "ias_platform",
     "services" : [
@@ -34,5 +32,19 @@
             "path": "../sensor_request_handler",
             "version": "1.0.0"
         }
-    ]
+    ],
+    "workers":[
+		{
+			"user":"vm2",
+			"ip":"20.53.249.215"
+		},
+		{
+			"user":"vm3",
+			"ip":"20.213.102.118"
+		},
+		{
+			"user":"vm4",
+			"ip":"20.213.116.238"
+		}
+	]
 }
