@@ -30,6 +30,7 @@ class thread(threading.Thread):
 
 def producerStart(ip, port, qf, topic_id, producer):
     logging.info('Starting producer')
+<<<<<<< HEAD
     thread1 = thread(topic_id,ip,port,qf, producer)
     thread1.start()
 
@@ -40,3 +41,36 @@ def start_all_threads(producer, sensor_config):
         # thread1 = thread(document['topic_id'], document['IP'], document['PORT'], document['QueryFrequency'], producer)
         # thread1.start()
         producerStart(document['IP'], document['PORT'] , document['QueryFrequency'], document['topic_id'], producer)
+=======
+    for topic_id in range(int(numberOfThread)):
+        document = sensor_config.find_one({"_id":topic_id})
+        thread1 = thread(topic_id,document['value']['IP'],document['value']['PORT'],document['value']['QueryFrequency'], producer)
+        thread1.start()
+
+
+def run(kafka_ip, kafka_port, mongo_server):
+    kafka_server = "{}:{}".format(kafka_ip, kafka_port)
+    # mongo_server = "{}:{}".format(mongo_ip, mongo_port)
+
+    producer = KafkaProducer(bootstrap_servers=[kafka_server],api_version=(0,10,1))
+    logging.info('Connected to kafka')
+
+    client = pymongo.MongoClient(mongo_server)
+    logging.info('Connected to database')
+
+    db = client[ "sensors" ]
+    sensor_config = db["sensordetails"]
+    sensor_config.delete_many({})
+    logging.info('Sensor database created')
+
+    sensorJson = pkg_resources.read_binary('sensor_manager', 'sensorConfig.json')
+    sensorData = json.loads(sensorJson)
+
+    numberOfThread = len(sensorData["Sensors"])
+
+    for key,item in enumerate(sensorData["Sensors"]):
+        record={"_id":key,"value":item}
+        sensor_config. insert_one(record)
+    #createKafkaTopic(numberOfThread)
+    producerStart(numberOfThread, sensor_config, producer)
+>>>>>>> 61a3868799b63c3b091f4dc1843fac7c52fa8102
