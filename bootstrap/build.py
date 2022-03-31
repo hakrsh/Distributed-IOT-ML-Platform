@@ -1,8 +1,9 @@
 from concurrent.futures import thread
+from tkinter import image_names
 import docker
 import json
 import logging
-import threading
+import tarfile
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,27 +11,26 @@ services = json.loads(open('config.json').read())
 logging.info('load config.json')
 
 client = docker.from_env()
-def build(tag):
-    logging.info('building image ' + tag)
-    image = client.images.build(path=service['path'], tag=tag)[0]
-    logging.info('build image ' + tag)
-    logging.info('saving image ' + tag)
-    with open(f'{tag}.tar', 'wb') as f:
+def build(image):
+    logging.info('building image ' + image)
+    image = client.images.build(path=service['path'], tag=image)[0]
+    logging.info('build image ' + image)
+    logging.info('saving image ' + image)
+    with open(f'{image}.tar', 'wb') as f:
         for chunk in image.save(chunk_size=1024):
             f.write(chunk)
     logging.info('save image to file')
+    return image + '.tar'
 
 for service in services['services']:
-    tag = f'{service["name"]}:{service["version"]}'
-    build(tag)
-#     build_threads = []
-#     logging.info('start build thread')
-#     t = threading.Thread(target=build, args=(tag,))
-#     build_threads.append(t)
-#     t.start()
+    image = f'{service["name"]}:{service["version"]}'
+    images = []
+    images.append(build(image))
+    output_tar_file = f"{services['tar_file']}_{service['version']}.tar"
+    with tarfile.open(output_tar_file, 'w') as tar:
+        for image in images:
+            tar.add(image)
 
-# for t in build_threads:
-#     t.join()    
     
 
 
