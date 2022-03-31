@@ -1,0 +1,38 @@
+{   
+    "username":"harium",
+    "password":"Docker@7525#",
+    "version": "1.0.0",
+    "tar_file": "ias_platform",
+    "services" : [
+        {
+            "name": "deployer",
+            "path": "../deployer",
+            "version": "1.0.0"
+        },
+        {
+            "name": "deployer_master",
+            "path": "../deployer_master",
+            "version": "1.0.0"
+        },
+        {
+            "name": "platform_manager",
+            "path": "../platform_manager",
+            "version": "1.0.0"
+        },
+        {
+            "name":"scheduler",
+            "path": "../scheduler",
+            "version": "1.0.0"
+        },
+        {
+            "name":"sensor_manager",
+            "path": "../sensor_manager",
+            "version": "1.0.0"
+        },
+        {
+            "name":"sensor_request_handler",
+            "path": "../sensor_request_handler",
+            "version": "1.0.0"
+        }
+    ]
+}

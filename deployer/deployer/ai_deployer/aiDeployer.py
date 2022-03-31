@@ -3,16 +3,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def run(package):
+def run(package, model_id):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
-        zip_ref.extractall('/tmp/ai_deployer')
+        zip_ref.extractall('/tmp/'+model_id)
     logging.info('Extracted package: ' + package)
 
-    contract = json.load(open('/tmp/ai_deployer/model/model_contract.json'))
-    port = contract['port']
+    contract = json.load(open(f'/tmp/{model_id}/model/model_contract.json'))
     endpoint = contract['endpoint']
-    container_name = contract['name']
+    image_name = contract['name']
     # generate server.py
     server_code = ''
     server_code += "from flask import Flask, request\n"
@@ -34,10 +33,10 @@ def run(package):
     server_code += "    return postprocess(pred)\n"
     server_code += "\n"
     server_code += "if __name__ == \"__main__\":\n"
-    server_code += f"    app.run(host='0.0.0.0', port={int(port)})\n"
+    server_code += f"    app.run(host='0.0.0.0', port=80)\n"
     logging.info('Generated server.py')
 
-    with open('/tmp/ai_deployer/model/server.py', 'w') as f:
+    with open(f'/tmp/{model_id}/model/server.py', 'w') as f:
         f.write(server_code)
     logging.info('Wrote server.py')
 
@@ -45,11 +44,11 @@ def run(package):
 ADD model model
 WORKDIR /model
 RUN pip install -r requirements.txt
+EXPOSE 80
 CMD [ "python3","server.py" ]"""
 
-    with open('/tmp/ai_deployer/Dockerfile', 'w') as f:
+    with open(f'/tmp/{model_id}/Dockerfile', 'w') as f:
         f.write(dockerfile)
     logging.info('Wrote Dockerfile')
     logging.info('Ready to build the model image')
-
-    return container_name
+    return image_name
