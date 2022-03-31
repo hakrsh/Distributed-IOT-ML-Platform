@@ -1,4 +1,6 @@
-{
+{   
+    "username":"harium",
+    "password":"Docker@7525#",
     "version": "1.0.0",
     "tar_file": "ias_platform",
     "services" : [
