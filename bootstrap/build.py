@@ -22,14 +22,15 @@ def build(tag):
 
 for service in services['services']:
     tag = f'{service["name"]}:{service["version"]}'
-    build_threads = []
-    logging.info('start build thread')
-    t = threading.Thread(target=build, args=(tag,))
-    build_threads.append(t)
-    t.start()
+    build(tag)
+#     build_threads = []
+#     logging.info('start build thread')
+#     t = threading.Thread(target=build, args=(tag,))
+#     build_threads.append(t)
+#     t.start()
 
-for t in build_threads:
-    t.join()    
+# for t in build_threads:
+#     t.join()    
     
 
 
