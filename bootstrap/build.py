@@ -24,12 +24,13 @@ for service in services['services']:
     image = f'{service["name"]}:{service["version"]}'
     images = []
     images.append(build(image))
-    output_tar_file = f"{services['tar_file']}_{service['version']}.tar"
-    logging.info('creating tar file')
-    with tarfile.open(output_tar_file, 'w') as tar:
-        for image in images:
-            tar.add(image)
-    logging.info('tar file created')
+    
+output_tar_file = f"{services['tar_file']}_{service['version']}.tar"
+logging.info('creating tar file')
+with tarfile.open(output_tar_file, 'w') as tar:
+    for image in images:
+        tar.add(image)
+logging.info('tar file created')
     
 
 
