@@ -46,6 +46,19 @@ def upload_model():
         response = requests.post(url, json={"ModelId":ModelId}).content
         return response.decode('ascii')
 
+@app.route('/get-model/<ModelId>', methods=['GET'])
+def get_model(ModelId):
+    model = db.models.find_one({"ModelId":ModelId})
+    return {'ModelId': model['ModelId'], 'ModelName': model['ModelName'], 'model_contract': model['model_contract']}
+@app.route('/get-models', methods=['GET'])
+
+def get_models():
+    models = db.models.find()
+    data = []
+    for model in models:
+        data.append({'ModelId': model['ModelId'], 'ModelName': model['ModelName'], 'model_contract': model['model_contract']})
+    return json.dumps(data)
+
 @app.route('/upload-app', methods=['POST','GET'])
 def upload_app():
     if request.method == 'GET':
@@ -64,7 +77,15 @@ def upload_app():
         app_contract = {}
         with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
             app_contract = json.load(f)
-        os.remove('/tmp/' + ApplicationID + '.zip')
+        model_id = 'c9524b51-28ce-4802-b082-7c120805413e' #TODO get it from front end
+        model = get_model(model_id)
+        with open('/tmp/' + ApplicationID + '/app/model_contract.json', 'w') as f:
+            json.dump(model['model_contract'], f)
+        logging.info('Inserted model contract into app')
+        shutil.make_archive('/tmp/' + ApplicationID, 'zip', '/tmp/'+ ApplicationID)
+        with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
+            content = f.read()
+        # os.remove('/tmp/' + ApplicationID + '.zip')
         logging.info('Application zip removed')
         shutil.rmtree('/tmp/' + ApplicationID)
         logging.info('Application temp directory removed')
