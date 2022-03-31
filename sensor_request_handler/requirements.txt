@@ -7,3 +7,4 @@ pymongo==3.10.1
 Werkzeug==1.0.1
 flask_pymongo==2.3.0 
 kafka-python
+dnspython

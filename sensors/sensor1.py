@@ -24,6 +24,6 @@ def get_temperature():
 
 if __name__ == '__main__':
 	heat_thread.start()
-	app.run(port=8085, debug=True)
+	app.run(port=8085, host='0.0.0.0')
 	heat_thread.join()
 
