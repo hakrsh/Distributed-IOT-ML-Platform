@@ -9,6 +9,7 @@ logging.info('load config.json')
 
 client = docker.from_env()
 output_tar_file = f"{services['tar_file']}_{services['version']}.tar"
+logging.info('Creating tar file')
 f = open(output_tar_file, 'wb')
 for service in services['services']:
     image_name = f'{service["name"]}:{service["version"]}'
@@ -19,6 +20,5 @@ for service in services['services']:
     for chunk in image.save(chunk_size=1024):
         f.write(chunk)
     logging.info('Added image ' + image_name + ' to tar file ' + output_tar_file)
-    
-
-
+f.close()
+logging.info('tar file created')
