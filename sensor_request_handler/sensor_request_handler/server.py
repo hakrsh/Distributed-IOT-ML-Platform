@@ -9,11 +9,9 @@ logging.basicConfig(level=logging.INFO)
 
 kafka_ip = module_config['kafka_ip']
 kafka_port = module_config['kafka_port']
-mongo_ip = module_config['mongo_ip']
-mongo_port =  module_config['mongo_port']
 
 kafka_server = "{}:{}".format(kafka_ip, kafka_port)
-mongo_server = "{}:{}".format(mongo_ip, mongo_port)
+mongo_server = module_config["mongo_server"]
 
 client = pymongo.MongoClient(mongo_server)
 logging.info('Connected to database')
