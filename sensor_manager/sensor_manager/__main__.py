@@ -1,7 +1,6 @@
-import json
-from sensor_manager.sensorManager import run
-import importlib.resources as pkg_resources
+from sensor_manager.server import app, producer, sensor_config
+from sensor_manager.sensorManager import start_all_threads
 
 if __name__ == "__main__":
-	module_config = json.loads(pkg_resources.read_binary('sensor_manager', 'config.json'))
-	run(module_config['kafka_ip'], module_config['kafka_port'], module_config['mongo_ip'], module_config['mongo_port'])
+	start_all_threads(producer, sensor_config)
+	app.run()

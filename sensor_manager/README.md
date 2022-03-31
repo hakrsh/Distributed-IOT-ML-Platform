@@ -1,5 +1,5 @@
 ## Introduction
-Module that intreacts with sensors and pushes data to kafka pipeline
+Module that interacts with sensors and pushes data to kafka pipeline
 
 ## Environment
 Requires kafka, mongo and all sensors in config to be up and running.
