@@ -18,8 +18,8 @@
             "version": "1.0.0"
         },
         {
-            "name":"schduler",
-            "path": "../schduler",
+            "name":"scheduler",
+            "path": "../scheduler",
             "version": "1.0.0"
         },
         {
