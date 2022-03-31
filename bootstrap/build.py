@@ -44,7 +44,7 @@ for service in services['services']:
             data = json.load(open('../deployer/deployer/config.json'))
             data['host_ip'] = worker['ip']
             data['host_name'] = worker['user']
-            with open('deployer/config.json', 'w') as outfile:
+            with open('../deployer/deployer/config.json', 'w') as outfile:
                 json.dump(data, outfile)
             logging.info('Updating config.json')
             build(host,service['path'],image_name,service['name'])
