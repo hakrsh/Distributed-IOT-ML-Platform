@@ -2,6 +2,7 @@ import threading
 import random
 import time
 from flask import Flask
+from data import get_passengers
 
 app = Flask(__name__)
 
@@ -18,7 +19,8 @@ heat_thread = threading.Thread(target=change_data)
 @app.route('/')
 def get_temperature():
 	global temp
-	return str(temp)
+	# return str(temp)
+	return str(get_passengers("test.csv"))
 
 if __name__ == '__main__':
 	heat_thread.start()
