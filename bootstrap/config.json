@@ -1,0 +1,36 @@
+{
+    "version": "1.0.0",
+    "tar_file": "ias_platform",
+    "services" : [
+        {
+            "name": "deployer",
+            "path": "deployer/Dockerfile",
+            "version": "1.0.0"
+        },
+        {
+            "name": "deployer_master",
+            "path": "deployer_master/Dockerfile",
+            "version": "1.0.0"
+        },
+        {
+            "name": "platform_manager",
+            "path": "platform_manager/Dockerfile",
+            "version": "1.0.0"
+        },
+        {
+            "name":"schduler",
+            "path": "schduler/Dockerfile",
+            "version": "1.0.0"
+        },
+        {
+            "name":"sensor_manager",
+            "path": "sensor_manager/Dockerfile",
+            "version": "1.0.0"
+        },
+        {
+            "name":"sensor_request_handler",
+            "path": "sensor_request_handler/Dockerfile",
+            "version": "1.0.0"
+        }
+    ]
+}
