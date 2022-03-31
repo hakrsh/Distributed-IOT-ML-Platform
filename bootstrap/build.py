@@ -1,8 +1,6 @@
-from tkinter import image_names
 import docker
 import json
 import logging
-import tarfile
 
 logging.basicConfig(level=logging.INFO)
 
