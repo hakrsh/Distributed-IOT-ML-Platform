@@ -111,8 +111,12 @@ def upload_app():
         with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
             app_contract = json.load(f)
         # TODO get it from front end
-        model_instance_id = 'df5422c2-9358-41de-bb78-71471d97b6d3'
-        model_id = 'ef8fe431-ce91-4eb4-acae-2aceec70e8b5'  # TODO get it from front end
+        running_models = json.loads(get_running_models())
+        logging.info('Chosing a random model')
+        model_id = running_models[0]['model_id']
+        model_instance_id = running_models[0]['instance_id']
+        logging.info('model_id: ' + model_id)
+        logging.info('model_instance_id: ' + model_instance_id)
         model_config = requests.get('http://localhost:5000/get-running-model-config',json={"model_id": model_id, "instance_id": model_instance_id}).json()
         with open('/tmp/' + ApplicationID + '/app/model_contract.json', 'w') as f:
             json.dump(model_config, f)
