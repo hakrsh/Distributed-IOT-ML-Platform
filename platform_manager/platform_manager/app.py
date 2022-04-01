@@ -1,5 +1,4 @@
 import json
-from django.shortcuts import redirect
 from flask import request, render_template, url_for
 import requests
 import uuid
