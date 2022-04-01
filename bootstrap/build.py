@@ -36,8 +36,8 @@ def build(host,path,image_tag,container_name):
 for service in services['services']:
     image_name = f'{service["name"]}:{service["version"]}'
     logging.info('building image ' + image_name)
-    # host = 'ssh://' + services['master']['user'] + '@' + services['master']['ip']
-    host = 'unix://var/run/docker.sock'
+    host = 'ssh://' + services['master']['user'] + '@' + services['master']['ip']
+    # host = 'unix://var/run/docker.sock'
     if service['name'] == 'deployer':
         for worker in services['workers']:
             host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
