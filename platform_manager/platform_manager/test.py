@@ -18,7 +18,8 @@ while True:
         ApplicationID = round(time.time())
         ApplicationName = input('Enter Application Name: ')
         FileLocation = input('Enter File Location: ')
-        data = {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "FileLocation": FileLocation}
+        data = {"ApplicationID": ApplicationID,
+                "ApplicationName": ApplicationName, "FileLocation": FileLocation}
         url = 'http://localhost:5000/upload-app'
         response = requests.post(url, json=data).content
         print(response.decode('ascii'))
