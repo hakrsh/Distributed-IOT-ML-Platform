@@ -14,7 +14,7 @@
                 <label for="app_name">Application name</label>
                 <select class="form-control form-control-lg" id="app_name" name="app_name">
                     {% for app in app_list %}
-                    <option value= {{app}}>{{app}}</option>"
+                    <option value= "{{app}}">{{app}}</option>"
                     {% endfor %}
                 </select>
             </div>
@@ -22,7 +22,7 @@
                 <label for="sensor_loc">Sensor Type and Location</label>
                 <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
                     {% for loc in sensors %}
-                    <option value= {{loc}} >{{loc}}</option>"
+                    <option value= "{{loc}}" >{{loc}}</option>"
                     {% endfor %}
                 </select>
             </div>

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import json
 import pymongo
 import logging
@@ -32,7 +32,7 @@ def getAllSensors():
 			sensorinfo["sensor_type"] = document['Type']
 			sensorinfo["sensor_location"] = document['Location']
 			list_of_sensors.append(sensorinfo)
-	return str(list_of_sensors)
+	return jsonify(list_of_sensors)
 
 
 @app.route("/data/<sensor_id>")

@@ -15,9 +15,8 @@ def get_sensor_data():
         sensor_data = requests.get(f"{module_config['sensor_api']}getAllSensors")
         print(sensor_data.json())
         return sensor_data.json()
-        # return json.loads(sensor_data.json())
-    except:
-        print("Error")
+    except Exception as e:
+        print(e)
     # sensor_data = [{"sensor_type":"heat", "sensor_location":"Hyderabad", "sensor_id":"1234"},
     #                 {"sensor_type":"heat", "sensor_location":"Mumbai", "sensor_id":"1235"},
     #                 {"sensor_type":"heat", "sensor_location":"Chennai", "sensor_id":"1236"}]
@@ -31,11 +30,10 @@ def get_app_data():
         apps_name = requests.get(f'{module_config["platform_api"]}/api/get-applications')
         print(apps_name.json())
         return apps_name.json()
-        # return json.loads(apps_name.json())
-    except:
-        print("Error")
-    # apps_name = [{"ApplicationID":1234,"ApplicationName":"xxx","FileLocation":"c:/Downloads"},
-    #             {"ApplicationID":1234,"ApplicationName":"yyy","FileLocation":"c:/Downloads"}]
+    except Exception as e:
+        print(e)
+    # apps_name = [{"ApplicationID":1234,"ApplicationName":"xxx jjjj"},
+    #             {"ApplicationID":1234,"ApplicationName":"yyy"}]
     # return apps_name
 
 """Get the data from sensor and storage team"""
@@ -98,14 +96,14 @@ def schedule():
     app_id,app_loc = 0,0
     for app_dict in app_data:
         if(app_name == app_dict["ApplicationName"]):
-            app_loc  = app_dict["ApplicationID"]
+            app_id  = app_dict["ApplicationID"]
     print(sensor_id)
-    print('app_loc: ' ,app_loc)
+    print('app_id: ' ,app_id)
     query = {
-    "ApplicationID":app_loc,
+    "ApplicationID":app_id,
     "sensor_ids":sensor_id
     }
-    print(query["sensor_ids"])
+    # print(query["sensor_ids"])
     msg = sh.schedule_a_task(time,query=query)
     print(msg)
     return render_template ("deploy.html", time = time)
