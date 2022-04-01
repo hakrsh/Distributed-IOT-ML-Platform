@@ -48,16 +48,41 @@ def upload_model():
 
 @app.route('/get-model/<ModelId>', methods=['GET'])
 def get_model(ModelId):
+    logging.info('ModelId: ' + ModelId)
     model = db.models.find_one({"ModelId":ModelId})
     return {'ModelId': model['ModelId'], 'ModelName': model['ModelName'], 'model_contract': model['model_contract']}
-@app.route('/get-models', methods=['GET'])
 
+@app.route('/get-models', methods=['GET'])
 def get_models():
     models = db.models.find()
     data = []
     for model in models:
         data.append({'ModelId': model['ModelId'], 'ModelName': model['ModelName'], 'model_contract': model['model_contract']})
     return json.dumps(data)
+
+@app.route('/get-running-model-config', methods=['GET'])
+def get_running_model_config():
+    model_id = request.json['model_id']
+    instance_id = request.json['instance_id']
+    model = get_model(model_id)
+    instace = db.instances.find_one({"instance_id":instance_id})
+    model_contract = model['model_contract']
+    model_contract['ip'] = instace['ip']
+    model_contract['port'] = instace['port']
+    return model_contract
+
+@app.route('/get-running-models', methods=['GET'])
+def get_running_models():
+    instances = db.instances.find()
+    data = []
+    for instance in instances:
+        if instance['type'] == 'model':
+            logging.info('Instance: ' + instance['instance_id'])
+            logging.info('Model: ' + instance['model_id'])
+            model = get_model(instance['model_id'])
+            data.append({'instance_id': instance['instance_id'], 'model_id': instance['model_id'], 'ModelName': model['ModelName']})
+    return json.dumps(data)
+
 
 @app.route('/upload-app', methods=['POST','GET'])
 def upload_app():
@@ -77,10 +102,10 @@ def upload_app():
         app_contract = {}
         with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
             app_contract = json.load(f)
-        model_id = 'c9524b51-28ce-4802-b082-7c120805413e' #TODO get it from front end
-        model = get_model(model_id)
+        model_instance_id = 'df5422c2-9358-41de-bb78-71471d97b6d3' #TODO get it from front end
+        model_config = get_running_model_config(model_instance_id)
         with open('/tmp/' + ApplicationID + '/app/model_contract.json', 'w') as f:
-            json.dump(model['model_contract'], f)
+            json.dump(model_config, f)
         logging.info('Inserted model contract into app')
         shutil.make_archive('/tmp/' + ApplicationID, 'zip', '/tmp/'+ ApplicationID)
         with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
