@@ -1,3 +1,4 @@
+from distutils.log import debug
 from flask import Flask, render_template, request
 import requests
 from datetime import datetime
@@ -15,6 +16,7 @@ logging.basicConfig(filename="scheduler.log",
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
 
+
 def get_sensor_data():
     
     """ To request sensor details from sensor team"""
@@ -27,7 +29,9 @@ def get_sensor_data():
                     {"sensor_type":"temperature", "sensor_location":"Mumbai", "sensor_id":"1235"},
                     {"sensor_type":"humidity", "sensor_location":"Chennai", "sensor_id":"1236"},
                     {"sensor_type":"light", "sensor_location":"Banglore", "sensor_id":"1236"},
-                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1238"}]
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1238"},
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1239"},
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1256"}]
     return sensor_data
 
 
@@ -63,6 +67,14 @@ def get_app_data():
                     {
                         "function" : "gettemperature",
                         "sensor_type" : "temperature"
+                    },
+                    {
+                        "function" : "getlight",
+                        "sensor_type" : "light"
+                    },
+                    {
+                        "function" : "getlight",
+                        "sensor_type" : "light"
                     }
                 ] ,
                 'endpoint': '/app/app.py'
@@ -133,6 +145,10 @@ def home():
     sensors = [sensor['sensor_type'] + "-" + sensor['sensor_location'] for sensor in sensor_data]
     return render_template ("index.html", app_list = app_lst, sensors = sensors)
 
+
+
+
+    
 
 def format_time(time):
     time = time.replace('T',' ')
