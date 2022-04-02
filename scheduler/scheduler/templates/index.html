@@ -31,12 +31,12 @@
             </select>
         </div>
         <div class="form-group" id="sensors_list">
-            <label for="sensor_loc">Sensor Type and Location</label>
+            <!-- <label for="sensor_loc">Sensor Type and Location</label>
             <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
                 {% for loc in sensors %}
                 <option value="{{loc}}">{{loc}}</option>"
                 {% endfor %}
-            </select>
+            </select> -->
         </div>
         <div class="form-group">
             <label for="datetime">Start Date and Time</label>
@@ -51,10 +51,11 @@
 </body>
 <script>
 
+    document.getElementById("app_name").selectedIndex = -1;
     document.getElementById('app_name').onchange = function () {
         var app_id = this.value;
 
-        console.log(app_id)
+        // console.log(app_id)
         $.ajax({
             type: 'POST',
             data: JSON.stringify({
@@ -64,31 +65,31 @@
             url: "{{ url_for('get_app_contract') }}",
             success: function (data) {
 
-                // <label for="sensor_loc">Sensor Type and Location</label>
-                //     <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
-                //         {% for loc in sensors %}
-                //         <option value= "{{loc}}" >{{loc}}</option>"
-                //         {% endfor %}
-                //     </select>
-
-                // console.log(data)
                 $("#sensors_list").empty();
-
                 data = JSON.parse(data)
                 for (var i = 0; i < data.length; i++) {
 
-                
+
                     var sensor_type = data[i].sensor_type
-                    var count = data[i].count
+                    var count = parseInt(data[i].count)
                     var sensor_list = data[i].sensors_list
 
-                    console.log(sensor_list);
-                    $('#sensors_list').append('<label for="sensor_loc">Sensor Type: '+ sensor_type + '</label>\
-                    <select class="form-control form-control-lg" id='+ i + '_sensor name="my_sensors" multiple>');
-                    var id_s = i + "_sensor"
-                    for (var j = 0; j < sensor_list.length; j++) {
-                        $('#'+id_s).append(
-                            "<option value=" + sensor_type + "-" + sensor_list[j][1] + 'id=+' + sensor_list[j][0] + '">' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                    if (count == 1) {
+                        $('#sensors_list').append('<label for="sensor_loc">Sensor Type: ' + sensor_type + "<br>Select only " + count + " sensor" + '</label>\
+                    <select class="form-control form-control-lg" id='+ i + '_sensor name="my_sensors" count=' + count + ' multiple>');
+                        var id_s = i + "_sensor"
+                        for (var j = 0; j < sensor_list.length; j++) {
+                            $('#' + id_s).append(
+                                "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                        }
+                    } else {
+                        $('#sensors_list').append('<label for="sensor_loc">Sensor Type: ' + sensor_type + "<br>Select only " + count + " sensors" + '</label>\
+                    <select class="form-control form-control-lg" id='+ i + '_sensor name="my_sensors" count=' + count + ' multiple>');
+                        var id_s = i + "_sensor"
+                        for (var j = 0; j < sensor_list.length; j++) {
+                            $('#' + id_s).append(
+                                "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                        }
                     }
                 }
             }
