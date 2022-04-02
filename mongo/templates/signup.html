@@ -109,6 +109,7 @@ hr {
   .cancelbtn, .signupbtn {
      width: 100%;
   }
+
 }
 </style>
 <body>
@@ -126,6 +127,15 @@ hr {
 
     <label for="password-repeat"><b>Repeat Password</b></label>
     <input type="password" placeholder="Repeat Password" name="password-repeat" required>
+
+    <label for="role"><b>Select Role</b></label>
+    <select name="role">
+      <option value="ai-dev">Data Scientist</option>
+      <option value="app-dev">App Developer</option>
+      <option value="snsr-mngr">Sensor Manager</option>
+      <option value="plt-mngr">Platform Manager</option>
+      <option value="scheduler">Scheduler</option>
+    </select>
 
     <div class="clearfix">
       <button type="button" class="cancelbtn">Cancel</button>
