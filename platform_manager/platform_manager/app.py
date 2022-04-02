@@ -92,6 +92,21 @@ def get_running_models():
     return json.dumps(data)
 
 
+@app.route('/get-running-applications', methods=['GET'])
+def get_running_applications():
+    instances = db.instances.find()
+    print(instances)
+    data = []
+    for instance in instances:
+        if instance['type'] == 'app':
+            logging.info('Instance: ' + instance['instance_id'])
+            url = "http://" + instance['ip'] + ':' + str(instance['port'])
+            data.append({'instance_id': instance['instance_id'],
+                        'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
+                        'url': url})
+    #return jsonify(data)
+    return render_template ("app_dashboard.html", data = data)
+
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
     if request.method == 'GET':
