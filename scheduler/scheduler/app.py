@@ -20,7 +20,6 @@ def get_sensor_data():
     """ To request sensor details from sensor team"""
     # try:
     #     sensor_data = requests.get(f"{module_config['sensor_api']}getAllSensors")
-    #     # print(sensor_data.json())
     #     return sensor_data.json()
     # except Exception as e:
     #     logging.error(e)
@@ -37,7 +36,6 @@ def get_app_data():
     """To request apps name from the storage team"""
     # try:
     #     apps_name = requests.get(f'{module_config["platform_api"]}/api/get-applications')
-    #     # print(apps_name.json())
     #     return apps_name.json()
     # except Exception as e:
     #     logging.error(e)
@@ -98,7 +96,6 @@ def refresh_data():
     data = dict()
     data["app"] = app_data
     data["sensor"] = sensor_data
-    # print(app_data)
     return data
 
 def insert_into_db(app_id, sensor_info, start_time, end_time):
@@ -163,15 +160,26 @@ def schedule():
     logging.info("User selected data: " + str(app_name) + str(my_sensors) + str(start_time) + str(end_time))
     start_time = format_time(start_time)
     end_time = format_time(end_time)
-    sensor_info = []
+    sensor_info = {}
     for s in my_sensors:
-        s_type, loc = s.split("-")
-        res = [sensor for sensor in sensor_data if sensor["sensor_type"]==s_type and sensor["sensor_location"]==loc]
-        sensor_info.append(res[0]["sensor_id"])
+        s_type, loc, s_id = s.split("-")
+        # res = [sensor for sensor in sensor_data if sensor["sensor_type"]==s_type and sensor["sensor_location"]==loc]
+        # sensor_info.append(res[0]["sensor_id"])
+        if s_type not in sensor_info.keys():
+            sensor_info[s_type] = [s_id]
+        else:
+            sensor_info[s_type].append(s_id)
+    print(app_name)
     app_id,app_loc = 0,0
+    req_func = []
     for app_dict in app_data:
-        if(app_name == app_dict["ApplicationName"]):
+        if(app_name == app_dict["ApplicationID"]):
             app_id  = app_dict["ApplicationID"]
+            req_func = app_dict["Contract"]["sensors"]
+            print(req_func)
+            break
+    
+    for func
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
     sched_id = insert_into_db(app_id, sensor_info, start_time, end_time)
     query = {
@@ -179,27 +187,23 @@ def schedule():
         "sensor_ids":sensor_info,
         "sched_id":sched_id
     }
-    msg = sh.schedule_a_task(start_time, query=query)
+    msg = sh.schedule_a_task(start_time, end_time, query=query)
     print(msg)
     return render_template ("deploy.html", time = start_time)
+
+@app.route('/reschedule', methods = ["POST"])
+def reshedule():
+    instance_id = request.json["instance_id"]
 
 
 
 @app.route('/get_app_contract',methods =["POST"])  
 def get_app_contract():
-
-
     app_id = json.loads(request.get_data())["app_id"]
-    print(app_id)
-
     data = refresh_data()
     app_data = data["app"]
     sensor_data = data["sensor"]
-
-
     list_of_sensors = [[sensor["sensor_id"],sensor['sensor_type'],sensor['sensor_location']] for sensor in sensor_data]
-
-
 
 
     req_sensors = []
@@ -208,11 +212,8 @@ def get_app_contract():
             req_sensors = app["Contract"]["sensors"]
     
 
-
-    
     sensors_of_app = {}
     for sensor in req_sensors:
-
         type_of_sensor = sensor["sensor_type"]
         if(type_of_sensor in sensors_of_app):
             sensors_of_app[type_of_sensor][0] +=1
@@ -234,15 +235,14 @@ def get_app_contract():
         d["count"] = v[0]
         sensors_of_app_send.append(d)
 
-
-    print(sensors_of_app_send)
+    # print(sensors_of_app_send)
     return json.dumps(sensors_of_app_send)
 
 
 def schedule_pending_tasks():
     pending_tasks = db.scheduleinfo.find({"instance_id":"blank"})
     for task in pending_tasks:
-        print(task)
+        # print(task)
         query = {
             "ApplicationID":task["Application_ID"],
             "sensor_ids":task["sensor_info"],
@@ -250,23 +250,20 @@ def schedule_pending_tasks():
         }
         start_time = datetime.strptime(task["start_time"], '%Y-%m-%d %H:%M:%S')
         if datetime.now() <= start_time:
-            print(start_time)
+            # print(start_time)
             end_time = datetime.strptime(task["end_time"], '%Y-%m-%d %H:%M:%S')
-            msg = sh.schedule_a_task(start_time, query=query)
+            msg = sh.schedule_a_task(start_time, end_time, query=query)
     
     pending_tasks = db.scheduleinfo.find({"stopped_flag":False})
     for task in pending_tasks:
         if task["instance_id"] != "blank":
-            print(task)
+            # print(task)
             query = {
-                "ApplicationID":task["Application_ID"],
-                "sensor_ids":task["sensor_info"],
-                "sched_id":task["sched_id"]
+                "instance_id":task["instance_id"]
             }
             end_time = datetime.strptime(task["end_time"], '%Y-%m-%d %H:%M:%S')
             if datetime.now() <= end_time:
-                print(start_time)
-                msg = sh.schedule_a_task(end_time, query=query) #####replace
+                msg = sh.schedule_a_stop_task(end_time, query=query)
 
 
 def start():
@@ -275,4 +272,4 @@ def start():
     t.start()
     t = threading.Thread(target = schedule_pending_tasks)
     t.start()
-    app.run(debug=True,port = 8210,host='0.0.0.0')
+    app.run(debug=True, port = 8210, host='0.0.0.0')

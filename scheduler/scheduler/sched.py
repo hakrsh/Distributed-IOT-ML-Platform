@@ -3,13 +3,21 @@ import time
 import requests
 import datetime
 from scheduler import module_config, db
+import logging
 
-def update_instance_id(data, sched_id):
+logging.basicConfig(filename="scheduler.log",
+                            filemode='a',
+                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                            datefmt='%H:%M:%S',
+                            level=logging.DEBUG)
+
+
+def update_stopped_status(instance_id):
     try:
-        # logging.info("Updating instance IDs")
-        db.scheduleinfo.update_one({"sched_id":sched_id},{"$set": {"instance_id": data["instance_id"]}})
+        logging.info("Updating stopped status")
+        db.scheduleinfo.update_one({"instance_id":instance_id},{"$set": {"stopped_flag": True}})
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 def get_scheduled_time(time):
     try:
@@ -22,36 +30,40 @@ def get_scheduled_time(time):
         delta = time - today
         return delta,time_to_execute
     except Exception as e:
-        print("Error at get_scheduled_time")
+        logging.error("Error at get_scheduled_time")
+        logging.error(e)
 
 
 def update_instance_id(instance_id, sched_id):
     try:
-        # logging.info("Updating instance IDs")
+        logging.info("Updating instance IDs")
         db.scheduleinfo.update_one({"sched_id":sched_id},{"$set": {"instance_id": instance_id}})
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 
 def end_app_instance(query):
     try:
         # Insert stopping Instance API Here
-        response = requests.post(f"{module_config['deployer_master']}app",json=query).content
-        print(response.decode('ascii'))
+        # response = requests.post(f"{module_config['deployer_master']}stop-instance",json=query).content
+        # print(response.decode('ascii'))
         print("FROM STOPPING INSTANCE!!!!")
+        update_stopped_status(query["instance_id"])
         return schedule.CancelJob
     except Exception as e:
-        print("Error at end_app_instance")
+        logging.error("Error at end_app_instance")
+        logging.error(e)
 
 
 def schedule_a_stop_task(endtime,query):
     delta,time_to_execute = get_scheduled_time(endtime)
-
+    if(delta=="Invalid time"):
+            return "Invalid time"
     schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = query)
     return "Ending Instance Job scheduled"
 
 
-def job_that_executes_once(query):
+def call_deployer(query, end_time):
     """
 
     This function is executed at the specified time
@@ -63,22 +75,21 @@ def job_that_executes_once(query):
     try:
         print("Doing job....")
         # Use the Deployer API here
-        response = requests.post(f"{module_config['deployer_master']}app",json=query).content
-        instance_id = response.decode('ascii')
+        # response = requests.post(f"{module_config['deployer_master']}app",json=query).content
+        # instance_id = response.decode('ascii')
+        instance_id = "1223"
         update_instance_id(instance_id, query['sched_id'])
-
-        end_time = datetime.datetime(2022, 4, 2, 12, 38)
         delta,time_to_execute = get_scheduled_time(end_time)
         if(delta=="Invalid time"):
             return "Invalid time"
         schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
-
         print(instance_id)
         return schedule.CancelJob
 
     except Exception as e:
-        print(e)
-        print("Error at job_that_executes_once")
+        logging.error("Error at call_deployer")
+        logging.error(e)
+        
 
 
 
@@ -87,7 +98,7 @@ def job_that_executes_once(query):
 # "location":"C:/Downloads",
 # "topic_name":["Hospital","Factory"]
 # }
-def schedule_a_task(time,query):
+def schedule_a_task(start_time, end_time, query):
     """
 
     We will check the validity of the time
@@ -96,9 +107,10 @@ def schedule_a_task(time,query):
 
     """
     # time_to_execute = str(time.hour)+":"+str(time.minute)
-    delta,time_to_execute = get_scheduled_time(time)
-
-    schedule.every(delta.days + 1).days.at(time_to_execute).do(job_that_executes_once,query = query)
+    delta,time_to_execute = get_scheduled_time(start_time)
+    if(delta=="Invalid time"):
+        return "Invalid time"
+    schedule.every(delta.days + 1).days.at(time_to_execute).do(call_deployer, query = query, end_time = end_time)
     return "job_scheduled"
 
 # year = int(input("Enter year:"))

@@ -64,15 +64,6 @@
             url: "{{ url_for('get_app_contract') }}",
             success: function (data) {
 
-
-                // <label for="sensor_loc">Sensor Type and Location</label>
-                //     <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
-                //         {% for loc in sensors %}
-                //         <option value= "{{loc}}" >{{loc}}</option>"
-                //         {% endfor %}
-                //     </select>
-
-                // console.log(data)
                 $("#sensors_list").empty();
 
                 data = JSON.parse(data)
@@ -89,7 +80,7 @@
                     var id_s = i + "_sensor"
                     for (var j = 0; j < sensor_list.length; j++) {
                         $('#'+id_s).append(
-                            "<option value=" + sensor_type + "-" + sensor_list[j][1] + 'id=+' + sensor_list[j][0] + '">' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                            "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_type + "-" + sensor_list[j][1] + '</option>');
                     }
                 }
             }
