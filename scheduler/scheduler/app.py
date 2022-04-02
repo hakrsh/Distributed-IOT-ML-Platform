@@ -194,7 +194,6 @@ def schedule():
         if(app_name == app_dict["ApplicationID"]):
             app_id  = app_dict["ApplicationID"]
             req_func = app_dict["Contract"]["sensors"]
-            print(req_func)
             break
     
 
@@ -206,12 +205,11 @@ def schedule():
         else:
             func_of_sensors[type_of_sensor] = []
             func_of_sensors[type_of_sensor].append(sensor["function"])
-           
     sensor_to_func_mapping =[]
     for sensor_type,funcs in func_of_sensors.items():      
         for i in range(len(funcs)):
             d = {}
-            if(len(sensor_info[sensor_type]) >= func_of_sensors[type_of_sensor]):
+            if(len(sensor_info[sensor_type]) == len(func_of_sensors[sensor_type])):
                 d["sensor_id"] = sensor_info[sensor_type][i]
                 d["function"] = funcs[i]
                 sensor_to_func_mapping.append(d)
@@ -321,6 +319,6 @@ def start():
     t = threading.Thread(target=sh.run_schedule)
     t.daemon = True
     t.start()
-    t = threading.Thread(target = schedule_pending_tasks)
-    t.start()
+    pending_jobs = threading.Thread(target = schedule_pending_tasks)
+    pending_jobs.start()
     app.run(debug=True, port = 8210, host='0.0.0.0')
