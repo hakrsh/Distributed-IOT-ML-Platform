@@ -1,5 +1,5 @@
 import json
-from flask import request, render_template, url_for
+from flask import request, render_template, url_for, jsonify
 import requests
 import uuid
 from platform_manager import app, db, module_config
@@ -155,6 +155,24 @@ def fetch_application(ApplicationID):
             'ApplicationName': application['ApplicationName'], 'Contract': application['app_contract']}
     return json.dumps(data)
 
+
+
+@app.route('/get-load')
+def home():
+    """
+        Fetches the application and models load data from all the virtual VMs
+    """
+    url = module_config['deployer']
+    print(url)
+    print((f'{url}get-load'))
+    response = requests.get(f'{url}get-load')
+    load_url = url+"get-load"
+
+    load_data = json.loads(response.content.decode('utf-8'))
+    
+    print(type(load_data))
+    
+    return render_template ("load-data.html", load_data = load_data, url = load_url)
 
 def start():
     app.run(host='0.0.0.0', port=5000)
