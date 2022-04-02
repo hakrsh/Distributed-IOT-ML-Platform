@@ -5,8 +5,9 @@ import threading
 import time
 import docker
 
-
 logging.basicConfig(level=logging.INFO)
+
+monitor_interval = 1
 
 mongo_server = module_config["mongo_server"]
 
@@ -17,16 +18,34 @@ db = client[ "repo" ]
 instances = db["instances"]
 logging.info('instance database created')
 
+def cleanup(client, instance_id, container_id):
+	logging.info("Cleaning up {}".format(container_id))
+	client.remove(container_id)
+
+def recover(instance_id):
+	logging.info("Recovering {}".format(container_id))
+
 def app_handler(app_info):
 	instance_id = app_info["instance_id"]
 	container_id = app_info["container_id"]
 	hostname = app_info["hostname"]
 	ip = app_info["ip"]
 	port = app_info["port"]
-	client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+	try:
+		client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+	except Exception as e:
+		print("Could not connect to docker daemon")
 	while True:
-		print(container_id)
-		time.sleep(10)
+		try:
+			cont = client.containers.get(container_id)
+			cont_status = cont.status
+			if cont_status != "running":
+				logging.info("Container {} not running".format(container_id))
+				cleanup(client, container_id)
+				recover(instance_id)
+		except Exception as e:
+			print("Could not find any such container")
+		time.sleep(monitor_interval)
 
 def run():
 	instance_cursor = instances.find({})
