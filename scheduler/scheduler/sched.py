@@ -2,7 +2,14 @@ import schedule
 import time
 import requests
 import datetime
-from scheduler import module_config
+from scheduler import module_config, db
+
+def update_instance_id(data, sched_id):
+    try:
+        # logging.info("Updating instance IDs")
+        db.scheduleinfo.update_one({"sched_id":sched_id},{"$set": {"instance_id": data["instance_id"]}})
+    except Exception as e:
+        print(e)
 
 def get_scheduled_time(time):
     try:
