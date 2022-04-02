@@ -194,8 +194,7 @@ def schedule():
             req_func = app_dict["Contract"]["sensors"]
             print(req_func)
             break
-    
-    for func
+
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
     sched_id = insert_into_db(app_id, sensor_info, start_time, end_time)
     query = {
@@ -207,10 +206,21 @@ def schedule():
     print(msg)
     return render_template ("deploy.html", time = start_time)
 
-@app.route('/reschedule', methods = ["POST"])
-def reshedule():
-    instance_id = request.json["instance_id"]
-
+@app.route('/reschedule/<instance_id>', methods = ["POST"])
+def reshedule(instance_id):
+    app_data = db.scheduleinfo.find({"instance_id":instance_id})
+    query = {
+        "ApplicationID":app_data["Application_ID"],
+        "sensor_ids":app_data["sensor_info"],
+        "sched_id":app_data["sched_id"]
+    }
+    start_time = datetime.now() + datetime.timedelta(0,3)
+    end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
+    response = requests.post(f"{module_config['deployer_master']}app",json=query).content
+    new_instance_id = response.decode('ascii')
+    sh.update_instance_id(new_instance_id, app_data["sched_id"])
+    sh.schedule_a_stop_task(end_time, {"instance_id":new_instance_id})
+    return new_instance_id
 
 
 @app.route('/get_app_contract',methods =["POST"])  
