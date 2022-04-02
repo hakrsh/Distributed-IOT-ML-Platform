@@ -185,8 +185,10 @@ def schedule():
             sensor_info[s_type] = [s_id]
         else:
             sensor_info[s_type].append(s_id)
+
+
     print(app_name)
-    app_id,app_loc = 0,0
+    app_id= 0
     req_func = []
     for app_dict in app_data:
         if(app_name == app_dict["ApplicationID"]):
@@ -195,16 +197,38 @@ def schedule():
             print(req_func)
             break
     
-    for func
+
+    func_of_sensors = {}
+    for sensor in req_func:
+        type_of_sensor = sensor["sensor_type"]
+        if(type_of_sensor in func_of_sensors):
+            func_of_sensors[type_of_sensor].append(sensor["function"])
+        else:
+            func_of_sensors[type_of_sensor] = []
+            func_of_sensors[type_of_sensor].append(sensor["function"])
+           
+    sensor_to_func_mapping =[]
+    for sensor_type,funcs in func_of_sensors.items():      
+        for i in range(len(funcs)):
+            d = {}
+            if(len(sensor_info[sensor_type]) >= func_of_sensors[type_of_sensor]):
+                d["sensor_id"] = sensor_info[sensor_type][i]
+                d["function"] = funcs[i]
+                sensor_to_func_mapping.append(d)
+            else:
+                error_msg = "select required number of sensors"
+                return render_template("error.html", error_msg=error_msg)
+
+    print(sensor_to_func_mapping)
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
-    sched_id = insert_into_db(app_id, sensor_info, start_time, end_time)
-    query = {
-        "ApplicationID":app_id,
-        "sensor_ids":sensor_info,
-        "sched_id":sched_id
-    }
-    msg = sh.schedule_a_task(start_time, end_time, query=query)
-    print(msg)
+    # sched_id = insert_into_db(app_id, sensor_info, start_time, end_time)
+    # query = {
+    #     "ApplicationID":app_id,
+    #     "sensor_ids":sensor_info,
+    #     "sched_id":sched_id
+    # }
+    # msg = sh.schedule_a_task(start_time, end_time, query=query)
+    # print(msg)
     return render_template ("deploy.html", time = start_time)
 
 @app.route('/reschedule', methods = ["POST"])
