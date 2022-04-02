@@ -7,6 +7,7 @@ app = Flask(__name__)
 client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/')
 db = client.users
 
+# @app.route('/', methods=['GET','POST'])
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -16,29 +17,25 @@ def signup():
     if request.method == 'GET': 
         return render_template('signup.html')
     elif request.method == 'POST':
-        req = request.get_data()
-        username, role, passwd = req.username, req.role, req.passwd
-        # username = 'user1'
-        # role='scheduler'
-        # passwd= '1234'
+        req = request.form
+        username, role, passwd = req.get('username'), req.get('role'), req.get('password')
         collection = db[role]
-        tmp = collection.find_one({'username':username, 'password':passwd})
-        if tmp == None:
-            return 'Invalid'
-        cid = collection.insert_one({'username': username,'password':passwd})
-        print(cid)
-        return 'Success'
+        cid = collection.find_one({'username':username, 'password':passwd})
+        if cid is None:
+            cid = collection.insert_one({'username': username,'password':passwd})
+            return 'Success'
+        return 'Invalid'
 
 @app.route('/users/login', methods=['GET','POST'])
 def login():
     if request.method == "GET":
         return render_template('login.html')
     elif request.method == 'POST':
-        req = request.get_data()
-        username, role, passwd = req.username, req.role, req.passwd
+        req = request.form
+        username, role, passwd = req.get('username'), req.get('role'), req.get('password')
         collection = db[role]
-        tmp = collection.find_one({'username':username, 'password':passwd})
-        if tmp == None:
+        cid = collection.find_one({'username':username, 'password':passwd})
+        if cid is None:
             return 'Invalid'
         return 'Success'
 
