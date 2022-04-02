@@ -30,7 +30,9 @@ def get_sensor_data():
                     {"sensor_type":"temperature", "sensor_location":"Mumbai", "sensor_id":"1235"},
                     {"sensor_type":"humidity", "sensor_location":"Chennai", "sensor_id":"1236"},
                     {"sensor_type":"light", "sensor_location":"Banglore", "sensor_id":"1236"},
-                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1238"}]
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1238"},
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1239"},
+                    {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1256"}]
     return sensor_data
 
 
@@ -67,6 +69,14 @@ def get_app_data():
                     {
                         "function" : "gettemperature",
                         "sensor_type" : "temperature"
+                    },
+                    {
+                        "function" : "getlight",
+                        "sensor_type" : "light"
+                    },
+                    {
+                        "function" : "getlight",
+                        "sensor_type" : "light"
                     }
                 ] ,
                 'endpoint': '/app/app.py'
@@ -137,62 +147,6 @@ def home():
     sensor_loc = list(dict.fromkeys(sensor_loc))
     sensors = [sensor['sensor_type'] + "-" + sensor['sensor_location'] for sensor in sensor_data]
     return render_template ("index.html", app_list = app_lst, sensors = sensors)
-
-
-
-@app.route('/get_app_contract',methods =["POST"])  
-def get_app_contract():
-
-
-    app_id = json.loads(request.get_data())["app_id"]
-    print(app_id)
-
-    data = refresh_data()
-    app_data = data["app"]
-    sensor_data = data["sensor"]
-
-
-    list_of_sensors = [[sensor["sensor_id"],sensor['sensor_type'],sensor['sensor_location']] for sensor in sensor_data]
-
-
-
-
-    req_sensors = []
-    for app in app_data:
-        if(app["ApplicationID"] == app_id):
-            req_sensors = app["Contract"]["sensors"]
-    
-
-
-    
-    sensors_of_app = {}
-    for sensor in req_sensors:
-
-        type_of_sensor = sensor["sensor_type"]
-        if(type_of_sensor in sensors_of_app):
-            sensors_of_app[type_of_sensor][0] +=1
-        else:
-
-            sensors_list = []
-            for type in list_of_sensors:
-                if(type[1] == type_of_sensor):
-                    sensors_list.append(type[0])
-                    sensors_list.append(type[1])
-
-            sensors_of_app[type_of_sensor] = [1,[]]
-            sensors_of_app[type_of_sensor][1] = sensors_list
-
-    sensors_of_app_send =[]
-    for k,v in sensors_of_app.items():
-        d={}
-        d["sensor_type"] = k
-        d["sensors_list"] = v[1]
-        d["count"] = v[0]
-        sensors_of_app_send.append(d)
-
-
-    print(sensors_of_app_send)
-    return json.dumps(sensors_of_app_send)
 
 
 
