@@ -21,10 +21,17 @@ def signup():
         username, role, passwd = req.get('username'), req.get('role'), req.get('password')
         collection = db[role]
         cid = collection.find_one({'username':username, 'password':passwd})
+        response = {}
+        response['user'] = username
+        response['password'] = passwd
+        response['role'] = role
+        response['action'] = 'signup'
         if cid is None:
             cid = collection.insert_one({'username': username,'password':passwd})
-            return 'Success'
-        return 'Invalid'
+            response['status'] = 200
+        else:
+            response['status'] = 500
+        return render_template('index.html', response = response)
 
 @app.route('/users/login', methods=['GET','POST'])
 def login():
@@ -35,9 +42,15 @@ def login():
         username, role, passwd = req.get('username'), req.get('role'), req.get('password')
         collection = db[role]
         cid = collection.find_one({'username':username, 'password':passwd})
+        response = {}
+        response['user'] = username
+        response['password'] = passwd
+        response['role'] = role
+        response['status'] = 200
+        response['action'] = 'login'
         if cid is None:
-            return 'Invalid'
-        return 'Success'
+            response['status'] = 500
+        return render_template('index.html', response = response)
 
 if __name__ == "__main__":
     app.run(debug=True, host='127.0.0.1', port=2500)
