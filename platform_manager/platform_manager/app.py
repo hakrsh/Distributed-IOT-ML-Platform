@@ -45,7 +45,7 @@ def upload_model():
         logging.info('Model uploaded successfully')
         url = module_config['deployer'] + '/model'
         logging.info('Sending model to deployer')
-        response = requests.post(url, json={"ModelId": ModelId}).content
+        response = requests.post(url, json={"ModelId": ModelId, "ModelName": model_name}).content
         return response.decode('ascii')
 
 
@@ -84,12 +84,14 @@ def get_running_models():
     data = []
     for instance in instances:
         if instance['type'] == 'model':
+            print(instance)
             logging.info('Instance: ' + instance['instance_id'])
             logging.info('Model: ' + instance['model_id'])
             model = get_model(instance['model_id'])
-            data.append({'instance_id': instance['instance_id'],
-                        'model_id': instance['model_id'], 'ModelName': model['ModelName']})
-    return json.dumps(data)
+            data.append({'ModelName': model['ModelName'],
+                        'ip': instance['ip'], 'port': instance['port'],
+                        'host': instance['hostname']})
+    return render_template ("model_dashboard.html", data = data)
 
 
 @app.route('/get-running-applications', methods=['GET'])
@@ -103,8 +105,7 @@ def get_running_applications():
             url = "http://" + instance['ip'] + ':' + str(instance['port'])
             data.append({'instance_id': instance['instance_id'],
                         'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
-                        'url': url})
-    #return jsonify(data)
+                        'url': url, 'app_name': instance['app_name'], 'status': instance['status']  })
     return render_template ("app_dashboard.html", data = data)
 
 @app.route('/upload-app', methods=['POST', 'GET'])
