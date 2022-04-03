@@ -3,6 +3,7 @@ import logging
 import docker
 from kafka import KafkaProducer
 import threading
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 logging.basicConfig(filename="monitor_logger.log",
                             filemode='a',
@@ -24,6 +25,14 @@ def push_to_kafka(instance_logs, instance_status, topic_id):
         logging.error(e)
 
 
+def get_instance_data(client,instance_id):
+    cur_container = client.containers.get(instance_id)
+    instance_status = {cur_container.id:cur_container.status}
+    instance_logs = {cur_container.id:cur_container.logs()}
+    if not check_topic(instance_id):
+        create_topics(instance_id)
+    push_to_kafka(instance_status, instance_logs, instance_id)
+
 def get_logs():
     try:
         # client = docker.from_env()
@@ -34,21 +43,13 @@ def get_logs():
         logging.info("Connecting to VM")
         instances = db.instances.find({"ip":ip})
         logging.info("Getting instance details from db")
-        instance_status = []
-        instance_logs = []
-        # containers = client.containers.list()
-        # for cur_container in containers:
-        #     instance_status.append({cur_container.id:cur_container.status})
-        #     instance_logs.append({cur_container.id:cur_container.logs()})
         for instance in instances:
-            cur_container = client.containers.get(instance["instance_id"])
-            instance_status.append({cur_container.id:cur_container.status})
-            instance_logs.append({cur_container.id:cur_container.logs()})
-        cur_container = client.containers.get('f46cde6cf3')
-        print(cur_container.logs())
-        print(instance_status)
-        print(instance_logs)
-        push_to_kafka(instance_status, instance_logs, str(ip))
+            thread = threading.Thread(target=get_instance_data, args=(client,instance["instance_id"]))
+            thread_list.append(thread)
+            thread.start()
+            for thread in thread_list:
+                thread.join()
+            thread_list = []
     
     except Exception as e:
         logging.error(e)
@@ -69,15 +70,23 @@ def create_topics(instance_id):
     except Exception as e:
         logging.error(e)
 
+def check_topic(topic_name):
+    try:
+        topic = db.db_topics.find({"topic_name":str(topic_name) + "-status"})
+        if len(topic) == 0:
+            return False
+        else:
+            return True
+
 def db_watcher():
     print("Thread started")
     resume_token = None
     pipeline = [{'$match': { '$or': [ { 'operationType': 'insert' }, { 'operationType': 'delete' } ] }}]
     change_stream = client.scheduler.scheduleinfo.watch(pipeline)
     for change in change_stream:
-        # print("change: ", change)
         if change["operationType"] == "insert":
             print(change["fullDocument"]["instance_id"])
+            thread = threading.Thread(target=get_instance_data, args=(client, change["fullDocument"]["instance_id"]))
         else:
             print(change["fullDocument"]["instance_id"])
             delete_topics(instance_id)
@@ -87,4 +96,11 @@ def start():
     logging.info("Logger started running")
     watcher = threading.Thread(target = db_watcher)
     watcher.start()
-    # get_logs()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(get_logs, 'interval', seconds=module_config["frequency"])
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        scheduler.shutdown()
