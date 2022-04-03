@@ -6,7 +6,7 @@ import json
 import uuid
 import scheduler.sched as sh
 import threading
-from scheduler import app, module_config, db
+from scheduler import app, module_config, db, client
 import logging
 
 
