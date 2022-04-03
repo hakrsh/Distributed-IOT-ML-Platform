@@ -26,7 +26,7 @@ def build(host,path,image_tag,container_name):
     try:
         if container_name == 'deployer':
             client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
-        if container_name == "monitor_ha":
+        elif container_name == "monitor_ha":
             client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'~/.ssh': {'bind': '/root/.ssh', 'mode': 'rw'}})
         else:
             client.containers.run(image_tag,name=container_name, detach=True, network='host')
