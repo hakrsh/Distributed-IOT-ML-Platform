@@ -29,7 +29,7 @@ def consume_log(topic,node_ip,node_port):
         logging.info("Starting the consumer")
         for msg in consumer:
             # print("Registered User ={}".format(json.loads(msg.value)))
-            print(msg.value)
+            print(msg.value,topic)
             file_name = topic + ".txt"
             with open(file_name, "a") as f:
                 f.write(msg.value.decode('utf-8') + '\n')
@@ -37,6 +37,7 @@ def consume_log(topic,node_ip,node_port):
             # break
     except Exception as e:
         logging.error(e)
+        print(e)
 
 def get_instance_data_from_db():
     logging.info("Getting topic names from db")
