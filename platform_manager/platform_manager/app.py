@@ -45,7 +45,9 @@ def upload_model():
         logging.info('Model uploaded successfully')
         url = module_config['deployer'] + '/model'
         logging.info('Sending model to deployer')
+
         response = requests.post(url, json={"ModelId": ModelId,"model_name":model_name}).content
+
         return response.decode('ascii')
 
 
@@ -84,13 +86,29 @@ def get_running_models():
     data = []
     for instance in instances:
         if instance['type'] == 'model':
+            print(instance)
             logging.info('Instance: ' + instance['instance_id'])
             logging.info('Model: ' + instance['model_id'])
             model = get_model(instance['model_id'])
-            data.append({'instance_id': instance['instance_id'],
-                        'model_id': instance['model_id'], 'ModelName': model['ModelName']})
-    return json.dumps(data)
+            data.append({'ModelName': model['ModelName'],
+                        'ip': instance['ip'], 'port': instance['port'],
+                        'host': instance['hostname']})
+    return render_template ("model_dashboard.html", data = data)
 
+
+@app.route('/get-running-applications', methods=['GET'])
+def get_running_applications():
+    instances = db.instances.find()
+    print(instances)
+    data = []
+    for instance in instances:
+        if instance['type'] == 'app':
+            logging.info('Instance: ' + instance['instance_id'])
+            url = "http://" + instance['ip'] + ':' + str(instance['port'])
+            data.append({'instance_id': instance['instance_id'],
+                        'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
+                        'url': url, 'app_name': instance['app_name'], 'status': instance['status']  })
+    return render_template ("app_dashboard.html", data = data)
 
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
@@ -167,12 +185,29 @@ def home():
     print((f'{url}get-load'))
     response = requests.get(f'{url}get-load')
     load_url = url+"get-load"
-
+    print(load_url)
     load_data = json.loads(response.content.decode('utf-8'))
     
     print(type(load_data))
     
     return render_template ("load-data.html", load_data = load_data, url = load_url)
+
+
+@app.route('/get-load-json')
+def get_load_json():
+    """
+        Fetches the application and models load data from all the virtual VMs
+    """
+    url = module_config['deployer']
+    print(url)
+    print((f'{url}get-load'))
+    response = requests.get(f'{url}get-load')
+    load_url = url+"get-load"
+    print(load_url)
+    load_data = jsonify(json.loads(response.content.decode('utf-8')))
+    
+    return load_data
+
 
 def start():
     app.run(host='0.0.0.0', port=5000)
