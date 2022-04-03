@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 import json
 import pymongo
 import logging
+import threading
 from kafka import KafkaConsumer
 from sensor_request_handler.config import module_config
 
