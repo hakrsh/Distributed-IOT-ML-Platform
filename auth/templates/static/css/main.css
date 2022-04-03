@@ -1,0 +1,507 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    /* overflow-x: hidden;
+    max-height: 100%; */
+    box-sizing: border-box;
+}
+
+
+/* .header {
+    height: 100vh;
+} */
+
+.navbar-style {
+    /* background-color: rgb(59, 59, 59); */
+    background-color: #222222;
+    box-shadow: 0 5px 10px #efefef;
+    padding: 15px;
+    text-transform: uppercase;
+}
+
+.logo {
+    height: 48px;
+    padding: 2px 10px;
+}
+
+.icon-bar {
+    background: #F05F40;
+}
+
+li a {
+    color: white;
+}
+
+li.active {
+    background-color: greenyellow;
+    border-radius: 7%;
+}
+
+div .item.active {
+    background-color: rgb(59, 59, 59);
+}
+
+.img-caraousel {
+    width: 100%;
+    height: 500px;
+    z-index: 0;
+}
+
+.profileImages {
+    height: 200px;
+    width: 200px;
+    margin: 30px;
+    text-align: center;
+    transition: transform .2s;
+}
+
+.profileImages:hover {
+    transform: scale(1.2);
+}
+
+#phdProfiles {
+    display: none;
+}
+
+#alumniProfiles {
+    display: none;
+}
+
+.idLis {
+    color: black;
+}
+
+.footy {
+    margin-top: 100px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+    /* background-color: rgb(59, 59, 59); */
+    background-color: #222222;
+    color: white;
+}
+
+.footylogo {
+    height: 40px;
+    padding: 5px 10px;
+}
+
+.captionCenter {
+    text-align: center;
+}
+
+table {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    table-layout: fixed;
+}
+
+table caption {
+    font-size: 1.5em;
+    margin: .5em 0 .75em;
+}
+
+table tr {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    padding: .35em;
+}
+
+table th,
+table td {
+    padding: .625em;
+    text-align: justify;
+}
+
+table th {
+    font-size: .85em;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.nextButton {
+    height: 48px;
+    padding: 2px 10px;
+}
+
+#changeColorButton,
+#toggleNewsRoll,
+#changeBackgroundButton,
+#addPublicationButton {
+    background-color: #F05F40;
+    color: white;
+    padding: 20px;
+    margin: 20px;
+    border: #F05F40;
+    border-radius: 3%;
+    transition: 0.2s;
+}
+
+#changeColorButton:hover {
+    transform: scale(1.2);
+}
+
+#toggleNewsRoll:hover {
+    transform: scale(1.2);
+}
+
+#changeBackgroundButton:hover {
+    transform: scale(1.2);
+}
+
+#addPublicationButton:hover {
+    transform: scale(1.2);
+}
+
+.profileButton {
+    background-color: greenyellow;
+    color: black;
+    font-weight: bold;
+    padding: 10px;
+    border: #F05F40;
+    margin-right: 10px;
+    border-radius: 3%;
+    transition: 0.2s;
+}
+
+.profileButton:hover {
+    transform: scale(1.2);
+}
+
+.downloadButton:hover {
+    transform: scale(1.2);
+}
+
+
+/* .magnify {
+    color: #56585a;
+    -webkit-text-size-adjust: none;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    vertical-align: top;
+    margin: 50px auto;
+    position: relative;
+    cursor: none;
+}
+
+.large {
+    color: #56585a;
+    -webkit-text-size-adjust: none;
+    cursor: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    vertical-align: top;
+    width: 300px;
+    height: 300px;
+    position: absolute;
+    border-radius: 100%;
+    box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.85), 0 0 7px 7px rgba(0, 0, 0, 0.25), inset 0 0 40px 2px rgba(0, 0, 0, 0.25);
+    background: url("/static/images/research_areas.jpg") -2853px -686px no-repeat;
+    display: block;
+    left: 973px;
+    top: 162.891px;
+}
+
+.grid_12 {
+    color: #56585a;
+    -webkit-text-size-adjust: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    vertical-align: top;
+    float: left;
+    min-height: 1px;
+    margin-left: 30px;
+    width: 1170px;
+} */
+
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* .styled-table2 {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    min-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+} */
+
+.styled-table thead tr {
+    background-color: #F05F40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #F05F40;
+}
+
+.styled-table tbody tr.active-row {
+    font-weight: bold;
+    color: #F05F40;
+}
+
+.styled-table tbody tr td {
+    font-weight: bold;
+    padding: 25px;
+    padding-right: 40px;
+}
+
+.alignCenter {
+    text-align: center;
+}
+
+
+/* .announcements {
+    background-color: #F05F40;
+} */
+
+
+/* .dropdown {
+    float: left;
+    overflow: hidden;
+}
+
+.dropdown .dropbtn {
+    font-size: 16px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 16px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+}
+
+.navbar a:hover,
+.dropdown:hover .dropbtn {
+    background-color: red;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+} */
+
+.projectDiv {
+    margin-left: 10%;
+    width: 60%;
+    padding: 10px;
+}
+
+.tab {
+    tab-size: 4;
+}
+
+@media (min-width: 768px) {
+    .navbar-nav {
+        margin: 0 auto;
+        display: table;
+        table-layout: fixed;
+        float: none;
+    }
+}
+
+.img-magnifier-container {
+    position: relative;
+}
+
+.img-magnifier-glass {
+    position: absolute;
+    border: 3px solid #000;
+    border-radius: 50%;
+    cursor: none;
+    /*Set the size of the magnifier glass:*/
+    width: 300px;
+    height: 300px;
+}
+
+.focusAreasClass {
+    width: 80%;
+    height: 100%;
+}
+
+
+/* body {
+    background-color: #F05F40
+} */
+
+.card {
+    padding: 25px;
+    height: 250px;
+    border: none;
+    -webkit-box-shadow: 0px 1px 9px 3px rgba(59, 59, 59, 1);
+    -moz-box-shadow: 0px 1px 9px 3px rgba(59, 59, 59, 1);
+    box-shadow: 0px 1px 9px 3px rgba(59, 59, 59, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.footy2 {
+    /* background-color: rgb(59, 59, 59); */
+    background-color: #222222;
+}
+
+.big-img {
+    display: block;
+    width: 55%;
+    /* height: 500px; */
+}
+
+marquee {
+    background: #0089fa;
+}
+
+.rightTI {
+    white-space: nowrap;
+    overflow: hidden;
+    animation: marquee 32s linear infinite;
+}
+
+.rightTI:hover {
+    animation-play-state: paused;
+}
+
+.marquee-div:hover {
+    animation-play-state: paused;
+}
+
+@-webkit-keyframes marquee {
+    0% {
+        text-indent: 100%;
+    }
+    100% {
+        text-indent: -100%;
+    }
+}
+
+.rightCSS {
+    background: #f4f0eb;
+    overflow: hidden;
+}
+
+.rightCSS div {
+    position: relative;
+    animation: CSSright linear 18s infinite;
+}
+
+@keyframes CSSright {
+    0% {
+        right: -100%;
+    }
+    100% {
+        right: 100%;
+    }
+}
+
+.rightCSS:hover div {
+    animation-play-state: paused;
+}
+
+.li {
+    float: left;
+    width: 100%;
+    height: 32px;
+    padding-top: 5px;
+    padding-left: 2%;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    color: rgba(0, 0, 0, 0.6);
+    font-family: "Lato", sans-serif;
+    font-style: italic;
+    background: #f4f0eb;
+}
+
+.announceTag {
+    width: 15%;
+    float: left;
+    color: white;
+    height: 32px;
+    padding-top: 3px;
+    padding-left: 2px;
+    background-color: rgba(20, 20, 20, 0.726);
+    font-family: "Lato", sans-serif;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.navButton.active {
+    background-color: greenyellow;
+    color: #000;
+    font-weight: bolder;
+    border-radius: 7%;
+}
+
+.navButton:hover {
+    background-color: greenyellow;
+    color: #000;
+    font-weight: bolder;
+    border-radius: 7%;
+}
+
+.holds-the-iframe {
+    background: url(../images/1_5ngZiNtGMrp_xmZHxSvJ0g.gif) center center no-repeat;
+    display: none;
+}
+
+
+/* 
+.iframe-loading {
+    background: url(../images/Loader.gif) center center no-repeat;
+} */
