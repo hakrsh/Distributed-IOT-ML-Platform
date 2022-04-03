@@ -223,7 +223,7 @@ def schedule():
     print(msg)
     return render_template ("deploy.html", time = start_time)
 
-@app.route('/reschedule/<instance_id>', methods = ["POST"])
+@app.route('/reschedule/<instance_id>', methods = ["GET"])
 def reshedule(instance_id):
     app_data = db.scheduleinfo.find({"instance_id":instance_id})
     query = {

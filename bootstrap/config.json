@@ -31,6 +31,11 @@
             "name":"sensor_request_handler",
             "path": "../sensor_request_handler",
             "version": "1.0.0"
+        },
+        {
+            "name":"monitor_ha",
+            "path": "../monitor_ha",
+            "version": "1.0.0"
         }
     ],
     "master": {
