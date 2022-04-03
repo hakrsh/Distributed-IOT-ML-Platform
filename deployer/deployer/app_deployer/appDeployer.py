@@ -17,7 +17,7 @@ def run(package, sensors, app_id):
     sensorStub += "import json\n"
     for sensor in sensors:
         sensorStub += f'def {sensor["function"]}():\n'
-        sensorStub += '    url = "{}data/{}"\n'.format(
+        sensorStub += '    url = "{}/data/{}"\n'.format(
             module_config['sensor_api'], sensor['sensor_id'])
         sensorStub += "    r = requests.get(url)\n"
         sensorStub += "    return json.loads(r.text)\n"

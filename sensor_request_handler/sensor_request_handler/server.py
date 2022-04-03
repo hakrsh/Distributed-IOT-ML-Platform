@@ -33,7 +33,7 @@ class thread(threading.Thread):
     def run(self):
         consumer = KafkaConsumer(self.topic, bootstrap_servers=[kafka_server], enable_auto_commit=True)
         for msg in consumer:
-            buffer[self.topic]=msg.value.decode("utf-8")
+            buffer[self.topic]=ast.literal_eval(msg.value.decode("utf-8"))
 
 def sensorThread(topic,buffer):
     logging.info('Starting consumer')

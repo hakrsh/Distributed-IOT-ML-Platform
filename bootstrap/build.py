@@ -27,7 +27,7 @@ def build(host,path,image_tag,container_name):
         if container_name == 'deployer':
             client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
         elif container_name == "monitor_ha":
-            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'~/.ssh': {'bind': '/root/.ssh', 'mode': 'rw'}})
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/home/vm1/.ssh': {'bind': '/root/.ssh', 'mode': 'rw'}})
         else:
             client.containers.run(image_tag,name=container_name, detach=True, network='host')
     except Exception as e:
