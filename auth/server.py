@@ -2,9 +2,7 @@ import pymongo
 from pymongo import MongoClient
 from flask import Flask
 from flask import request, render_template, url_for, redirect
-import requests
 app = Flask(__name__, static_url_path='', static_folder='templates/static', template_folder='templates')
-import json
 
 client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/')
 db = client.users
@@ -34,16 +32,6 @@ def signup():
             cid = collection.insert_one({'username': username,'password':passwd})
             response['status'] = 200
             return redirect('/users/login')
-            # if role == 'ai-dev':
-            #     return render_template('model-dash.html')
-            # elif role == 'app-dev':
-            #     return render_template('application-dash.html')
-            # elif role == 'plt-mngr':
-            #     return render_template('application-dash.html')
-            # elif role == 'snsr-mngr':
-            #     return render_template('sensor-dash.html')
-            # elif role == 'scheduler':
-            #     return render_template('scheduler-dash.html')
         else:
             response['status'] = 500
         return render_template('index.html', response = response)
