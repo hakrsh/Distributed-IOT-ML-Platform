@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 import json
 import pymongo
 import logging
+import threading
 from kafka import KafkaConsumer
 from sensor_request_handler.config import module_config
 
@@ -23,6 +24,30 @@ logging.info("Sensor database created")
 
 app = Flask(__name__)
 
+###############################02-04-2022############################################start
+class thread(threading.Thread):
+    def __init__(self,topic,buffer):
+        threading.Thread.__init__(self)
+        self.topic=topic
+        self.buffer=buffer
+    def run(self):
+        consumer = KafkaConsumer(self.topic, bootstrap_servers=[kafka_server], enable_auto_commit=True)
+        for msg in consumer:
+            buffer[self.topic]=msg.value.decode("utf-8")
+
+def sensorThread(topic,buffer):
+    logging.info('Starting consumer')
+    thread1 = thread(topic,buffer)
+    thread1.start()
+
+buffer=dict()
+def sensor():
+    sensors_cursor = sensor_config.find({})
+    for document in sensors_cursor:
+        topic=document["topic_id"]
+        sensorThread(topic,buffer)
+sensor()
+###############################02-04-2022############################################end
 
 @app.route("/getAllSensors")
 def getAllSensors():
@@ -39,15 +64,6 @@ def getAllSensors():
 
 @app.route("/data/<sensor_id>")
 def getSensorData(sensor_id):
-    print(sensor_id)
-    consumer = KafkaConsumer(
-        sensor_id, bootstrap_servers=[kafka_server], enable_auto_commit=True
-    )
     logging.info("Connected to kafka")
-    data = []
-    for message in consumer:
-        print(message.value.decode("utf-8"))
-        data.append(ast.literal_eval(message.value.decode("utf-8")))
-        break
-    return jsonify(data[0])
-
+    data=buffer[sensor_id]
+    return jsonify(data)

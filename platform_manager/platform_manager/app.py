@@ -45,7 +45,9 @@ def upload_model():
         logging.info('Model uploaded successfully')
         url = module_config['deployer'] + '/model'
         logging.info('Sending model to deployer')
-        response = requests.post(url, json={"ModelId": ModelId, "ModelName": model_name}).content
+
+        response = requests.post(url, json={"ModelId": ModelId,"model_name":model_name}).content
+
         return response.decode('ascii')
 
 

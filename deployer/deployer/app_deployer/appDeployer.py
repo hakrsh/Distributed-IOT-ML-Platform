@@ -4,7 +4,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-def run(package, sensor_id, app_id):
+def run(package, sensors, app_id):
     import zipfile
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('/tmp/'+app_id)
@@ -15,11 +15,12 @@ def run(package, sensor_id, app_id):
     sensorStub = ''
     sensorStub += "import requests\n"
     sensorStub += "import json\n"
-    sensorStub += 'def get_data():\n'
-    sensorStub += '    url = "{}/{}"\n'.format(
-        module_config['sensor_api'], sensor_id)
-    sensorStub += "    r = requests.get(url)\n"
-    sensorStub += "    return json.loads(r.text)\n"
+    for sensor in sensors:
+        sensorStub += f'def {sensor["function"]}():\n'
+        sensorStub += '    url = "{}data/{}"\n'.format(
+            module_config['sensor_api'], sensor['sensor_id'])
+        sensorStub += "    r = requests.get(url)\n"
+        sensorStub += "    return json.loads(r.text)\n"
     logging.info('Generated getdata.py')
     with open(f'/tmp/{app_id}/app/src/getdata.py', 'w') as f:
         f.write(sensorStub)

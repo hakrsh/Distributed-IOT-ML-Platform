@@ -17,12 +17,14 @@ def index():
 @app.route('/model', methods=['POST'])
 def deploy_model():
     model_id = request.json['ModelId']
+    model_name = request.json['model_name']
     logging.info('ModelID: ' + model_id)
     instance_id = str(uuid.uuid4())
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id,
                             "type": "model",
                              "model_id": model_id,
+                             "model_name": model_name,
                              "status": "pending",
                              "container_id": "",
                              "hostname": "",
@@ -38,6 +40,8 @@ def deploy_model():
 @app.route('/app', methods=['POST'])
 def deploy_app():
     application_id = request.json['ApplicationID']
+    app_name = request.json['app_name']
+    sched_id = request.json['sched_id']
     sensor_ids = request.json['sensor_ids']
     logging.info("ApplicationID: " + application_id)
     instance_id = str(uuid.uuid4())
@@ -45,6 +49,9 @@ def deploy_app():
     db.instances.insert_one({"instance_id": instance_id,
                             "type": "app",
                              "model_id": application_id,
+                             "app_name": app_name,
+                             "application_id": application_id,
+                             "sched_id": sched_id,
                              "status": "pending",
                              "container_id": "",
                              "hostname": "",
@@ -52,7 +59,7 @@ def deploy_app():
                              "port": ""})
     logging.info("Created deployment record")
     res = requests.post('http://localhost:9898/app', json={
-                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids})
+                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id})
     logging.info("Sent request to app service")
     return res.text
 

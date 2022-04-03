@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<style>
+  body {font-family: Arial, Helvetica, sans-serif;}
+  * {box-sizing: border-box;}
+  
+  
+  .close:hover,
+  .close:focus {
+    color: #f44336;
+    cursor: pointer;
+  }
+  
+  /* Clear floats */
+  .clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+  /* Change styles for cancel button and signup button on extra small screens */
+  @media screen and (max-width: 300px) {
+    .cancelbtn, .signupbtn {
+      width: 100%;
+    }
+  }
+  /* Style the navbar */
+  .topnav {
+    overflow: hidden;
+    background-color: #e9e9e9;
+  }
+  
+  /* Navbar links */
+  .topnav a {
+    float: left;
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+  
+  /* Navbar links on mouse-over */
+  .topnav a:hover {
+    background-color: #ddd;
+    color: black;
+  }
+  
+  /* Active/current link */
+  .topnav a.active {
+    background-color: #2196F3;
+    color: white;
+  }
+  
+  /* Style the input container */
+  .topnav .login-container {
+    float: right;
+  }
+  
+  /* Style the input field inside the navbar */
+  .topnav input[type=text] {
+    padding: 6px;
+    margin-top: 8px;
+    font-size: 17px;
+    border: none;
+    width: 150px; /* adjust as needed (as long as it doesn't break the topnav) */
+  }
+  
+  /* Style the button inside the input container */
+  .topnav .login-container button {
+    float: right;
+    padding: 6px;
+    margin-top: 8px;
+    margin-right: 16px;
+    background: #ddd;
+    font-size: 17px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .topnav .login-container button:hover {
+    background: #ccc;
+  }
+  
+  /* Add responsiveness - On small screens, display the navbar vertically instead of horizontally */
+  @media screen and (max-width: 600px) {
+    .topnav .login-container {
+      float: none;
+    }
+    .topnav a, .topnav input[type=text], .topnav .login-container button {
+      float: none;
+      display: block;
+      text-align: left;
+      width: 100%;
+      margin: 0;
+      padding: 14px;
+    }
+    .topnav input[type=text] {
+      border: 1px solid #ccc;
+    }
+    
+  }
+</style>
+<head>
+  <title> IAS-Application </title>
+
+  <link rel="stylesheet" type="text/css" href="/css/main.css">
+  <link rel="stylesheet" type="text/css" href="/css/effect.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.7/css/all.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/css/news-slider.css" rel="stylesheet">
+  <script src="/scripts/main.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.js"></script>
+  <script src="/scripts/news-slider.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="https://kit.fontawesome.com/55e820d8c1.js" crossorigin="anonymous"></script>
+
+</head>
+<body onload="init()">
+  <header class="header">
+    <nav class="navbar navbar-expand-lg navbar-style navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#micon">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+
+            <div class="collapse navbar-collapse" id="micon">
+                <a href="/" class="nav navbar-nav" style="color: rgb(255, 255, 255); padding: 5px;"> IAS Platform </a>
+                <h2 class="nav navbar-nav navbar-right" style="color: rgb(255, 255, 255); padding: 5px; margin-right: 20px;"> IAS Group 3 </h2>
+            </div>
+            <div class="login-container">
+              <a href="users/login" id="login">Log In</a>
+              <a href="users/signup" id="signup">Sign Up</a>
+              <a id="logout" onclick="logOut()">Log Out</a>
+            </div>
+        </div>
+    </nav>
+</header>
+  
+    <div class="login-container">
+      <a href="users/login" id="login">Log In</a>
+      <a href="users/signup" id="signup">Sign Up</a>
+      <a href="/" id="logout" onclick="logOut()">Log Out</a>
+    </div>
+  </div> -->
+  <div class="container">
+    <!-- <iframe src="http://192.168.86.110:5000/upload-model"  width="100%" height="500rem" style="border:none;" title="Upload Model" id="upmdl"></iframe>
+    <iframe src="http://192.168.86.110:5000/upload-app"  width="100%" height="500rem" style="border:none;" title="Upload App" id="upapp"></iframe>
+    <iframe src="http://192.168.86.110:8210/"  width="100%" height="500rem" style="border:none;" title="Schedule" id="schd"></iframe>
+    <iframe src="http://192.168.86.110:7005/register"  width="100%" height="500rem" style="border:none;" alt="mkc" title="Sensor Registration" id="rgstr"></iframe>
+    <iframe src="http://192.168.86.110:5000/upload-app"  width="100%" height="500rem" style="border:none;" title="Iframe Example" id="upmdl"></iframe> -->
+  </div>
+  <script>
+    function init() {
+      setStorage(); 
+      showAttributes();
+    }
+    
+    function setStorage() {
+      {% if response is defined %}
+      if (`{{response.status}}` == 500 || `{{response.action}}` == 'signup'){
+        return
+      }
+      sessionStorage.usermame = `{{response.user}}`
+      sessionStorage.password = `{{response.password}}`
+      sessionStorage.role = `{{response.role}}`
+      {% endif %}
+    }
+
+    function showAttributes() {
+      document.getElementById("login").style.display = 'block'
+      document.getElementById("signup").style.display = 'block'
+      document.getElementById("logout").style.display = 'none'
+      
+      {% if response is defined %}
+      sessionStorage.username = `{{response.user}}`
+      var user = sessionStorage.getItem('username');
+      if (user == `{{response.user}}`) {
+        document.getElementById("login").style.display = 'none'
+        document.getElementById("signup").style.display = 'none'
+        document.getElementById("logout").style.display = 'block'
+      }
+      console.log(user);
+      {% endif %}
+    }
+
+    function logOut() {
+      sessionStorage.removeItem('username');
+      sessionStorage.removeItem('password');
+      sessionStorage.removeItem('role');
+      alert('User logged out successfully!')
+      window.location.replace("/");
+    }
+  </script>
+</body>
+</html>
