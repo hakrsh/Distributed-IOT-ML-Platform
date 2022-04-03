@@ -50,13 +50,13 @@ def deploy_app_thread(application_id, sensor_id, instance_id):
 @app.route('/app', methods=['POST'])
 def deploy_app():
     application_id = request.json['ApplicationID']
-    sensor_id = str(request.json['sensor_ids'][0])
-
+    sensors = request.json['sensor_ids']
+    sched_id = request.json['sched_id']
     logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
     threading.Thread(target=deploy_app_thread, args=(
-        application_id, sensor_id, instance_id)).start()
-    return {"InstanceID": instance_id, "Status": "pending"}
+        application_id, sensors, instance_id)).start()
+    return {"InstanceID": instance_id,"sched_id":sched_id, "Status": "pending"}
 
 
 @app.route('/stop-instance', methods=['POST'])
