@@ -45,6 +45,7 @@ def app_handler(app_info):
 		try:
 			cont = client.containers.get(container_id)
 			cont_status = cont.status
+			logging.info("Container {} {}".format(container_id, cont_status))
 			if cont_status != "running":
 				logging.info("Container {} not running".format(container_id))
 				cleanup(client, container_id)
@@ -54,7 +55,6 @@ def app_handler(app_info):
 		document = db.instances.find_one({"instance_id": instance_id})
 		if document == None:
 			break
-		logging.info("Running")
 		time.sleep(monitor_interval)
 
 def run():

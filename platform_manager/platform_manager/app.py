@@ -79,9 +79,21 @@ def get_running_model_config():
     model_contract['port'] = instace['port']
     return model_contract
 
-
 @app.route('/get-running-models', methods=['GET'])
 def get_running_models():
+    instances = db.instances.find()
+    data = []
+    for instance in instances:
+        if instance['type'] == 'model':
+            logging.info('Instance: ' + instance['instance_id'])
+            logging.info('Model: ' + instance['model_id'])
+            model = get_model(instance['model_id'])
+            data.append({'instance_id': instance['instance_id'],
+                        'model_id': instance['model_id'], 'ModelName': model['ModelName']})
+    return json.dumps(data)
+
+@app.route('/get-model-dashboard', methods=['GET'])
+def get_model_dashboard():
     instances = db.instances.find()
     data = []
     for instance in instances:
@@ -93,7 +105,7 @@ def get_running_models():
             data.append({'ModelName': model['ModelName'],
                         'ip': instance['ip'], 'port': instance['port'],
                         'host': instance['hostname']})
-    return render_template ("model_dashboard.html", data = data)
+    return render_template("model_dashboard.html", data = data)
 
 
 @app.route('/get-running-applications', methods=['GET'])
