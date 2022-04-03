@@ -56,16 +56,16 @@ def get_logs():
 
 def delete_topics(instance_id):
     try:
-        db.db_topics.remove({"topic_name":str(instance_id) + "-status"})
-        db.db_topics.remove({"topic_name":str(instance_id) + "-logs"})
+        db_topics.remove({"topic_name":str(instance_id) + "-status"})
+        db_topics.remove({"topic_name":str(instance_id) + "-logs"})
         logging.info("Removing topics")
     except Exception as e:
         logging.error(e)
 
 def create_topics(instance_id):
     try:
-        db.db_topics.insert_one({"topic_name":str(instance_id) + "-status"})
-        db.db_topics.insert_one({"topic_name":str(instance_id) + "-logs"})
+        db_topics.insert_one({"topic_name":str(instance_id) + "-status"})
+        db_topics.insert_one({"topic_name":str(instance_id) + "-logs"})
         logging.info("Inserting topics")
     except Exception as e:
         logging.error(e)

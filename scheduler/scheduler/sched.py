@@ -4,6 +4,7 @@ import requests
 import datetime
 from scheduler import module_config, db
 import logging
+import json
 
 logging.basicConfig(filename="scheduler.log",
                             filemode='a',
@@ -44,9 +45,8 @@ def update_instance_id(instance_id, sched_id):
 
 def end_app_instance(query):
     try:
-        # Insert stopping Instance API Here
-        # response = requests.post(f"{module_config['deployer_master']}stop-instance",json=query).content
-        # print(response.decode('ascii'))
+        response = requests.post(f"{module_config['deployer_master']}stop-instance",json=query).content
+        print(response.decode('ascii'))
         print("FROM STOPPING INSTANCE!!!!")
         update_stopped_status(query["instance_id"])
         return schedule.CancelJob
@@ -74,10 +74,9 @@ def call_deployer(query, end_time):
     print("Scheduling")
     try:
         print("Doing job....")
-        # Use the Deployer API here
-        # response = requests.post(f"{module_config['deployer_master']}app",json=query).content
-        # instance_id = response.decode('ascii')
-        instance_id = "1223"
+        response = requests.post(f"{module_config['deployer_master']}app",json=query)
+        instance_id = response.json()
+        instance_id = instance_id["InstanceID"]
         update_instance_id(instance_id, query['sched_id'])
         delta,time_to_execute = get_scheduled_time(end_time)
         if(delta=="Invalid time"):
