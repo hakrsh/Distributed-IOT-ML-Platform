@@ -10,7 +10,6 @@ def hello_world():
 
 @app.route('/showlog', methods = ['GET'])
 def showlog():
-    print("FUnction called")
     # file_name = request.form['topic']
     file_name = request.args.get('topic')+'.txt'
     
