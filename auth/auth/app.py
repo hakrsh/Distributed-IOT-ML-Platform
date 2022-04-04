@@ -66,4 +66,4 @@ def login():
         return render_template('index.html', response=response)
 
 def start():
-    app.run(debug=True, host='127.0.0.1', port=2500)
+    app.run(host='0.0.0.0', port=2500)

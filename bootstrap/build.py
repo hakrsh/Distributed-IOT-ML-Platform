@@ -52,3 +52,5 @@ for service in services['services']:
             build(host,service['path'],image_name,service['name'])
     else:
         build(host,service['path'],image_name,service['name'])
+
+logging.info('Platform has been deployed' + services['master']['ip'] + ':2500')

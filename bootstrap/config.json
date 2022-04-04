@@ -36,6 +36,11 @@
             "name":"monitor_ha",
             "path": "../monitor_ha",
             "version": "1.0.0"
+        },
+        {
+            "name":"auth",
+            "path": "../auth",
+            "version": "1.0.0"
         }
     ],
     "master": {
