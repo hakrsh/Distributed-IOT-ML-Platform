@@ -2,7 +2,7 @@ from flask import jsonify, request
 from deployer.ai_deployer import aiDeployer
 from deployer.app_deployer import appDeployer
 from deployer.deploy import Deploy, stopInstance, systemStats
-from deployer import app, db, module_config
+from deployer import app, db, module_config, fs
 import logging
 import threading
 
@@ -18,7 +18,7 @@ def deploy_model_thread(model_id, instance_id):
     model = db.models.find_one({"ModelId": model_id})
     logging.info("ModelId: " + model_id)
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
-        f.write(model['content'])
+        f.write(fs.get(model['content']).read())
     logging.info('Got model: ' + model_id + ' from database')
     image_name = aiDeployer.run(f'/tmp/{instance_id}.zip', instance_id)
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
@@ -39,7 +39,7 @@ def deploy_model():
 def deploy_app_thread(application_id, sensor_id, instance_id):
     application = db.applications.find_one({"ApplicationID": application_id})
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
-        f.write(application['content'])
+        f.write(fs.get(application['content']).read())
     logging.info('Got application: ' + application_id + ' from database')
     image_name = appDeployer.run(
         f'/tmp/{instance_id}.zip', sensor_id, instance_id)

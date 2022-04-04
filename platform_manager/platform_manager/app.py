@@ -1,8 +1,8 @@
 import json
-from flask import request, render_template, url_for, jsonify
+from flask import request, render_template, jsonify
 import requests
 import uuid
-from platform_manager import app, db, module_config
+from platform_manager import app, db, module_config, fs
 import logging
 import zipfile
 import os
@@ -25,6 +25,7 @@ def upload_model():
         ModelId = str(uuid.uuid4())
         logging.info('ModelId: ' + ModelId)
         content = request.files['file'].read()
+        file = fs.put(content, filename=ModelId+'.zip')
         with open('/tmp/' + ModelId + '.zip', 'wb') as f:
             f.write(content)
         logging.info('Model saved to /tmp/' + ModelId + '.zip')
@@ -41,7 +42,7 @@ def upload_model():
         shutil.rmtree('/tmp/' + ModelId)
         logging.info('Model temp directory removed')
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,
-                             "content": content, "model_contract": model_contract})
+                              "model_contract": model_contract, "content": file})
         logging.info('Model uploaded successfully')
         url = module_config['deployer'] + '/model'
         logging.info('Sending model to deployer')
@@ -153,14 +154,15 @@ def upload_app():
         logging.info('Inserted model contract into app')
         shutil.make_archive('/tmp/' + ApplicationID,
                             'zip', '/tmp/' + ApplicationID)
+        file = ''
         with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
-            content = f.read()
-        # os.remove('/tmp/' + ApplicationID + '.zip')
+            file = fs.put(f,filename=ApplicationID + '.zip')
+        os.remove('/tmp/' + ApplicationID + '.zip')
         logging.info('Application zip removed')
         shutil.rmtree('/tmp/' + ApplicationID)
         logging.info('Application temp directory removed')
         db.applications.insert_one(
-            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "content": content, "app_contract": app_contract})
+            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
         logging.info('Application uploaded successfully')
         return 'Application stored successfully'
 

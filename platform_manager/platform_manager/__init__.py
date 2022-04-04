@@ -1,5 +1,6 @@
 from flask import Flask
 from pymongo import MongoClient
+import gridfs
 import json
 import importlib.resources as pkg_resources
 
@@ -14,4 +15,5 @@ module_config = json.loads(
 #     module_config['mongo_ip'], module_config['mongo_port'])
 
 client = MongoClient(module_config['mongo_server'])
+fs = gridfs.GridFS(client.fs)
 db = client.repo
