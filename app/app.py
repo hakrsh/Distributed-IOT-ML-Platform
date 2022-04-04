@@ -1,3 +1,4 @@
+import random
 from flask import Flask, render_template, request, url_for, redirect, session
 import pymongo
 import bcrypt
@@ -8,7 +9,8 @@ app = Flask(__name__)
 
 app.secret_key = "testing"
 
-client = pymongo.MongoClient("mongodb+srv://root:root@ias.tu9ec.mongodb.net/hospital?retryWrites=true&w=majority")
+# client = pymongo.MongoClient("mongodb+srv://root:root@ias.tu9ec.mongodb.net/hospital?retryWrites=true&w=majority")
+client = pymongo.MongoClient("mongodb://localhost:27017/")
 
 db = client.get_database('hospital')
 
@@ -167,8 +169,10 @@ def show_patient():
                 data2 += doctor_name + " : "
                 data2 += doctor_phone_number
                 data2 += " "
-
-            row = [75, 97, 84]
+            spo2 = random.randint(60, 100)
+            temperature = random.randint(97, 105)
+            pulse = random.randint(40, 100)
+            row = [spo2, temperature, pulse]
             file = open('model.pkl', 'rb')     
             model = pickle.load(file)
             result = model.predict([row])[0]

@@ -1,19 +1,19 @@
 {
-	"kafka_ip":"20.232.42.212",
+	"kafka_ip":"20.232.162.235",
 	"kafka_port":"9092",
 	"mongo_server":"mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
 	"workers":[
 		{
 			"name":"worker1",
-			"ip":"20.53.249.215"
+			"ip":"20.211.109.104"
 		},
 		{
 			"name":"worker2",
-			"ip":"20.213.102.118"
+			"ip":"20.211.109.89"
 		},
 		{
 			"name":"worker3",
-			"ip":"20.213.116.238"
+			"ip":"20.211.109.117"
 		}
 	],
 	"frequency" : 3

@@ -1,11 +1,39 @@
 import docker
 import json
 import logging
+from jinja2 import Template
 
 logging.basicConfig(level=logging.INFO)
 
 services = json.loads(open('config.json').read())
 logging.info('load config.json')
+
+tm = Template("""
+global
+    log 127.0.0.1 local0 notice
+    maxconn 2000
+    user haproxy
+    group haproxy
+
+defaults
+	log     global
+	mode    http
+	option  httplog
+	option  dontlognull
+	retries 3
+	option redispatch
+	timeout connect  5000
+	timeout client  10000
+	timeout server  10000
+
+frontend deployer_service
+	bind 127.0.0.1:9898
+	default_backend deployers
+backend deployers
+	balance roundrobin
+    {% for s in servers %}
+    server {{s.name s.ip}}:{{s.port}} check
+""")
 
 def build(host,path,image_tag,container_name):
     logging.info('Connecing to ' + host)
@@ -35,22 +63,26 @@ def build(host,path,image_tag,container_name):
     logging.info('Started ' + container_name)
 
 
-for service in services['services']:
-    image_name = f'{service["name"]}:{service["version"]}'
-    logging.info('building image ' + image_name)
-    host = 'ssh://' + services['master']['user'] + '@' + services['master']['ip']
-    # host = 'unix://var/run/docker.sock'
-    if service['name'] == 'deployer':
-        for worker in services['workers']:
-            host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
-            data = json.load(open('../deployer/deployer/config.json'))
-            data['host_ip'] = worker['ip']
-            data['host_name'] = worker['user']
-            with open('../deployer/deployer/config.json', 'w') as outfile:
-                json.dump(data, outfile)
-            logging.info('Updating config.json')
+def start_services():
+    for service in services['services']:
+        image_name = f'{service["name"]}:{service["version"]}'
+        logging.info('building image ' + image_name)
+        host = 'ssh://' + services['master']['user'] + '@' + services['master']['ip']
+        # host = 'unix://var/run/docker.sock'
+        if service['name'] == 'deployer':
+            for worker in services['workers']:
+                host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
+                data = json.load(open('../deployer/deployer/config.json'))
+                data['host_ip'] = worker['ip']
+                data['host_name'] = worker['user']
+                with open('../deployer/deployer/config.json', 'w') as outfile:
+                    json.dump(data, outfile)
+                logging.info('Updating config.json')
+                build(host,service['path'],image_name,service['name'])
+        else:
             build(host,service['path'],image_name,service['name'])
-    else:
-        build(host,service['path'],image_name,service['name'])
 
-logging.info('Platform has been deployed' + services['master']['ip'] + ':2500')
+    logging.info('Platform has been deployed' + services['master']['ip'] + ':2500')
+
+def configure_master():
+    

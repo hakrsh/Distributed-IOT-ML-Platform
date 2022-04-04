@@ -4,6 +4,6 @@
 	"mongo_ip":"127.0.0.1",
 	"mongo_port":"27017",
 	"mongo_server":"mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
-	"sensor_api":"http://20.232.42.212:7000/data",
-	"deployer_master":"http://20.232.42.212:9999"
+	"sensor_api":"http://20.232.162.235:7000/data",
+	"deployer_master":"http://20.232.162.235:9999"
 }
