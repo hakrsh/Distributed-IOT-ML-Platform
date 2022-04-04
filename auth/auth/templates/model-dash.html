@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title> IAS-Application </title>
+    <title> IAS-Model </title>
 
     <link rel="stylesheet" type="text/css" href="/css/main.css">
     <link rel="stylesheet" type="text/css" href="/css/effect.css">
@@ -29,6 +29,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.js"></script>
     <script src="/scripts/news-slider.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
     <script src="https://kit.fontawesome.com/55e820d8c1.js" crossorigin="anonymous"></script>
 
@@ -47,8 +48,15 @@
                 </div>
 
                 <div class="collapse navbar-collapse" id="micon">
-                    <a href="/" class="nav navbar-nav" style="color: rgb(255, 255, 255); padding: 5px;"> Platform Manager </a>
+                    <h2 class="nav navbar-nav" style="color: rgb(255, 255, 255); padding: 5px;"> Platform Manager </h2>
                     <h2 class="nav navbar-nav navbar-right" style="color: rgb(255, 255, 255); padding: 5px; margin-right: 20px;"> IAS Group 3 </h2>
+                    <!-- <h2 class="nav navbar-nav" style="color: greenyellow; padding: 5px;"> IAS Group 3 </h2> -->
+                    <!-- <ul class="nav navbar-nav navbar-right">
+                        <li style="margin-right: 20px;"> <a href="/index.html" class="navText navButton"> Home </a></li>
+                        <li style="margin-right: 20px;"> <a href="#download" class="navText navButton"> Download </a></li>
+                        <li style="margin-right: 20px;"> <a href="#download" class="navText navButton"> Mods </a></li>
+                        <li style="margin-right: 20px;" class="active"> <a href="/secure.html" class="navText navButton active"> IAS Group 3 </a></li>
+                    </ul> -->
                 </div>
                 <div class="login-container">
                     <a href="/users/login" id="login">Log In</a>
@@ -67,6 +75,8 @@
         Secure App
     </div> -->
 
+
+
     <div style="margin: 0px; margin-top: 0%;">
         <!-- <br><br><br> -->
         <div class="container">
@@ -74,18 +84,18 @@
                 <div class="col-sm-12">
                     <a name="secure" style="margin-top: 10%;"></a>
                     <div class="col-sm-12" style="padding: 5%;">
-                        <h1 style="color: rgb(40, 140, 255); font-weight: bold;"> Application Dashboard</h1>
+                        <h1 style="color: rgb(40, 140, 255); font-weight: bold;"> Model Dashboard </h1>
                         <hr>
                         <br>
                         <div class="col-sm-6">
                             <div class="card" style="width: 24rem; height: 32rem; background-color: whitesmoke; margin-left: 27%;">
                                 <br>
-                                <img class="card-img-top" src="/images/website.png" alt="Card image cap">
+                                <img class="card-img-top" src="/images/artificial-intelligence.png" alt="Card image cap">
                                 <div class="card-body">
                                     <br>
                                     <p class="card-text" style="font-weight:bolder;">
-                                        <a href="http://20.232.42.212:5000/upload-app" target="targetframe">
-                                            <button class="downloadButton" style="background-color: #000000; color:rgb(40, 223, 255); font-weight: bolder; padding: 5%;" onclick="displayLoader()">Upload Application</button>
+                                        <a href="http://20.232.42.212:5000/upload-model" target="targetframe">
+                                            <button class="downloadButton" style="background-color: #000000; color:rgb(40, 223, 255); font-weight: bolder; padding: 5%;" onclick="displayLoader()">Upload Model</button>
                                         </a>
                                     </p>
                                 </div>
@@ -99,8 +109,8 @@
                                 <div class="card-body">
                                     <br>
                                     <p class="card-text" style="font-weight:bolder;">
-                                        <a href="http://20.232.42.212:5000/upload-app" target="targetframe">
-                                            <button class="downloadButton" style="background-color: #000000; color:rgb(40, 223, 255); font-weight: bolder; padding: 5%;" onclick="displayLoader()">List Applications</button>
+                                        <a href="http://20.232.42.212:5000/get-model-dashboard" target="targetframe">
+                                            <button class="downloadButton" style="background-color: #000000; color:rgb(40, 223, 255); font-weight: bolder; padding: 5%;" onclick="displayLoader()">List Models</button>
                                         </a>
                                     </p>
                                 </div>
@@ -108,15 +118,31 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="holds-the-iframe">
                         <iframe width="100%" height="800" name="targetframe" allowTransparency="true" scrolling="yes" frameborder="0">
                           </iframe>
                     </div>
+
+                    <!-- <div class="iframe-loading">
+                        <iframe width="100%" height="800" name="targetframe" allowTransparency="true" scrolling="yes" frameborder="0" onload="$('.iframe-loading').css('background-image', 'none');"></iframe>
+                    </div> -->
+
+                    <br/>
+
+                    <!-- <div>
+                        <a href="application-dash.html" target="targetframe">Link to Page 2</a><br />
+                        <a href="model-dash.html" target="targetframe">Link to Page 3</a>
+                    </div> -->
+
                 </div>
             </div>
 
         </div>
     </div>
+
+
+
     </div>
     </div>
     <script>

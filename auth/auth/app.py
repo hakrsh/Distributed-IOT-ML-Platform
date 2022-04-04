@@ -1,11 +1,8 @@
-import pymongo 
-from pymongo import MongoClient
-from flask import Flask
-from flask import request, render_template, url_for, redirect
-app = Flask(__name__, static_url_path='', static_folder='templates/static', template_folder='templates')
+from flask import request, render_template, redirect
+from auth import app, db, module_config
 
-client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/')
-db = client.users
+# client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/')
+# db = client.users
 
 @app.route('/', methods=['GET','POST'])
 def home():
@@ -55,6 +52,7 @@ def login():
             response['status'] = 500
             return render_template('login.html', response=response)
         if role == 'ai-dev':
+            response['ip'] = module_config['model_dash']
             return render_template('model-dash.html', response=response)
         elif role == 'app-dev':
             return render_template('application-dash.html', response=response)
@@ -67,5 +65,5 @@ def login():
 
         return render_template('index.html', response=response)
 
-if __name__ == "__main__":
+def start():
     app.run(debug=True, host='127.0.0.1', port=2500)
