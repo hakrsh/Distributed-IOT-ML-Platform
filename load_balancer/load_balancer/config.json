@@ -1,0 +1,19 @@
+{
+	"mongo_ip":"127.0.0.1",
+	"mongo_port":"27017",
+	"mongo_server":"mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
+	"workers":[
+		{
+			"name":"worker1",
+			"ip":"20.211.109.104"
+		},
+		{
+			"name":"worker2",
+			"ip":"20.211.109.89"
+		},
+		{
+			"name":"worker3",
+			"ip":"20.211.109.117"
+		}
+	]
+}

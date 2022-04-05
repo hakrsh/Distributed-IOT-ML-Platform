@@ -41,6 +41,16 @@
             "name":"auth",
             "path": "../auth",
             "version": "1.0.0"
+        },
+        {
+            "name":"system_monitor",
+            "path": "../system_monitor",
+            "version": "1.0.0"
+        },
+        {
+            "name":"load_balancer",
+            "path": "../load_balancer",
+            "version": "1.0.0"
         }
     ],
     "master": {
