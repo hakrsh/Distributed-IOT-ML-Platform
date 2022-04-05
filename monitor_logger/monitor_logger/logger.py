@@ -51,7 +51,7 @@ def push_to_kafka(instance_logs, instance_status, topic_id):
 
 
 def get_instance_data(client,instance_id):
-    print(client)
+    print(client, instance_id)
     cur_container = client.containers.get(instance_id)
     instance_status = {cur_container.id:cur_container.status}
     instance_logs = {cur_container.id:cur_container.logs()}
@@ -80,7 +80,7 @@ def get_logs():
         for instance in instances:
             print(instance)
             print(client)
-            thread = threading.Thread(target=get_instance_data, args=(client,instance))
+            thread = threading.Thread(target=get_instance_data, args=(client,instance["container_id"]))
             thread_list.append(thread)
             thread.start()
             for thread in thread_list:
