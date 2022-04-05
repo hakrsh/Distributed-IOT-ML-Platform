@@ -1,13 +1,6 @@
 import docker
 import json
 import logging
-from jinja2 import Template
-
-def render_template(template_file, output_file, workers):
-    with open(template_file) as f:
-        template = Template(f.read())
-    with open(output_file, 'w') as f:
-        f.write(template.render(servers=workers))
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,15 +35,6 @@ def build(host,path,image_tag,container_name):
         logging.info('Error: ' + str(e))
     logging.info('Started ' + container_name)
 
-
-def haproxy_config():
-    workers = []
-    for worker in servers['workers']:
-        temp = {}
-        temp['name'] = worker['user']
-        temp['ip'] = worker['ip']
-        workers.append(temp)
-    render_template('haproxy.j2', 'haproxy.cfg', workers=workers)
 
 def generate_service_config():
     logging.info('Generating service config')
@@ -103,6 +87,6 @@ def start_service():
                 build(host,service['path'],image_name,service['name'])
         else:
             build(host,service['path'],image_name,service['name'])
-    logging.info('Platform has been deployed' + servers['master']['ip'] + ':2500')
+    logging.info('Platform has been deployed ' + servers['master']['ip'] + ':2500')
 
 start_service()

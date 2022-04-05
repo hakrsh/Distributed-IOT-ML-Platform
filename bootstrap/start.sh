@@ -38,7 +38,7 @@ echo "making $user passwordless"
 sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
 cat ~/.ssh/id_rsa.pub | sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
 ssh $user 'sudo apt-get -qq update'
-ssh $user 'sudo apt-get -qq install python3 default-jre haproxy python3-pip -y'
+ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip -y'
 ssh $user 'pip3 install docker '
 echo "installing docker on master"
 scp install-docker.sh $user:~/
@@ -49,24 +49,24 @@ echo "Installing kafka on master"
 scp install-kafka.sh $user:~/
 ssh $user 'chmod +x install-kafka.sh'
 ssh $user 'sudo ./install-kafka.sh'
-
-echo "Configuring HAProxy"
-ssh $user 'sudo chmod 777 /etc/haproxy/haproxy.cfg'
-ssh $user 'echo "frontend deployer_service">>/etc/haproxy/haproxy.cfg'
-ssh $user 'echo "  bind 127.0.0.1:9898">>/etc/haproxy/haproxy.cfg'
-ssh $user 'echo "  default_backend deployers">>/etc/haproxy/haproxy.cfg'
-ssh $user 'echo "backend deployers">>/etc/haproxy/haproxy.cfg'
-ssh $user 'echo "  balance roundrobin">>/etc/haproxy/haproxy.cfg'
-
-IFS=',' ;
-count=2
-for i in $worker_ips ; 
-do
-    ssh $user "echo '  server server$count $i:9898 check'>>/etc/haproxy/haproxy.cfg"
-    count=1+$count
-done
-ssh $user 'sudo systemctl enable haproxy'
-ssh $user 'sudo systemctl start haproxy'
+# prompt user to chose load balancer
+echo "Please choose a load balancer"
+echo "1. HAProxy"
+echo "2. IAS Group 3 Load Balancer"
+read -p "Enter your choice: " choice
+if [ $choice -eq 1 ]; then
+    echo "Installing HAProxy"
+    ssh $user 'sudo apt-get -qq install haproxy -y'
+    python3 config_haproxy.py
+    scp haproxy.cfg $user:~/
+    ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
+    ssh $user 'sudo systemctl enable haproxy'
+    ssh $user 'sudo systemctl start haproxy'
+elif [ $choice -eq 2 ]; then
+    echo "Installing IAS Group 3 Load Balancer"
+else
+    echo "Invalid choice"
+fi
 
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!1"
 python3 build.py
