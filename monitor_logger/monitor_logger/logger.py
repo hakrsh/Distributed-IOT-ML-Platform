@@ -6,20 +6,21 @@ import threading
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
 import paramiko
-
-
-hostname = '20.211.109.104' 
-myuser   = 'vm2'
-mySSHK   = '/home/sowmya/Downloads/ias_nitin.pem'
-sshcon   = paramiko.SSHClient()  # will create the object
-sshcon.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # no known_hosts error
-sshcon.connect(hostname, username=myuser, key_filename=mySSHK) # no passwd needed
+from pytz import timezone
+import pytz
 
 logging.basicConfig(filename="monitor_logger.log",
                             filemode='a',
                             format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
+
+# hostname = '20.211.109.104' 
+# myuser   = 'vm2'
+# mySSHK   = '/home/sowmya/Downloads/ias_nitin.pem'
+# sshcon   = paramiko.SSHClient()  # will create the object
+# sshcon.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # no known_hosts error
+# sshcon.connect(hostname, username=myuser, key_filename=mySSHK) # no passwd needed
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -66,7 +67,11 @@ def get_logs():
         ip = module_config["workers"][0]["ip"]
         name = module_config["workers"][0]["name"]
         print(ip, name)
-        # client = docker.DockerClient(base_url="ssh://{}@{}".format(name, ip))
+        # try:
+        #     client = docker.DockerClient(base_url="ssh://{}@{}".format(name, ip))
+        # except Exception as e:
+        #     print("Not able to connect")
+        #     print(e)
         logging.info("Connecting to VM")
         instances = db_instances.instances.find({"ip":ip})
         logging.info("Getting instance details from db")

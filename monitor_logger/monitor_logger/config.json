@@ -4,15 +4,15 @@
 	"mongo_server":"mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
 	"workers":[
 		{
-			"name":"worker1",
+			"name":"vm2",
 			"ip":"20.211.109.104"
 		},
 		{
-			"name":"worker2",
+			"name":"vm3",
 			"ip":"20.211.109.89"
 		},
 		{
-			"name":"worker3",
+			"name":"vm4",
 			"ip":"20.211.109.117"
 		}
 	],
