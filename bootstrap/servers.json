@@ -1,0 +1,15 @@
+{
+    "master": {
+        "user": "vm6",
+        "ip": "20.231.93.96",
+        "pass": "Hackathon@2022"
+    },
+    "workers": [
+        {
+            "user": "vm7",
+            "ip": "20.25.74.25",
+            "pass": "Hackathon@2022"
+        }
+    ],
+	"mongo_server" : "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority"
+}
