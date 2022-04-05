@@ -47,6 +47,16 @@
             "version": "1.0.0"
         },
         {
+            "name":"monitor_logger",
+            "path": "../monitor_logger",
+            "version": "1.0.0"
+        },
+        {
+            "name":"monitor_log_aggregator",
+            "path": "../monitor_log_aggregator",
+            "version": "1.0.0"
+        },
+        {
             "name":"auth",
             "path": "../auth",
             "version": "1.0.0"

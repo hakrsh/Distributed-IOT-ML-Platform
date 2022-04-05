@@ -48,7 +48,7 @@ ssh $user './install-docker.sh'
 echo "Installing kafka on master"
 scp install-kafka.sh $user:~/
 ssh $user 'chmod +x install-kafka.sh'
-ssh $user './install-kafka.sh'
+ssh $user 'sudo ./install-kafka.sh'
 
 echo "Configuring HAProxy"
 ssh $user 'sudo chmod 777 /etc/haproxy/haproxy.cfg'

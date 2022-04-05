@@ -52,7 +52,7 @@ def login():
             response['status'] = 500
             return render_template('login.html', response=response)
         if role == 'ai-dev':
-            response['ip'] = module_config['model_dash']
+            # response['ip'] = module_config['model_dash']
             return render_template('model-dash.html', response=response,url=module_config['platform_manager'])
         elif role == 'app-dev':
             return render_template('application-dash.html', response=response,url=module_config['platform_manager'])

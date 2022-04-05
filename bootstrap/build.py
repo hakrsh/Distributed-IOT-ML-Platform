@@ -67,9 +67,10 @@ def generate_service_config():
         "mongo_server": servers['mongo_server'],
         "sensor_api": "http://" + master_ip + ":7000/",
         "deployer_master": "http://" + master_ip + ":9999/",
-        "platform_manager": "http://" + master_ip + ":5000/",
+        "platform_api": "http://" + master_ip + ":5000/",
         "scheduler": "http://" + master_ip + ":8210/",
-        "workers": workers
+        "workers": workers,
+        "frequency": "10" 
     }
     logging.info('Writing service config')
     for service in services['services']:

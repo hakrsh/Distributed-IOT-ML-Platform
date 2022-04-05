@@ -1,5 +1,10 @@
-#!/bin/bash
-# kafka instatiation
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+IFS=$(printf '\n\t')
+
 if [ ! -d /opt/kafka ]; then
     sudo apt -qq update && sudo apt -qq install -y default-jre
     curl https://dlcdn.apache.org/kafka/3.1.0/kafka_2.13-3.1.0.tgz | tar xz 
