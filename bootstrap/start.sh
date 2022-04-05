@@ -3,12 +3,12 @@ mkdir -p ~/.ssh
 if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa <<<y >/dev/null 2>&1
 fi
-sudo apt install sshpass jq -y
-sudo pip3 install docker paramiko
+sudo apt -qq install sshpass jq -y
+sudo pip3 install docker paramiko --quite
 
 echo "Reading server list..."
-master=$(cat servers.json | jq -r '.master')
-workers=$(cat servers.json | jq -r '.workers')
+master=`python3 read_json_master.py`
+workers=`python3 read_json_workers.py`
 IFS=',' ;
 worker_ips=""
 for i in $workers ; 
@@ -23,7 +23,7 @@ do
     sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
     cat ~/.ssh/id_rsa.pub | sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
     echo "installing docker on $worker_ip"
-    ssh $user 'wget https://gist.githubusercontent.com/097nitinkumar/f2ab08718f489df02f8b23f1e922e543/raw/ecec210efaa6eff98a0091e521e6daf8f06f08df/install-docker.sh'
+    scp install-docker.sh $user:~/
     ssh $user 'chmod +x install-docker.sh'
     ssh $user './install-docker.sh'
 done
@@ -37,11 +37,11 @@ master_ip=`echo "${master_holder}"| head -2 | tail -1`
 echo "making master passwordless"
 sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
 cat ~/.ssh/id_rsa.pub | sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
-ssh $user 'sudo apt-get update'
-ssh $user 'sudo apt-get install python3 default-jre haproxy python3-pip -y'
-ssh $user 'pip3 install docker'
+ssh $user 'sudo apt-get -qq update'
+ssh $user 'sudo apt-get -qq install python3 default-jre haproxy python3-pip -y'
+ssh $user 'pip3 install docker --quite'
 echo "installing docker on master"
-ssh $user 'wget https://gist.githubusercontent.com/097nitinkumar/f2ab08718f489df02f8b23f1e922e543/raw/ecec210efaa6eff98a0091e521e6daf8f06f08df/install-docker.sh'
+scp install-docker.sh $user:~/
 ssh $user 'chmod +x install-docker.sh'
 ssh $user './install-docker.sh'
 
