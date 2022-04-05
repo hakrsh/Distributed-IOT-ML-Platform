@@ -54,7 +54,9 @@ echo "Please choose a load balancer"
 echo "1. HAProxy"
 echo "2. IAS Group 3 Load Balancer"
 read -p "Enter your choice: " choice
+load_balancer=""
 if [ $choice -eq 1 ]; then
+    load_balancer="haproxy"
     echo "Installing HAProxy"
     ssh $user 'sudo apt-get -qq install haproxy -y'
     python3 config_haproxy.py
@@ -63,10 +65,11 @@ if [ $choice -eq 1 ]; then
     ssh $user 'sudo systemctl enable haproxy'
     ssh $user 'sudo systemctl start haproxy'
 elif [ $choice -eq 2 ]; then
+    load_balancer="ias"
     echo "Installing IAS Group 3 Load Balancer"
 else
     echo "Invalid choice"
 fi
 
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!1"
-python3 build.py
+python3 build.py $load_balancer

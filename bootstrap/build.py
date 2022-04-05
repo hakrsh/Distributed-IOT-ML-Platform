@@ -1,12 +1,14 @@
 import docker
 import json
 import logging
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
 servers = json.loads(open('servers.json').read())
+load_balancer = sys.argv[1]
 
 def build(host,path,image_tag,container_name):
     logging.info('Connecing to ' + host)
@@ -51,11 +53,15 @@ def generate_service_config():
         "mongo_server": servers['mongo_server'],
         "sensor_api": "http://" + master_ip + ":7000/",
         "deployer_master": "http://" + master_ip + ":9999/",
+        "load_balancer": "http://localhost:9899/",
         "platform_api": "http://" + master_ip + ":5000/",
         "scheduler": "http://" + master_ip + ":8210/",
         "workers": workers,
         "frequency": "10" 
     }
+    if load_balancer == 'haproxy':
+        logging.info('Using haproxy')
+        service_config['load_balancer'] = "http://localhost:9898/"
     logging.info('Writing service config')
     for service in services['services']:
         path = '../' + service['name'] + '/' + service['name'] + '/config.json'

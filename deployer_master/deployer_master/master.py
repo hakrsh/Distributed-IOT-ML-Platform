@@ -31,7 +31,7 @@ def deploy_model():
                              "ip": "",
                              "port": ""})
     logging.info("Created deployment record")
-    res = requests.post('http://localhost:9898/model',
+    res = requests.post(f'{module_config["load_balancer"]}/model',
                         json={'ModelId': model_id, 'InstanceId': instance_id})
     logging.info("Sent request to model service")
     return res.text
@@ -58,7 +58,7 @@ def deploy_app():
                              "ip": "",
                              "port": ""})
     logging.info("Created deployment record")
-    res = requests.post('http://localhost:9898/app', json={
+    res = requests.post(f'{module_config["load_balancer"]}/app', json={
                         'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id})
     logging.info("Sent request to app service")
     return res.text
