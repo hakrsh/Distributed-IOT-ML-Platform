@@ -1,11 +1,8 @@
-#!/bin/bash
-sudo apt update & sudo apt install haproxy -y
-cat > /etc/haproxy/haproxy.cfg <<EOF
 global
-	log 127.0.0.1 local0 notice
-	maxconn 2000
-	user haproxy
-	group haproxy
+    log 127.0.0.1 local0 notice
+    maxconn 2000
+    user haproxy
+    group haproxy
 
 defaults
 	log     global
@@ -23,4 +20,6 @@ frontend deployer_service
 	default_backend deployers
 backend deployers
 	balance roundrobin
-EOF
+    {% for s in servers %}
+    server {{s.name}} {{s.ip}}:9898 check
+	{% endfor %}

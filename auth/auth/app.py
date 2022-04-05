@@ -53,15 +53,15 @@ def login():
             return render_template('login.html', response=response)
         if role == 'ai-dev':
             response['ip'] = module_config['model_dash']
-            return render_template('model-dash.html', response=response)
+            return render_template('model-dash.html', response=response,url=module_config['platform_manager'])
         elif role == 'app-dev':
-            return render_template('application-dash.html', response=response)
+            return render_template('application-dash.html', response=response,url=module_config['platform_manager'])
         elif role == 'plt-mngr':
-            return render_template('application-dash.html', response=response)
+            return render_template('application-dash.html', response=response,url=module_config['platform_manager'])
         elif role == 'snsr-mngr':
-            return render_template('sensor-dash.html', response=response)
+            return render_template('sensor-dash.html', response=response,url=module_config['sensor_api'])
         elif role == 'scheduler':
-            return render_template('scheduler-dash.html', response=response)
+            return render_template('scheduler-dash.html', response=response,url=module_config['scheduler'])
 
         return render_template('index.html', response=response)
 

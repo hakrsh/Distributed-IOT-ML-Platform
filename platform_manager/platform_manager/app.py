@@ -44,7 +44,7 @@ def upload_model():
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,
                               "model_contract": model_contract, "content": file})
         logging.info('Model uploaded successfully')
-        url = module_config['deployer'] + '/model'
+        url = module_config['deployer_master'] + '/model'
         logging.info('Sending model to deployer')
 
         response = requests.post(url, json={"ModelId": ModelId,"model_name":model_name}).content
@@ -194,7 +194,7 @@ def home():
     """
         Fetches the application and models load data from all the virtual VMs
     """
-    url = module_config['deployer']
+    url = module_config['deployer_master']
     print(url)
     print((f'{url}get-load'))
     response = requests.get(f'{url}get-load')
@@ -212,7 +212,7 @@ def get_load_json():
     """
         Fetches the application and models load data from all the virtual VMs
     """
-    url = module_config['deployer']
+    url = module_config['deployer_master']
     print(url)
     print((f'{url}get-load'))
     response = requests.get(f'{url}get-load')

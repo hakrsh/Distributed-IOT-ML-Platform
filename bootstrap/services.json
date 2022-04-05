@@ -1,6 +1,5 @@
 {   
     "version": "1.0.0",
-    "tar_file": "ias_platform",
     "services" : [
         {
             "name": "deployer",
@@ -38,11 +37,6 @@
             "version": "1.0.0"
         },
         {
-            "name":"auth",
-            "path": "../auth",
-            "version": "1.0.0"
-        },
-        {
             "name":"system_monitor",
             "path": "../system_monitor",
             "version": "1.0.0"
@@ -51,24 +45,11 @@
             "name":"load_balancer",
             "path": "../load_balancer",
             "version": "1.0.0"
+        },
+        {
+            "name":"auth",
+            "path": "../auth",
+            "version": "1.0.0"
         }
-    ],
-    "master": {
-        "user": "vm1",
-        "ip":"20.232.162.235"
-    },
-    "workers":[
-		{
-			"user":"vm2",
-			"ip":"20.211.109.104"
-		},
-		{
-			"user":"vm3",
-			"ip":"20.211.109.89"
-		},
-		{
-			"user":"vm4",
-			"ip":"20.211.109.117"
-		}
-	]
+    ]
 }
