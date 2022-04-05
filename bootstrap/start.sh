@@ -4,7 +4,7 @@ if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
 sudo apt -qq install sshpass jq -y
-sudo pip3 install docker paramiko 
+sudo pip3 install docker paramiko jinja2
 
 echo "Reading server list..."
 master=`python3 read_json_master.py`
