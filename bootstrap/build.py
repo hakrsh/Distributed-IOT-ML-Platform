@@ -103,3 +103,5 @@ def start_service():
         else:
             build(host,service['path'],image_name,service['name'])
     logging.info('Platform has been deployed' + servers['master']['ip'] + ':2500')
+
+start_service()
