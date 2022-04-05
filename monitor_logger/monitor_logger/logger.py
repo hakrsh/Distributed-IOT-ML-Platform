@@ -6,8 +6,11 @@ import threading
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
 import paramiko
-from pytz import timezone
-import pytz
+import os
+import time
+
+os.environ["TZ"] = "Asia/Kolkata"
+time.tzset()
 
 logging.basicConfig(filename="monitor_logger.log",
                             filemode='a',
@@ -133,11 +136,11 @@ def start():
     watcher = threading.Thread(target = db_watcher)
     watcher.start()
     get_logs()
-    # scheduler = BlockingScheduler()
-    # scheduler.add_job(get_logs, 'interval', seconds=module_config["frequency"])
-    # try:
-    #     scheduler.start()
-    # except (KeyboardInterrupt, SystemExit):
-    #     pass
-    # finally:
-    #     scheduler.shutdown()
+    scheduler = BlockingScheduler()
+    scheduler.add_job(get_logs, 'interval', seconds=module_config["frequency"])
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        scheduler.shutdown()
