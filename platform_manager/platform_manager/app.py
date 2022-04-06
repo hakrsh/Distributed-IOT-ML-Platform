@@ -27,6 +27,8 @@ def upload_model():
         return render_template('upload_model.html')
     elif request.method == 'POST':
         model_name = request.form['model_name']
+        if db.models.find_one({'ModelName': model_name}) is not None:
+            return 'Model already exists'
         ModelId = str(uuid.uuid4())
         logging.info('ModelId: ' + ModelId)
         content = request.files['file'].read()
@@ -125,8 +127,9 @@ def get_running_models():
             logging.info('Instance: ' + instance['instance_id'])
             logging.info('Model: ' + instance['model_id'])
             model = get_model(instance['model_id'])
-            data.append({'instance_id': instance['instance_id'],
-                        'model_id': instance['model_id'], 'ModelName': model['ModelName']})
+            if model is not None:
+                data.append({'instance_id': instance['instance_id'],
+                            'model_id': instance['model_id'], 'ModelName': model['ModelName']})
     return json.dumps(data)
 
 @app.route('/get-model-dashboard', methods=['GET'])
@@ -167,6 +170,8 @@ def upload_app():
         data = request.form
         ApplicationID = str(uuid.uuid4())
         ApplicationName = data['ApplicationName']
+        if db.applications.find_one({"ApplicationId": ApplicationID}):
+            return 'Application already exists'
         content = request.files['file'].read()
         with open('/tmp/' + ApplicationID + '.zip', 'wb') as f:
             f.write(content)
@@ -216,6 +221,8 @@ def upload_app():
         logging.info('Validations passed')
         # TODO get it from front end
         running_models = json.loads(get_running_models())
+        if len(running_models) == 0:
+            return 'No running models'
         logging.info('Chosing a random model')
         model_id = running_models[0]['model_id']
         model_instance_id = running_models[0]['instance_id']
