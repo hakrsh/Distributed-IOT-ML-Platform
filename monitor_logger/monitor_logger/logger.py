@@ -137,7 +137,7 @@ def start():
     watcher.start()
     get_logs()
     scheduler = BlockingScheduler()
-    scheduler.add_job(get_logs, 'interval', seconds=module_config["logger_frequency"])
+    scheduler.add_job(get_logs, 'interval', seconds=module_config["frequency"])
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):
