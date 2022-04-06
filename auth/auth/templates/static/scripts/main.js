@@ -293,3 +293,11 @@ function displayLoader() {
     obj.style.display = "block";
     console.write(obj)
 }
+
+function hideLoader() {
+    let obj = document.getElementsByClassName("holds-the-iframe")[0]
+    obj.style.background = "none";
+    console.log(obj)
+        // await sleep(5 * 1000);
+        // obj.style.display = "none";
+}
