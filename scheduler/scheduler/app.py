@@ -10,9 +10,7 @@ from scheduler import app, module_config, db, client
 import logging
 
 
-logging.basicConfig(filename="scheduler.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
 
@@ -25,14 +23,6 @@ def get_sensor_data():
         return sensor_data.json()
     except Exception as e:
         logging.error(e)
-    # sensor_data = [{"sensor_type":"heat", "sensor_location":"Hyderabad", "sensor_id":"1234"},
-    #                 {"sensor_type":"temperature", "sensor_location":"Mumbai", "sensor_id":"1235"},
-    #                 {"sensor_type":"humidity", "sensor_location":"Chennai", "sensor_id":"1236"},
-    #                 {"sensor_type":"light", "sensor_location":"Banglore", "sensor_id":"1236"},
-    #                 {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1238"},
-    #                 {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1239"},
-    #                 {"sensor_type":"light", "sensor_location":"goa", "sensor_id":"1256"}]
-    # return sensor_data
 
 
 def get_app_data():
@@ -43,62 +33,6 @@ def get_app_data():
         return apps_name.json()
     except Exception as e:
         logging.error(e)
-    # apps_name = [{"ApplicationID":1234,"ApplicationName":"xxx jjjj"},
-    #             {"ApplicationID":1234,"ApplicationName":"yyy"}]
-    # apps_name = [ 
-    #         { 
-    #         'ApplicationID': '87160e53-5fb4-411c-bd20-8ecbb3c6e7a5', 
-    #         'ApplicationName': 'MobileUploadTest', 
-    #         'Contract': 
-    #             {'name': 'titanic_app',
-    #             "sensors":[
-    #                 {
-    #                     "function" : "getheat1",
-    #                     "sensor_type" : "heat"
-    #                 },
-    #                 {
-    #                     "function" : "gethumidity",
-    #                     "sensor_type" : "humidity"
-    #                 },
-    #                 {
-    #                     "function" : "getlight",
-    #                     "sensor_type" : "light"
-    #                 },
-    #                 {
-    #                     "function" : "gettemperature",
-    #                     "sensor_type" : "temperature"
-    #                 },
-    #                 {
-    #                     "function" : "getlight2",
-    #                     "sensor_type" : "light"
-    #                 },
-    #                 {
-    #                     "function" : "getlight3",
-    #                     "sensor_type" : "light"
-    #                 }
-    #             ] ,
-    #             'endpoint': '/app/app.py'
-    #             }
-    #         }, 
-    #         {'ApplicationID': '58c5c0eb-e5c4-4d00-86a1-8c6f6fbfaf52', 
-    #         'ApplicationName': 'Test', 
-    #         'Contract': 
-    #             {'name': 'titanic_app', 
-    #             "sensors":[
-    #                 {
-    #                     "function" : "getlight",
-    #                     "sensor_type" : "light"
-    #                 },
-    #                 {
-    #                     "function" : "gettemperature",
-    #                     "sensor_type" : "temperature"
-    #                 }
-    #             ],
-    #             'endpoint': '/app/app.py'
-    #             }
-    #         }
-    #     ]
-    # return apps_name
 
 """Get the data from sensor and storage team"""
 def refresh_data():
@@ -173,6 +107,13 @@ def schedule():
     logging.info("User selected data: " + str(app_id) + str(my_sensors) + str(start_time) + str(end_time))
     start_time = format_time(start_time)
     end_time = format_time(end_time)
+    delta,time_to_execute = sh.get_scheduled_time(start_time)
+    if(delta=="Invalid time"):
+        error_msg = "Invalid Time"
+        return render_template("error.html", error_msg=error_msg)
+    if end_time < start_time:
+        error_msg = "End time is less than start time"
+        return render_template("error.html", error_msg=error_msg)
     sensor_info = {}
     for s in my_sensors:
         s_type, loc, s_id = s.split("-")
@@ -234,7 +175,7 @@ def reshedule(instance_id):
     }
     start_time = datetime.now() + datetime.timedelta(0,3)
     end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
-    # response = requests.post(f"{module_config['deployer_master']}app",json=query).content
+    response = requests.post(f"{module_config['deployer_master']}app",json=query).content
     new_instance_id = response.decode('ascii')
     sh.update_instance_id(new_instance_id, app_data["sched_id"])
     sh.schedule_a_stop_task(end_time, {"instance_id":new_instance_id})

@@ -55,7 +55,7 @@
                     <a href="users/login" id="login">Log In</a>
                     <a href="users/signup" id="signup">Sign Up</a>
                     <a href="/" id="logout" onclick="logOut()">Log Out</a>
-                  </div>
+                </div>
             </div>
         </nav>
     </header>
@@ -109,9 +109,9 @@
                             </div>
                         </div> -->
                     </div>
-                    <div class="holds-the-iframe">
+                    <div class="holds-the-iframe" onmouseover="hideLoader()">
                         <iframe width="100%" height="800" name="targetframe" allowTransparency="true" scrolling="yes" frameborder="0">
-                          </iframe>
+                        </iframe>
                     </div>
                 </div>
             </div>
@@ -122,44 +122,48 @@
     </div>
     <script>
         function init() {
-          setStorage(); 
-          showAttributes();
+            setStorage();
+            showAttributes();
         }
-        
+
         function setStorage() {
-          {% if response is defined %}
-          if (`{{response.status}}` == 500 || `{{response.action}}` == 'signup'){
-            return
-          }
-          sessionStorage.usermame = `{{response.user}}`
-          sessionStorage.password = `{{response.password}}`
-          sessionStorage.role = `{{response.role}}`
-          {% endif %}
+            { %
+                if response is defined %
+            }
+            if (`{{response.status}}` == 500 || `{{response.action}}` == 'signup') {
+                return
+            }
+            sessionStorage.usermame = `{{response.user}}`
+            sessionStorage.password = `{{response.password}}`
+            sessionStorage.role = `{{response.role}}` { % endif %
+            }
         }
-    
+
         function showAttributes() {
-          document.getElementById("login").style.display = 'block'
-          document.getElementById("signup").style.display = 'block'
-          document.getElementById("logout").style.display = 'none'
-          
-          {% if response is defined %}
-          sessionStorage.username = `{{response.user}}`
-          var user = sessionStorage.getItem('username');
-          if (user == `{{response.user}}`) {
-            document.getElementById("login").style.display = 'none'
-            document.getElementById("signup").style.display = 'none'
-            document.getElementById("logout").style.display = 'block'
-          }
-          console.log(user);
-          {% endif %}
+            document.getElementById("login").style.display = 'block'
+            document.getElementById("signup").style.display = 'block'
+            document.getElementById("logout").style.display = 'none'
+
+            { %
+                if response is defined %
+            }
+            sessionStorage.username = `{{response.user}}`
+            var user = sessionStorage.getItem('username');
+            if (user == `{{response.user}}`) {
+                document.getElementById("login").style.display = 'none'
+                document.getElementById("signup").style.display = 'none'
+                document.getElementById("logout").style.display = 'block'
+            }
+            console.log(user); { % endif %
+            }
         }
-    
+
         function logOut() {
-          sessionStorage.removeItem('username');
-          sessionStorage.removeItem('password');
-          sessionStorage.removeItem('role');
-          alert('User logged out successfully!')
-          window.location.replace("/");
+            sessionStorage.removeItem('username');
+            sessionStorage.removeItem('password');
+            sessionStorage.removeItem('role');
+            alert('User logged out successfully!')
+            window.location.replace("/");
         }
-      </script>
+    </script>
 </body>

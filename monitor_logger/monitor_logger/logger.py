@@ -12,18 +12,9 @@ import time
 os.environ["TZ"] = "Asia/Kolkata"
 time.tzset()
 
-logging.basicConfig(filename="monitor_logger.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
-
-# hostname = '20.211.109.104' 
-# myuser   = 'vm2'
-# mySSHK   = '/home/sowmya/Downloads/ias_nitin.pem'
-# sshcon   = paramiko.SSHClient()  # will create the object
-# sshcon.set_missing_host_key_policy(paramiko.AutoAddPolicy()) # no known_hosts error
-# sshcon.connect(hostname, username=myuser, key_filename=mySSHK) # no passwd needed
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -35,12 +26,10 @@ logging.info('Connected to kafka')
 
 def push_to_kafka(instance_logs, instance_status, topic_id):
     try:
-
         print(producer)
-        print("In producer function",topic_id)
+        logging.info("In producer function",topic_id)
         instance_status = bytes(str(instance_status), 'utf-8')
-        x= producer.send(str(topic_id) + "-status", instance_status)
-        print(x)
+        producer.send(str(topic_id) + "-status", instance_status)
         logging.info("Pushed status to topic")
         print("Pushed status to topic")
         instance_logs = bytes(str(instance_logs), 'utf-8')
@@ -48,7 +37,6 @@ def push_to_kafka(instance_logs, instance_status, topic_id):
         logging.info("Pushed logs to topic")
     except Exception as e:
         print(e)
-        print("errr")
         logging.error(e)
         
 
@@ -62,24 +50,17 @@ def get_instance_data(client,instance_id):
     if not check_topic(instance_id):
         create_topics(instance_id)
     print("calling kafka")
-    push_to_kafka(instance_status, instance_logs, instance_id)
+    push_to_kafka(instance_logs, instance_status, instance_id)
 
 def get_logs():
     try:
         client = docker.from_env()
         ip = module_config["workers"][0]["ip"]
-        name = module_config["workers"][0]["name"]
         print(ip, name)
-        # try:
-        #     client = docker.DockerClient(base_url="ssh://{}@{}".format(name, ip))
-        # except Exception as e:
-        #     print("Not able to connect")
-        #     print(e)
         logging.info("Connecting to VM")
         instances = db_instances.instances.find({"ip":ip})
         logging.info("Getting instance details from db")
         thread_list = []
-        # instances = ["27d0d5a208e2", "fd93eaaa9698"]
         for instance in instances:
             print(instance)
             print(client)
