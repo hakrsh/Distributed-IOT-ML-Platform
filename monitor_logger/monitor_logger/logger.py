@@ -55,7 +55,7 @@ def get_instance_data(client,instance_id):
 def get_logs():
     try:
         client = docker.from_env()
-        ip = module_config["host_ip"]
+        ip = module_config["workers"][0]["ip"]
         print(ip, name)
         logging.info("Connecting to VM")
         instances = db_instances.instances.find({"ip":ip})
