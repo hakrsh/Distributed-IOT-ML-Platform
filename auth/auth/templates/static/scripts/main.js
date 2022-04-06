@@ -291,5 +291,14 @@ function getRows() {
 function displayLoader() {
     let obj = document.getElementsByClassName("holds-the-iframe")[0]
     obj.style.display = "block";
+    obj.style.background = "url(../images/1_5ngZiNtGMrp_xmZHxSvJ0g.gif) center center no-repeat"
     console.write(obj)
+}
+
+function hideLoader() {
+    let obj = document.getElementsByClassName("holds-the-iframe")[0]
+    obj.style.background = "none";
+    console.log(obj)
+        // await sleep(5 * 1000);
+        // obj.style.display = "none";
 }
