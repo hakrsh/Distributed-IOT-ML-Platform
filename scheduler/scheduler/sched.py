@@ -6,9 +6,7 @@ from scheduler import module_config, db
 import logging
 import json
 
-logging.basicConfig(filename="scheduler.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
 
@@ -75,8 +73,11 @@ def call_deployer(query, end_time):
     try:
         print("Doing job....")
         response = requests.post(f"{module_config['deployer_master']}app",json=query)
-        instance_id = response.json()
-        instance_id = instance_id["InstanceID"]
+        print(type(response.text))
+        print(type(json.loads(response.text)))
+        response = json.loads(response.text)
+        instance_id = response["InstanceID"]
+        print(instance_id)
         update_instance_id(instance_id, query['sched_id'])
         delta,time_to_execute = get_scheduled_time(end_time)
         if(delta=="Invalid time"):
@@ -90,13 +91,6 @@ def call_deployer(query, end_time):
         logging.error(e)
         
 
-
-
-# query = {
-# "app_name":"App1",
-# "location":"C:/Downloads",
-# "topic_name":["Hospital","Factory"]
-# }
 def schedule_a_task(start_time, end_time, query):
     """
 
@@ -111,16 +105,6 @@ def schedule_a_task(start_time, end_time, query):
         return "Invalid time"
     schedule.every(delta.days + 1).days.at(time_to_execute).do(call_deployer, query = query, end_time = end_time)
     return "job_scheduled"
-
-# year = int(input("Enter year:"))
-# month = int(input("Enter month:"))
-# day = int(input("Enter day:"))
-# hour = int(input("Enter hour:"))
-# minute = int(input("Enter minute:"))
-# schedule_time = datetime.datetime(year, month, day, hour, minute) 
-
-# schedule_a_task(time = schedule_time,query = query)
-
 
 def run_schedule():
     """

@@ -5,13 +5,14 @@ import time
 import pymongo
 import logging
 from monitor_log_aggregator import kafka_server, module_config, db_instances, db_topics, client
+from flask import Flask, render_template, request
+import os
+app = Flask(__name__)
 
 node_ip = module_config["kafka_ip"]
 node_port = module_config["kafka_port"]
 log_threads = dict()
-logging.basicConfig(filename="monitor_log_aggregator.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
 
@@ -78,8 +79,46 @@ def db_watcher():
             instance_deleted(change["fullDocument"]["instance_id"])
         resume_token = change_stream.resume_token
 
+
+
+@app.route('/')
+# ‘/’ URL is bound with hello_world() function.
+def hello_world():
+    return 'Hello World'
+
+@app.route('/showlog')
+def showlog():
+    print("Log Function called")
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    log_files = [f for f in files if f.endswith("logs.txt")]
+    content = []
+    for f in log_files:
+        with open(f,'r') as k:
+            content.append(k.read())
+    
+    # print(content)
+    return str(content)
+
+
+@app.route('/showstatus')
+def showstatus():
+    print("Status Function called")
+    print(os.listdir('.'))
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    print(len(files))
+    status_files = [f for f in files if f.endswith("status.txt")]
+    print(len(status_files))
+    content = []
+    for f in status_files:
+        with open(f,'r') as k:
+            content.append(k.read())
+    
+    # print(content)
+    return str(content)
+
 def start():
     logging.info("Log aggregator is running")
     watcher = threading.Thread(target = db_watcher)
     watcher.start()
     get_instance_data_from_db()
+    app.run(debug=True, port = 8310, host='0.0.0.0')
