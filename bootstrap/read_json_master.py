@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-with open("./config.json", "r") as jsonfile:
+with open("./servers.json", "r") as jsonfile:
     data = json.load(jsonfile)
     logging.info("Read successful")
 

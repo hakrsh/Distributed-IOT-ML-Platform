@@ -1,15 +1,18 @@
 {
     "master": {
-        "user": "vm6",
-        "ip": "20.106.132.35",
-        "pass": "Hackathon@2022"
+        "user": "vm12",
+        "ip": "20.223.246.47",
+        "pass": "Hackathon@2022",
+        "location": "northeurope"
     },
     "workers": [
         {
-            "user": "vm7",
-            "ip": "20.121.219.238",
-            "pass": "Hackathon@2022"
+            "user": "vm13",
+            "ip": "20.223.243.166",
+            "pass": "Hackathon@2022",
+            "location": "northeurope"
         }
     ],
-	"mongo_server" : "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority"
+    "subscription_id": "33f4f7cd-44fe-4cbe-b482-a5bce2fe048b",
+    "mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority"
 }

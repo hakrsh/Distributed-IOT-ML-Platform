@@ -30,7 +30,7 @@ def hello(path):
             if(sum < minsum):
                 target_ip = ip
         resp = requests.post(f"http://{target_ip}:9898/{path}", json=request.get_json())
-        return target_ip
+        return resp
     else:
         return ""
     
