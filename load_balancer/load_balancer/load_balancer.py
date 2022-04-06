@@ -30,11 +30,11 @@ def hello(path):
             if(sum < minsum):
                 target_ip = ip
         resp = requests.post(f"http://{target_ip}:9898/{path}", json=request.get_json())
-        return resp
+        return resp.text,resp.status_code
     else:
         return ""
     
     
 
 if(__name__ == "__main__"):
-    app.run(host = "0.0.0.0", port = 9898, debug=True)
+    app.run(host = "0.0.0.0", port = 9899)

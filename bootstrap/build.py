@@ -52,6 +52,7 @@ def generate_service_config():
         "kafka_port": "9092",
         "mongo_server": servers['mongo_server'],
         "sensor_api": "http://" + master_ip + ":7000/",
+        "sensor_reg_api": "http://" + master_ip + ":7005/",
         "deployer_master": "http://" + master_ip + ":9999/",
         "load_balancer": "http://localhost:9899/",
         "platform_api": "http://" + master_ip + ":5000/",

@@ -59,7 +59,7 @@ def login():
         elif role == 'plt-mngr':
             return render_template('application-dash.html', response=response,url=module_config['platform_api'])
         elif role == 'snsr-mngr':
-            return render_template('sensor-dash.html', response=response,url=module_config['sensor_api'])
+            return render_template('sensor-dash.html', response=response,url=module_config['sensor_reg_api'])
         elif role == 'scheduler':
             return render_template('scheduler-dash.html', response=response,url=module_config['scheduler'])
 

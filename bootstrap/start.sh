@@ -82,8 +82,8 @@ if [ $choice -eq 1 ]; then
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
     rm haproxy.cfg
-    ssh $user 'sudo systemctl enable haproxy'
-    ssh $user 'sudo systemctl start haproxy'
+    ssh $user 'sudo systemctl enable haproxy.service'
+    ssh $user 'sudo systemctl restart haproxy.service'
 elif [ $choice -eq 2 ]; then
     load_balancer="ias"
     echo "Installing IAS Group 3 Load Balancer"
