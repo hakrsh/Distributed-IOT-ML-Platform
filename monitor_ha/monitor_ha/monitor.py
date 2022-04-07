@@ -67,10 +67,12 @@ def run():
 
 	for change in instances.watch():
 		change_type = change['operationType']
-		document_id = change['documentKey']
-		document = instances.find_one(document_id)
-		thread = threading.Thread(target=app_handler, args=(document,))
-		thread_list.append(thread)
+		if change_type == "insert":
+			document_id = change['documentKey']
+			document = instances.find_one(document_id)
+			thread = threading.Thread(target=app_handler, args=(document,))
+			thread_list.append(thread)
+			thread.start()
 
 	for thread in thread_list:
 		thread.join()
