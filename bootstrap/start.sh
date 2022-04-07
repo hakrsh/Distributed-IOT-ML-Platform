@@ -39,8 +39,10 @@ do
     worker_ip=`echo "${worker_holder}"| head -2 | tail -1`
     worker_ips=$worker_ip","$worker_ips
     echo "making $user password less"
-    sudo sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
+    sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
     cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+    echo "made $user password less"
+    sleep 1
     echo "installing docker on $worker_ip"
     scp install-docker.sh $user:~/
     ssh $user 'chmod +x install-docker.sh'
@@ -54,8 +56,11 @@ master_holder=($(echo $user | sed s/@/\\n/g))
 master_ip=`echo "${master_holder}"| head -2 | tail -1`
 
 echo "making $user passwordless"
-sudo sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
+sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
 cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+echo "$user now has passwordless access"
+sleep 1
+echo "installing docker on $user"
 ssh $user 'sudo apt-get -qq update'
 ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip -y'
 ssh $user 'pip3 install docker '
