@@ -24,7 +24,17 @@ logging.info("Sensor database created")
 
 app = Flask(__name__)
 
-###############################02-04-2022############################################start
+buffer=dict()
+
+def db_change_detector():
+    for change in sensor_config.watch():
+        change_type = change['operationType']
+        if change_type == "insert":
+            document_id = change['documentKey']
+            document = sensor_config.find_one(document_id)
+            topic=document["topic_id"]
+            sensorThread(topic,buffer)
+
 class thread(threading.Thread):
     def __init__(self,topic,buffer):
         threading.Thread.__init__(self)
@@ -40,14 +50,11 @@ def sensorThread(topic,buffer):
     thread1 = thread(topic,buffer)
     thread1.start()
 
-buffer=dict()
-def sensor():
+def start_pending_threads():
     sensors_cursor = sensor_config.find({})
     for document in sensors_cursor:
         topic=document["topic_id"]
         sensorThread(topic,buffer)
-sensor()
-###############################02-04-2022############################################end
 
 @app.route("/getAllSensors")
 def getAllSensors():
