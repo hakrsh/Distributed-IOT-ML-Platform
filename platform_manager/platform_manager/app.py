@@ -7,9 +7,14 @@ import logging
 import zipfile
 import os
 import shutil
+from jsonschema import validate
 
 logging.basicConfig(level=logging.INFO)
 
+def clear(path):
+    os.remove(path + '.zip')
+    shutil.rmtree(path)
+    logging.info('Temp files removed')
 
 @app.route('/')
 def index():
@@ -22,28 +27,61 @@ def upload_model():
         return render_template('upload_model.html')
     elif request.method == 'POST':
         model_name = request.form['model_name']
+        if db.models.find_one({'ModelName': model_name}) is not None:
+            return 'Model already exists'
         ModelId = str(uuid.uuid4())
         logging.info('ModelId: ' + ModelId)
         content = request.files['file'].read()
-        file = fs.put(content, filename=ModelId+'.zip')
         with open('/tmp/' + ModelId + '.zip', 'wb') as f:
             f.write(content)
         logging.info('Model saved to /tmp/' + ModelId + '.zip')
         with zipfile.ZipFile('/tmp/' + ModelId + '.zip', 'r') as zip_ref:
             zip_ref.extractall('/tmp/' + ModelId)
         logging.info('Model extracted to /tmp/' + ModelId)
+        logging.info('Validating model...')
+        if not os.path.exists('/tmp/' + ModelId + '/model/requirements.txt'):
+            clear('/tmp/' + ModelId)
+            return 'requirements.txt not found'
+        if not os.path.exists('/tmp/' + ModelId + '/model/model.pkl') and not os.path.exists('/tmp/' + ModelId + '/model/model.h5'):
+            clear('/tmp/' + ModelId)
+            return 'model.pkl or model.h5 not found'
+        if not os.path.exists('/tmp/' + ModelId + '/model/model_contract.json'):
+            clear('/tmp/' + ModelId)
+            return 'model_contract.json not found'
+        if not os.path.exists('/tmp/' + ModelId + '/model/preprocessing.py'):
+            clear('/tmp/' + ModelId)
+            return 'preprocessing.py not found'
+        if not os.path.exists('/tmp/' + ModelId + '/model/postprocessing.py'):
+            clear('/tmp/' + ModelId)
+            return 'postprocessing.py not found'
+        logging.info('Validating model_contract.json...')
+        schema = {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "endpoint": {
+                    "type": "string"
+                }
+            },
+            "required": ["name", "endpoint"]
+        }
         model_contract = {}
         with open('/tmp/' + ModelId + '/model/model_contract.json', 'r') as f:
             model_contract = json.load(f)
-
-        logging.info('Model contract uploaded successfully')
-        os.remove('/tmp/' + ModelId + '.zip')
-        logging.info('Model zip removed')
-        shutil.rmtree('/tmp/' + ModelId)
-        logging.info('Model temp directory removed')
+        try:
+            validate(model_contract, schema)
+        except :
+            clear('/tmp/' + ModelId)
+            return 'model_contract.json is not valid'
+        logging.info('Model validation passed...')
+        logging.info('Uploading model...')
+        file = fs.put(content, filename=ModelId+'.zip')
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,
                               "model_contract": model_contract, "content": file})
         logging.info('Model uploaded successfully')
+        clear('/tmp/' + ModelId)
         url = module_config['deployer_master'] + '/model'
         logging.info('Sending model to deployer')
 
@@ -89,8 +127,9 @@ def get_running_models():
             logging.info('Instance: ' + instance['instance_id'])
             logging.info('Model: ' + instance['model_id'])
             model = get_model(instance['model_id'])
-            data.append({'instance_id': instance['instance_id'],
-                        'model_id': instance['model_id'], 'ModelName': model['ModelName']})
+            if model is not None:
+                data.append({'instance_id': instance['instance_id'],
+                            'model_id': instance['model_id'], 'ModelName': model['ModelName']})
     return json.dumps(data)
 
 @app.route('/get-model-dashboard', methods=['GET'])
@@ -131,6 +170,8 @@ def upload_app():
         data = request.form
         ApplicationID = str(uuid.uuid4())
         ApplicationName = data['ApplicationName']
+        if db.applications.find_one({"ApplicationId": ApplicationID}):
+            return 'Application already exists'
         content = request.files['file'].read()
         with open('/tmp/' + ApplicationID + '.zip', 'wb') as f:
             f.write(content)
@@ -138,11 +179,50 @@ def upload_app():
         with zipfile.ZipFile('/tmp/' + ApplicationID + '.zip', 'r') as zip_ref:
             zip_ref.extractall('/tmp/' + ApplicationID)
         logging.info('Application extracted to /tmp/' + ApplicationID)
+        logging.info('Validating application...')
+        if not os.path.exists('/tmp/' + ApplicationID + '/app/app_contract.json'):
+            clear('/tmp/' + ApplicationID)
+            return 'app_contract.json not found'
+        if not os.path.exists('/tmp/' + ApplicationID + '/app/src'):
+            clear('/tmp/' + ApplicationID)
+            return 'src directory not found'
+        if not os.path.exists('/tmp/' + ApplicationID + '/app/requirements.txt'):
+            clear('/tmp/' + ApplicationID)
+            return 'requirements.txt not found'
+        logging.info('Validating app_contract.json...')
+        schema = {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "sensors": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "function": {"type": "string"},
+                            "sensor_type": {"type": "string"}
+                        },
+                        "required": ["function", "sensor_type"]
+                    },
+                    "minItems": 1,
+                    "uniqueItems": True,
+                },
+            },
+            "required": ["name", "sensors"]
+        }
         app_contract = {}
         with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
             app_contract = json.load(f)
+        try:
+            validate(app_contract, schema)
+        except:
+            clear('/tmp/' + ApplicationID)
+            return 'app_contract.json is not valid'
+        logging.info('Validations passed')
         # TODO get it from front end
         running_models = json.loads(get_running_models())
+        if len(running_models) == 0:
+            return 'No running models'
         logging.info('Chosing a random model')
         model_id = running_models[0]['model_id']
         model_instance_id = running_models[0]['instance_id']
@@ -154,16 +234,14 @@ def upload_app():
         logging.info('Inserted model contract into app')
         shutil.make_archive('/tmp/' + ApplicationID,
                             'zip', '/tmp/' + ApplicationID)
+        logging.info('Uploading application...')
         file = ''
         with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
             file = fs.put(f,filename=ApplicationID + '.zip')
-        os.remove('/tmp/' + ApplicationID + '.zip')
-        logging.info('Application zip removed')
-        shutil.rmtree('/tmp/' + ApplicationID)
-        logging.info('Application temp directory removed')
         db.applications.insert_one(
             {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
         logging.info('Application uploaded successfully')
+        clear('/tmp/' + ApplicationID)
         return 'Application stored successfully'
 
 
