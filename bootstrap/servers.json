@@ -1,14 +1,14 @@
 {
     "master": {
-        "user": "vm1",
-        "ip": "137.135.210.89",
+        "user": "vm15",
+        "ip": "20.223.233.57",
         "pass": "Hackathon@2022",
         "location": "northeurope"
     },
     "workers": [
         {
-            "user": "vm3",
-            "ip": "13.69.192.173",
+            "user": "vm6",
+            "ip": "20.223.161.151",
             "pass": "Hackathon@2022",
             "location": "northeurope"
         }
