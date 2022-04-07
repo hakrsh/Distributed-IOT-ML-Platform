@@ -66,7 +66,7 @@ echo "$user now has passwordless access"
 sleep 1
 echo "installing docker on $user"
 ssh $user 'sudo apt-get -qq update'
-ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip -y'
+ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip sshpass -y'
 ssh $user 'pip3 install docker '
 echo "installing docker on master"
 scp install-docker.sh $user:~/
@@ -99,7 +99,12 @@ elif [ $choice -eq 2 ]; then
 else
     echo "Invalid choice"
 fi
-
+echo "making passwordless access to workers from master"
+python3 copy_ssh.py
+scp copy_ssh.sh $user:~/
+rm copy_ssh.sh
+ssh $user 'chmod +x copy_ssh.sh'
+ssh $user './copy_ssh.sh'
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer
 echo "!!!!!!!!!!!!!!!!BUILD COMPLETED!!!!!!!!!!!!!!!!!!!!"
