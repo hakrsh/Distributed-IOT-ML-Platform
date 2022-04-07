@@ -39,8 +39,10 @@ do
     worker_ip=`echo "${worker_holder}"| head -2 | tail -1`
     worker_ips=$worker_ip","$worker_ips
     echo "making $user password less"
-    sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
-    cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+    # sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
+    # cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+    sleep 2
+    sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
     echo "made $user password less"
     sleep 1
     echo "installing docker on $worker_ip"
@@ -56,8 +58,10 @@ master_holder=($(echo $user | sed s/@/\\n/g))
 master_ip=`echo "${master_holder}"| head -2 | tail -1`
 
 echo "making $user passwordless"
-sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
-cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+# sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
+# cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
+sleep 2
+sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
 echo "$user now has passwordless access"
 sleep 1
 echo "installing docker on $user"
