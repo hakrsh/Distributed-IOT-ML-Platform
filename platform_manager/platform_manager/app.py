@@ -273,15 +273,9 @@ def home():
         Fetches the application and models load data from all the virtual VMs
     """
     url = module_config['deployer_master']
-    print(url)
-    print((f'{url}get-load'))
     response = requests.get(f'{url}get-load')
     load_url = url+"get-load"
-    print(load_url)
     load_data = json.loads(response.content.decode('utf-8'))
-    
-    print(type(load_data))
-    
     return render_template ("load-data.html", load_data = load_data, url = load_url)
 
 
@@ -291,13 +285,8 @@ def get_load_json():
         Fetches the application and models load data from all the virtual VMs
     """
     url = module_config['deployer_master']
-    print(url)
-    print((f'{url}get-load'))
     response = requests.get(f'{url}get-load')
-    load_url = url+"get-load"
-    print(load_url)
     load_data = jsonify(json.loads(response.content.decode('utf-8')))
-    
     return load_data
 
 
