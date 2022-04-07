@@ -19,6 +19,14 @@
 <body>
     <h1 style="margin: 50px;">Upload Application</h1>
     <form action="/upload-app" method="post" style="margin: 50px;" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="app_name">Models</label>
+            <select class="form-control form-control-lg" name="model_instance_id">
+                {% for model in models %}
+                <option value= {{model.instance_id}}>{{model.ModelName}}</option>"
+                {% endfor %}
+            </select>
+        </div>
         <label for="exampleInputEmail1">Application Name</label>
         <input type="text" class="form-control" aria-describedby="emailHelp" placeholder="Enter App name"
             name="ApplicationName">

@@ -1,4 +1,5 @@
 import json
+from pyexpat import model
 from flask import request, render_template, jsonify
 import requests
 import uuid
@@ -165,7 +166,8 @@ def get_running_applications():
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
     if request.method == 'GET':
-        return render_template('upload_app.html')
+        running_models = json.loads(get_running_models())
+        return render_template('upload_app.html',models=running_models)
     if request.method == 'POST':
         data = request.form
         ApplicationID = str(uuid.uuid4())
@@ -219,15 +221,11 @@ def upload_app():
             clear('/tmp/' + ApplicationID)
             return 'app_contract.json is not valid'
         logging.info('Validations passed')
-        # TODO get it from front end
-        running_models = json.loads(get_running_models())
-        if len(running_models) == 0:
-            return 'No running models'
-        logging.info('Chosing a random model')
-        model_id = running_models[0]['model_id']
-        model_instance_id = running_models[0]['instance_id']
+        
+        model_instance_id = request.form['model_instance_id']
+        logging.info('Model instance id: ' + model_instance_id)
+        model_id = db.instances.find_one({"instance_id": model_instance_id})['model_id']
         logging.info('model_id: ' + model_id)
-        logging.info('model_instance_id: ' + model_instance_id)
         model_config = requests.get('http://localhost:5000/get-running-model-config',json={"model_id": model_id, "instance_id": model_instance_id}).json()
         with open('/tmp/' + ApplicationID + '/app/model_contract.json', 'w') as f:
             json.dump(model_config, f)
