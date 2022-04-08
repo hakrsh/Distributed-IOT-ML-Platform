@@ -1,11 +1,13 @@
 import logging
 import json
 from jinja2 import Template
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
+server_list  = sys.argv[1]
 logging.info('Reading config servers.json')
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open(server_list).read())
 
 def render_template(template_file, output_file, workers):
     with open(template_file) as f:

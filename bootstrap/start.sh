@@ -16,6 +16,7 @@ echo "installed dependencies"
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    python3 generate_bootstrap_config.py
     read -p "Do you want to install azure cli? [y/n] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -25,11 +26,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Installing azure cli python..."
         pip install azure-cli
         echo "Installed azure cli python"
+    fi
         az login
         echo "Logged in to azure"
         echo "Creating VMs..."
-        python3 create_vms.py
-    fi
+        python3 create_vms.py servers.json
 fi
 sleep 2
 echo "Reading server list..."
@@ -94,7 +95,7 @@ if [ $choice -eq 1 ]; then
     load_balancer="haproxy"
     echo "Installing HAProxy"
     ssh $user 'sudo apt-get -qq install haproxy -y'
-    python3 config_haproxy.py
+    python3 config_haproxy.py servers.json
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
     rm haproxy.cfg
