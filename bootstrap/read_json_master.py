@@ -1,9 +1,10 @@
 import json
 import logging
+import sys
 
 logging.basicConfig(level=logging.INFO)
-
-with open("./servers.json", "r") as jsonfile:
+server_list = sys.argv[1]
+with open(server_list, "r") as jsonfile:
     data = json.load(jsonfile)
     logging.info("Read successful")
 

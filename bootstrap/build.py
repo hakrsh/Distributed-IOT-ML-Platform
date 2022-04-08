@@ -2,6 +2,7 @@ import docker
 import json
 import logging
 import sys
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,7 +11,7 @@ services = json.loads(open('services.json').read())
 servers = json.loads(open('servers.json').read())
 load_balancer = sys.argv[1]
 
-def build(host,path,image_tag,container_name):
+def build(host,path,image_tag,container_name,config_path):
     logging.info('Connecing to ' + host)
     client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
@@ -27,12 +28,16 @@ def build(host,path,image_tag,container_name):
         logging.info('Container does not exist')
     logging.info('Creating container: ' + container_name)
     try:
-        if container_name == 'deployer':
-            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
+        container_config_path = f'/{container_name}/config.json'
+        if container_name == 'deployer' or container_name == 'monitor_logger' :
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
+            config_path: {'bind': container_config_path, 'mode': 'rw'}})
         elif container_name == "monitor_ha":
-            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/home/vm1/.ssh': {'bind': '/root/.ssh', 'mode': 'rw'}})
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
+            config_path: {'bind': container_config_path, 'mode': 'rw'}})
         else:
-            client.containers.run(image_tag,name=container_name, detach=True, network='host')
+            client.containers.run(image_tag,name=container_name, detach=True, network='host',
+                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})
     except Exception as e:
         logging.info('Error: ' + str(e))
     logging.info('Started ' + container_name)
@@ -63,12 +68,17 @@ def generate_service_config():
     if load_balancer == 'haproxy':
         logging.info('Using haproxy')
         service_config['load_balancer'] = "http://localhost:9898/"
-    logging.info('Writing service config')
-    for service in services['services']:
-        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
-        with open(path, 'w') as outfile:
-            json.dump(service_config, outfile)
-        logging.info('Wrote service config to ' + path)
+    logging.info('Writing config')
+    with open('../config.json', 'w') as f:
+        json.dump(service_config, f, indent=4)
+    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    logging.info('Copyied config to master')
+    subprocess.call(cmd, shell=True)
+    # for service in services['services']:
+    #     path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+    #     with open(path, 'w') as outfile:
+    #         json.dump(service_config, outfile)
+    #     logging.info('Wrote service config to ' + path)
     
 def start_service():
     generate_service_config()
@@ -78,22 +88,23 @@ def start_service():
         logging.info('building image ' + image_name)
         host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
         # host = 'unix://var/run/docker.sock'
-        if service['name'] == 'deployer':
+        if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
             for worker in servers['workers']:
                 host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
-                data = json.load(open('../deployer/deployer/config.json'))
+                data = json.load(open('../config.json'))
                 data['host_ip'] = worker['ip']
                 data['host_name'] = worker['user']
-                with open('../deployer/deployer/config.json', 'w') as outfile:
+                with open('../config.json', 'w') as outfile:
                     json.dump(data, outfile)
                 logging.info('Updating config.json')
-                build(host,service['path'],image_name,service['name'])
-        elif service['name'] == 'system_monitor':
-            for worker in servers['workers']:
-                host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
-                build(host,service['path'],image_name,service['name'])
+                cmd = 'scp ../config.json ' + worker['user'] + '@' + worker['ip'] + ':~/'
+                logging.info('Copying config to worker')
+                subprocess.call(cmd, shell=True)
+                config_path = f'/home/{worker["user"]}/config.json'
+                build(host,service['path'],image_name,service['name'],config_path)
         else:
-            build(host,service['path'],image_name,service['name'])
+            config_path = f'/home/{servers["master"]["user"]}/config.json'
+            build(host,service['path'],image_name,service['name'],config_path)
     logging.info('Platform has been deployed ' + servers['master']['ip'] + ':2500')
 
 start_service()

@@ -26,8 +26,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 sleep 2
 echo "Reading server list..."
-master=`python3 read_json_master.py`
-workers=`python3 read_json_workers.py`
+master=`python3 read_json_master.py servers.json`
+workers=`python3 read_json_workers.py servers.json`
 IFS=',' ;
 worker_ips=""
 for i in $workers ; 
@@ -100,7 +100,7 @@ else
     echo "Invalid choice"
 fi
 echo "making passwordless access to workers from master"
-python3 copy_ssh.py
+python3 copy_ssh.py servers.json
 scp copy_ssh.sh $user:~/
 rm copy_ssh.sh
 ssh $user 'chmod +x copy_ssh.sh'
