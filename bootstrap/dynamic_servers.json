@@ -1,0 +1,11 @@
+{
+    "workers": [
+        {
+            "user": "vm6",
+            "ip": "20.223.138.14",
+            "pass": "Hackathon@2022",
+            "location": "northeurope"
+        }
+    ],
+    "subscription_id": "33f4f7cd-44fe-4cbe-b482-a5bce2fe048b"
+}

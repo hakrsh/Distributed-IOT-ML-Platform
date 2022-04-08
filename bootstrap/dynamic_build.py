@@ -1,0 +1,90 @@
+import docker
+import json
+import logging
+import sys
+import subprocess
+
+logging.basicConfig(level=logging.INFO)
+
+logging.info('Reading config files')
+services = json.loads(open('services.json').read())
+servers = json.loads(open('servers.json').read())
+dynamic_servers = json.loads(open('dynamic_servers.json').read())
+load_balancer = sys.argv[1]
+
+def build(host,path,image_tag,container_name,config_path):
+    logging.info('Connecing to ' + host)
+    client = docker.DockerClient(base_url=host)
+    logging.info('Connected to Docker')
+    logging.info('Building ' + image_tag)
+    client.images.build(path=path, tag=image_tag)
+    logging.info('Built image: ' + image_tag)
+    try:
+        container = client.containers.get(container_name)
+        logging.info('Container exists, stopping')
+        container.stop()
+        logging.info('Removing container: ' + container_name)
+        container.remove()
+    except:
+        logging.info('Container does not exist')
+    logging.info('Creating container: ' + container_name)
+    try:
+        container_config_path = f'/{container_name}/config.json'
+        if container_name == 'deployer' or container_name == 'monitor_logger' :
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
+            config_path: {'bind': container_config_path, 'mode': 'rw'}})
+        elif container_name == "monitor_ha":
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
+            config_path: {'bind': container_config_path, 'mode': 'rw'}})
+        else:
+            client.containers.run(image_tag,name=container_name, detach=True, network='host',
+                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})
+    except Exception as e:
+        logging.info('Error: ' + str(e))
+    logging.info('Started ' + container_name)
+
+
+def generate_service_config():
+    logging.info('Generating service config')
+    master_ip = servers['master']['ip']
+    workers = []
+    for worker in dynamic_servers['workers']:
+        temp = {}
+        temp['name'] = worker['user']
+        temp['ip'] = worker['ip']
+        workers.append(temp)
+    config = json.loads(open('../config.json').read())
+    config['workers'].append(workers)
+    logging.info('Writing config')
+    with open('../config.json', 'w') as f:
+        json.dump(config, f, indent=4)
+    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    logging.info('Copyied config to master')
+    subprocess.call(cmd, shell=True)
+    
+    
+def start_service():
+    generate_service_config()
+    logging.info('Starting service')
+    for service in services['services']:
+        image_name = f'{service["name"]}:{service["version"]}'
+        logging.info('building image ' + image_name)
+        # host = 'unix://var/run/docker.sock'
+        if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
+            for worker in servers['workers']:
+                host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
+                data = json.load(open('../config.json'))
+                data['host_ip'] = worker['ip']
+                data['host_name'] = worker['user']
+                with open('../config.json', 'w') as outfile:
+                    json.dump(data, outfile)
+                logging.info('Updating config.json')
+                cmd = 'scp ../config.json ' + worker['user'] + '@' + worker['ip'] + ':~/'
+                logging.info('Copying config to worker')
+                subprocess.call(cmd, shell=True)
+                config_path = f'/home/{worker["user"]}/config.json'
+                build(host,service['path'],image_name,service['name'],config_path)
+        
+    logging.info('new servers added')
+
+start_service()

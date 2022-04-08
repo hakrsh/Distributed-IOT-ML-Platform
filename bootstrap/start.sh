@@ -10,19 +10,26 @@ if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
 sudo apt -qq install sshpass jq -y
-pip3 install docker paramiko jinja2 azure-cli
+pip3 install docker paramiko jinja2 
 echo "installed dependencies"
 
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "installing azure cli..."
-    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-    echo "Installed az-cli"
-    az login
-    echo "Logged in to azure"
-    echo "Creating VMs..."
-    python3 create_vms.py
+    read -p "Do you want to install azure cli? [y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "installing azure cli..."
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        echo "Installed az-cli"
+        echo "Installing azure cli python..."
+        pip install azure-cli
+        echo "Installed azure cli python"
+        az login
+        echo "Logged in to azure"
+        echo "Creating VMs..."
+        python3 create_vms.py
+    fi
 fi
 sleep 2
 echo "Reading server list..."
