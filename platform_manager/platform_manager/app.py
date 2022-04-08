@@ -124,7 +124,7 @@ def get_running_models():
     instances = db.instances.find()
     data = []
     for instance in instances:
-        if instance['type'] == 'model':
+        if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Instance: ' + instance['instance_id'])
             logging.info('Model: ' + instance['model_id'])
             model = get_model(instance['model_id'])
