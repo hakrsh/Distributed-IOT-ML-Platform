@@ -172,14 +172,18 @@ def run():
     username = servers['master']['user']
     password = servers['master']['pass']
     location = servers['master']['location']
-    servers['master']['ip'] = create(subscription_id,vm_name,username,password,location)
+    ip = create(subscription_id,vm_name,username,password,location)
+    logging.info('Master IP: ' + ip)
+    servers['master']['ip'] = ip
     
     for worker in servers['workers']:
         vm_name = worker['user']
         username = worker['user']
         password = worker['pass']
         location = worker['location']
-        worker['ip'] = create(subscription_id,vm_name,username,password,location)
+        ip = create(subscription_id,vm_name,username,password,location)
+        logging.info('Worker IP: ' + ip)
+        worker['ip'] = ip
     
     with open('servers.json', 'w') as f:
         json.dump(servers, f, indent=4)

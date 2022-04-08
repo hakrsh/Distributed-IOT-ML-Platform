@@ -24,7 +24,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "Creating VMs..."
     python3 create_vms.py
 fi
-
+sleep 2
 echo "Reading server list..."
 master=`python3 read_json_master.py`
 workers=`python3 read_json_workers.py`
