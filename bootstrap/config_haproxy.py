@@ -1,7 +1,10 @@
 import logging
 import json
+from platform import platform
 from jinja2 import Template
 import sys
+
+platform_config = json.loads(open('servers.json').read())
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,6 +25,12 @@ def generate_config():
         temp['name'] = worker['user']
         temp['ip'] = worker['ip']
         workers.append(temp)
+    if server_list == 'dynamic_servers.json':
+        for worker in platform_config['workers']:
+            temp = {}
+            temp['name'] = worker['user']
+            temp['ip'] = worker['ip']
+            workers.append(temp)
     render_template('haproxy.j2', 'haproxy.cfg', workers=workers)
 
 generate_config()
