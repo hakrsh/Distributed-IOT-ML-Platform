@@ -47,7 +47,6 @@ def build(host,path,image_tag,container_name,config_path):
 def generate_service_config():
     logging.info('Generating service config')
     config = json.loads(open('../config.json').read())
-    workers = []
     for worker in dynamic_servers['workers']:
         temp = {}
         temp['name'] = worker['user']
@@ -60,6 +59,12 @@ def generate_service_config():
     cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     logging.info('Copyied config to master')
     subprocess.call(cmd, shell=True)
+    logging.info('Updating config.json')
+    for service in services['services']:
+        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+        with open(path, 'w') as outfile:
+            json.dump(config, outfile)
+        logging.info('Update config ' + path)
     
 def restart_services():
     logging.info('Restarting services')

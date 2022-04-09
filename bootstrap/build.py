@@ -74,11 +74,11 @@ def generate_service_config():
     cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     logging.info('Copyied config to master')
     subprocess.call(cmd, shell=True)
-    # for service in services['services']:
-    #     path = '../' + service['name'] + '/' + service['name'] + '/config.json'
-    #     with open(path, 'w') as outfile:
-    #         json.dump(service_config, outfile)
-    #     logging.info('Wrote service config to ' + path)
+    for service in services['services']:
+        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+        with open(path, 'w') as outfile:
+            json.dump(service_config, outfile)
+        logging.info('Wrote service config to ' + path)
     
 def start_service():
     generate_service_config()
