@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open('platform_config.json').read())
 load_balancer = sys.argv[1]
 
 def build(host,path,image_tag,container_name,config_path):

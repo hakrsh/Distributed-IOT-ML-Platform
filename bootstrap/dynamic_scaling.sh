@@ -56,7 +56,7 @@ do
 done
 
 echo "making passwordless access to workers from master"
-master=`python3 read_json_master.py servers.json`
+master=`python3 read_json_master.py platform_config.json`
 holder=($(echo $master | sed s/~/\\n/g))
 user=`echo "${holder}" | head -1`
 echo $user

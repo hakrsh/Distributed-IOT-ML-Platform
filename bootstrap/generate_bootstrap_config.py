@@ -47,6 +47,6 @@ server = {
     "subscription_id": subscription_id,
     "mongo_server": mongo_server
 }
-with(open("servers.json", "w")) as f:
+with(open("platform_config.json", "w")) as f:
     json.dump(server, f)
 logging.info("Bootstrap config generated")

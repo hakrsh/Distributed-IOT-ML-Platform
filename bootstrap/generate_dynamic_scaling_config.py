@@ -10,7 +10,7 @@ if number_of_vms < 1 or number_of_vms > 2:
     print("Invalid number of VMs")
     exit(1)
 
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open('platform_config.json').read())
 subscription_id = servers['subscription_id']
 location = "northeurope"
 mongo_server = servers['mongo_server']

@@ -32,13 +32,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         az login
         echo "Logged in to azure - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
         echo "Creating VMs..."
-        python3 create_vms.py servers.json
+        python3 create_vms.py platform_config.json
 fi
 sleep 2
 echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "Reading server list..."
-master=`python3 read_json_master.py servers.json`
-workers=`python3 read_json_workers.py servers.json`
+master=`python3 read_json_master.py platform_config.json`
+workers=`python3 read_json_workers.py platform_config.json`
 IFS=',' ;
 worker_ips=""
 for i in $workers ; 
@@ -101,7 +101,7 @@ if [ $choice -eq 1 ]; then
     load_balancer="haproxy"
     echo "Installing HAProxy"
     ssh $user 'sudo apt-get -qq install haproxy -y'
-    python3 config_haproxy.py servers.json
+    python3 config_haproxy.py platform_config.json
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
     rm haproxy.cfg
@@ -115,7 +115,7 @@ else
 fi
 echo "Installed load balancer - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "making passwordless access to workers from master"
-python3 copy_ssh.py servers.json
+python3 copy_ssh.py platform_config.json
 scp copy_ssh.sh $user:~/
 rm copy_ssh.sh
 ssh $user 'chmod +x copy_ssh.sh'

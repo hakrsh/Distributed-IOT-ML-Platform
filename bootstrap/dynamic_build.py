@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open('platform_config.json').read())
 dynamic_servers = json.loads(open('dynamic_servers.json').read())
 
 
