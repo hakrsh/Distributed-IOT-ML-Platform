@@ -8,13 +8,13 @@
   }
 </style>
 <body>
-  <form role="form" action="{{ url_for('register') }}" class="custom-centered" method="post">
+  <form role="form" action="{{ url_for('register_sensor') }}" class="custom-centered" method="post">
     <div class="form-group" style="margin: 10px;">
       <label for="type">Type</label>
-      <select class="form-select" name="type">
-        <option>Heat</option>
-        <option>Temperature</option>
-        <option>Camera</option>
+      <select class="form-select" name="type" required>
+        {% for type in types %}
+        <option>{{ type }}</option>
+        {% endfor %}
       </select>
     </div>
     <div class="form-group" style="margin: 10px;">

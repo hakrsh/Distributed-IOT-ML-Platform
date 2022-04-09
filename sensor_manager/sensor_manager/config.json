@@ -1,1 +1,13 @@
-{"kafka_ip": "20.223.233.57", "kafka_port": "9092", "mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority", "sensor_api": "http://20.223.233.57:7000/", "sensor_reg_api": "http://20.223.233.57:7005/", "deployer_master": "http://20.223.233.57:9999/", "load_balancer": "http://localhost:9899/", "platform_api": "http://20.223.233.57:5000/", "scheduler": "http://20.223.233.57:8210/", "workers": [{"name": "vm6", "ip": "20.223.161.151"}], "frequency": "10"}
+{
+	"kafka_ip": "127.0.0.1",
+	"kafka_port": "9092",
+	"mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
+	"sensor_api": "http://20.223.233.57:7000/", 
+	"sensor_reg_api": "http://20.223.233.57:7005/",
+	"deployer_master": "http://20.223.233.57:9999/",
+	"load_balancer": "http://localhost:9899/", 
+	"platform_api": "http://20.223.233.57:5000/",
+	"scheduler": "http://20.223.233.57:8210/",
+	"workers": [{"name": "vm6", "ip": "20.223.161.151"}],
+	"frequency": "10"
+}
