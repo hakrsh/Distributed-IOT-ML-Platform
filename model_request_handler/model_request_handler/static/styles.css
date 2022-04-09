@@ -1,0 +1,22 @@
+.modelHeader {
+    text-align: center;
+    font-family:"font-family: 'Gill Sans', 'Gill Sans MT', Calibri";
+    margin-top: 1rem;
+    padding: 15px;
+}
+
+
+.container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.apps {
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
