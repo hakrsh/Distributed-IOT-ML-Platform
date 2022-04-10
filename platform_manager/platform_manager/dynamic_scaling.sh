@@ -9,7 +9,7 @@ mkdir -p ~/.ssh
 if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
-
+cd platform_manager
 python3 generate_dynamic_scaling_config.py
 python3 create_vms.py dynamic_servers.json
 

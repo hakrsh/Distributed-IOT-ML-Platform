@@ -9,6 +9,7 @@ import logging
 import zipfile
 import os
 import shutil
+import os
 from jsonschema import validate
 
 logging.basicConfig(level=logging.INFO)
@@ -219,8 +220,9 @@ def execute(cmd):
     subprocess.call(cmd, shell=True)
 @app.route('/create-new-vm', methods=['GET'])
 def create_vm():
-    cmd = 'bash dynamic_scaling.sh'
-    threading.Thread(target=execute, args=(cmd,)).start()
+    cmd = 'bash ./platform_manager/dynamic_scaling.sh'
+    print(os.getcwd())
+    # threading.Thread(target=execute, args=(cmd,)).start()
     return 'VM creation on progress...'
     
     

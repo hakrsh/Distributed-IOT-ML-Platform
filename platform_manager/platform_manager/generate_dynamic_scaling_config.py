@@ -8,9 +8,9 @@ number_of_vms = 1
 #     exit(1)
 platform_config = json.loads(open("platform_config.json").read())
 subscription_id = platform_config["subscription_id"]
-location = platform_config["location"]
+location = platform_config["master"]["location"]
 mongo_server = platform_config["mongo_server"]
-password = platform_config["password"]
+password = platform_config["master"]["pass"]
 
 # sub = input('Default subscription id is {}. Do you want to change it? (y/n): '.format(subscription_id))
 # if sub == 'y':
