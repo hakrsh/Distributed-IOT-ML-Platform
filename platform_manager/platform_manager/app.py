@@ -1,6 +1,4 @@
-from distutils.log import debug
 import json
-from pyexpat import model
 from flask import request, render_template, jsonify
 import requests
 import uuid
@@ -190,34 +188,18 @@ def fetch_application(ApplicationID):
     return json.dumps(data)
 
 
-@app.route('/get-load')
-def home():
-    """
-        Fetches the application and models load data from all the virtual VMs
-    """
-    url = module_config['deployer_master']
-    response = requests.get(f'{url}get-load')
-    load_url = url+"get-load"
-    load_data = json.loads(response.content.decode('utf-8'))
-    return render_template ("load-data.html", load_data = load_data, url = load_url)
-
-
 @app.route('/get-model-dashboard', methods=['GET'])
 def get_model_dashboard():
     instances = db.instances.find()
     data = []
     for instance in instances:
-        if instance['type'] == 'model':
-            print(instance)
-            logging.info('Instance: ' + instance['instance_id'])
+        if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Model: ' + instance['model_id'])
-            data.append({'ModelName': instances['model_name'],
-                        'ip': instance['ip'], 'port': instance['port'],
-                        'host': instance['hostname'],
-                        'status': instance['status']})
-    return render_template("model_dashboard.html", data = data)
-
-
+            data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
+                         'status': instance['status'], 'ip': instance['ip'],
+                         'port': instance['port'], 'host': instance['hostname']})
+    return render_template('model_dashboard.html', data=data)
+    
 @app.route('/get-running-applications', methods=['GET'])
 def get_running_applications():
     instances = db.instances.find()
@@ -233,3 +215,39 @@ def get_running_applications():
 
 def start():
     app.run(host='0.0.0.0', port=5000)
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+@app.route('/get-load')
+def home():
+    """
+        Fetches the application and models load data from all the virtual VMs
+    """
+    url = module_config['deployer_master']
+    print(url)
+    print((f'{url}get-load'))
+    response = requests.get(f'{url}get-load')
+    load_url = url+"get-load"
+    print(load_url)
+    load_data = json.loads(response.content.decode('utf-8'))
+    
+    print(type(load_data))
+    
+    return render_template ("load-data.html", load_data = load_data, url = load_url)
+
+
+@app.route('/get-load-json')
+def get_load_json():
+    """
+        Fetches the application and models load data from all the virtual VMs
+    """
+    url = module_config['deployer_master']
+    print(url)
+    print((f'{url}get-load'))
+    response = requests.get(f'{url}get-load')
+    load_url = url+"get-load"
+    print(load_url)
+    load_data = jsonify(json.loads(response.content.decode('utf-8')))
+    
+    return load_data
+

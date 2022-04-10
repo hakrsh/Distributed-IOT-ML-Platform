@@ -26,13 +26,12 @@
               <h6 class="card-subtitle mb-2 text-muted">{{ data.hostname }}</h6>
               <p class="card-text">
                   <ul>
-                    <li>
-                        IP : {{ data.ip }}
-                    </li>
-                    <li>
-                        Port : {{ data.port }}
-                    </li>   
-                  </ul>
+                        <b><li>Model Name: {{ data.model_name }}</li></b>
+                        <!-- <li>Model ID: {{ data.model_id }}</li> -->
+                        <li>Host: {{ data.host }}</li>
+                        <li>IP: {{ data.ip }}</li>
+                        <li>Port: {{ data.port }}</li>
+                        <li>Status: {{ data.status }}</li>
               </p>
             </div>
           </div>
