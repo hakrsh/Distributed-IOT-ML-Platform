@@ -2,6 +2,7 @@
 
 set -o errexit
 set -o nounset
+export DEBIAN_FRONTEND=noninteractive
 
 IFS=$(printf '\n\t')
 SECONDS=0
@@ -50,7 +51,7 @@ do
     # sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
     # cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
     sleep 2
-    sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
+    sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user > /dev/null
     echo "made $user password less - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
     sleep 1
     echo "installing docker on $worker_ip"
@@ -70,7 +71,7 @@ echo "making $user passwordless"
 # sudo -S sshpass -p $pass ssh -o 'StrictHostKeyChecking no' $user "mkdir -p .ssh"
 # cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
 sleep 2
-sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
+sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user > /dev/null
 echo "$user now has passwordless access"
 sleep 1
 echo "installing docker on $user"
@@ -121,4 +122,3 @@ echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minut
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer
 echo "Build completed - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
-

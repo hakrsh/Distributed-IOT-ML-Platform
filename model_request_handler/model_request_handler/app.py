@@ -15,7 +15,7 @@ def get_running_models():
             document = instances.find_one(document_id)
             if document['type'] == 'model' and document['status'] == 'running':
                 logging.info('Model Name: {}'.format(document['model_name']))
-                url = f'http://{document["ip"]}:{document["port"]}get-pred'
+                url = f'http://{document["ip"]}:{document["port"]}/get-pred'
                 logging.info(f'url: {url}')
                 models[document['model_id']] = url
                 logging.info('models hashmap updated')
