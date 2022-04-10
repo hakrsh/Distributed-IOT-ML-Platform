@@ -121,6 +121,7 @@ ssh $user './copy_ssh.sh' > /dev/null
 echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 scp platform_config.json $user:~/
 scp services.json $user:~/
+scp -r ~/.azure $user:~/
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer
 echo "Build completed - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
