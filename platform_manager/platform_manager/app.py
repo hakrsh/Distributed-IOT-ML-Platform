@@ -193,7 +193,7 @@ def get_model_dashboard():
     instances = db.instances.find()
     data = []
     for instance in instances:
-        if instance['type'] == 'model' and instance['status'] == 'running':
+        if instance['type'] == 'model' :
             logging.info('Model: ' + instance['model_id'])
             data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
                          'status': instance['status'], 'ip': instance['ip'],
