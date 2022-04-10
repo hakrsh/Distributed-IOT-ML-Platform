@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -o errexit
 set -o nounset
@@ -91,7 +91,7 @@ ssh $user 'sudo ./install-kafka.sh' > /dev/null
 echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 # prompt user to chose load balancer
 echo "Please choose a load balancer"
-echo "1. HAProxy"
+echo "1. HAProxy (Recommended!)"
 echo "2. IAS Group_3 Load Balancer"
 read -p "Enter your choice: " choice
 load_balancer=""

@@ -4,7 +4,7 @@ import logging
 import subprocess
 import subprocess
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO,filename='dynamic_build.log',filemode='w')
 
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())

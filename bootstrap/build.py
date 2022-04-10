@@ -4,7 +4,7 @@ import logging
 import sys
 import subprocess
 
-logging.basicConfig(filename='deploy.log', level=logging.INFO)
+logging.basicConfig(filename='deploy.log', level=logging.INFO,filemode='w')
 logging.info('Starting deploy')
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
