@@ -119,6 +119,8 @@ rm copy_ssh.sh
 ssh $user 'chmod +x copy_ssh.sh'
 ssh $user './copy_ssh.sh' > /dev/null
 echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+scp platform_config.json $user:~/
+scp services.json $user:~/
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer
 echo "Build completed - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"

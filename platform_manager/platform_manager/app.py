@@ -1,4 +1,6 @@
 import json
+import subprocess
+import threading
 from flask import request, render_template, jsonify
 import requests
 import uuid
@@ -213,6 +215,15 @@ def get_running_applications():
                         'url': url, 'app_name': instance['app_name'], 'status': instance['status']  })
     return render_template ("app_dashboard.html", data = data)
 
+def execute(cmd):
+    subprocess.call(cmd, shell=True)
+@app.route('/create-new-vm', methods=['GET'])
+def create_vm():
+    cmd = 'bash dynamic_scaling.sh'
+    threading.Thread(target=execute, args=(cmd,)).start()
+    return 'VM creation on progress...'
+    
+    
 def start():
     app.run(host='0.0.0.0', port=5000)
 

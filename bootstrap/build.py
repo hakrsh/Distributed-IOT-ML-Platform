@@ -35,6 +35,11 @@ def build(host,path,image_tag,container_name,config_path):
         elif container_name == "monitor_ha":
             client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
             config_path: {'bind': container_config_path, 'mode': 'rw'}})
+        elif container_name == "platform_manager":
+            client.containers.run(image_tag,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
+            config_path: {'bind': container_config_path, 'mode': 'rw'},
+            f"/home/{servers['master']['user']}/platform_config.json": {'bind': '/platform_manager/platform_config.json', 'mode': 'rw'},
+            f"/home/{servers['master']['user']}/services.json": {'bind': '/platform_manager/services.json', 'mode': 'rw'}})
         else:
             client.containers.run(image_tag,name=container_name, detach=True, network='host',
                                   volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})

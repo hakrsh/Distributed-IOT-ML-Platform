@@ -10,33 +10,9 @@ if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
 
-# read -p "Do you want to create new VMs? [y/n] " -n 1 -r
-# echo
-# if [[ $REPLY =~ ^[Yy]$ ]]; then
-#     read -p "Do you want to install azure cli? [y/n] " -n 1 -r
-#     echo
-#     python3 generate_dynamic_scaling_config.py
-#     if [[ $REPLY =~ ^[Yy]$ ]]; then
-#         echo "installing azure cli..."
-#         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash > /dev/null
-#         echo "Installed az-cli"
-#         echo "Installing azure cli python..."
-#         pip install azure-cli --upgrade > /dev/null
-#         echo "Installed azure cli python"
-#     fi
-#         az login
-#         echo "Logged in to azure"
-#         echo "Creating VMs..."
-#         python3 create_vms.py dynamic_servers.json
-# fi
+python3 generate_dynamic_scaling_config.py
+python3 create_vms.py dynamic_servers.json
 
-read -p "Do you want to create new VMs? [y/n] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    python3 generate_dynamic_scaling_config.py
-    echo "Creating VMs..."
-    python3 create_vms.py dynamic_servers.json
-fi
 echo "Reading dynamic_server list..."
 workers=`python3 read_json_workers.py dynamic_servers.json`
 IFS=',' ;
