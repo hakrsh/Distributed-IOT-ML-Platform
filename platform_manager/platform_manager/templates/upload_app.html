@@ -1,44 +1,87 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <title>Upload Application</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
-</head>
-
-<body>
-    <h1 style="margin: 50px;">Upload Application</h1>
-    <form action="/upload-app" method="post" style="margin: 50px;" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="app_name">Models</label>
-            <select class="form-control form-control-lg" name="model_instance_id">
-                {% for model in models %}
-                <option value= {{model.instance_id}}>{{model.ModelName}}</option>"
-                {% endfor %}
-            </select>
-        </div>
-        <label for="exampleInputEmail1">Application Name</label>
-        <input type="text" class="form-control" aria-describedby="emailHelp" placeholder="Enter App name"
-            name="ApplicationName">
-        <br>
-        <label for="exampleInputEmail1">Choose file</label>
+   <head>
+      <title>Upload Application</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+         crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js"
+         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+         crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js"
+         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+         crossorigin="anonymous"></script>
+   </head>
+   <body>
+      <h1 style="margin: 50px;">Upload Application</h1>
+      <form action="/upload-app" method="post" style="margin: 50px;" enctype="multipart/form-data">
+         <div class="form-group">
+            <label for="app_name">Application Name</label>
+            <input type="text" class="form-control" name="ApplicationName" placeholder="enter application name">
+         </div>
+         <div class="form-group">
+            <label for="app_name">Select Models...</label>
+         </div>
+         <div class="form-row">
+            <div class="form-group col-md-5">
+               <input type="text" class="form-control" placeholder="enter model name" name="model1_name">
+            </div>
+            <div class="form-group col-md-5">
+               <select id="inputState" class="form-control" name="model1_id">
+                  <option selected>Choose model...</option>
+                  {% for model in models %}
+                  <option value="{{model.model_id}}">{{model.model_name}}</option>
+                  {% endfor %}
+               </select>
+            </div>
+            <div class="form-group col-md-1">
+               <button type="button" class="btn btn-primary" id="add">Add</button>
+            </div>
+            <div class="form-group col-md-1">
+                <button type="button" class="btn btn-primary" id="remove">Remove</button>
+             </div>
+         </div>
+         <label for="exampleInputEmail1">Choose file</label>
 
         <div class="mb-3">
             <input class="form-control" type="file" name="file">
         </div>
-        <br>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-</body>
-
+         <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <script>
+        // on load set i to 1
+        var i = 1;
+        $(document).ready(function() {
+                $('#add').click(function() {
+                var html = '<div class="form-row">' +
+                    '<div class="form-group col-md-5">' +
+                    '<input type="text" class="form-control" placeholder="enter model name" name="model' + (i + 1) + '_name">' +
+                    '</div>' +
+                    '<div class="form-group col-md-5">' +
+                    '<select id="inputState" class="form-control" name="model' + (i + 1) + '_id">' +
+                    '<option selected>Choose model...</option>' +
+                    {% for model in models %}
+                    '<option value="{{model.model_id}}">{{model.model_name}}</option>' +
+                    {% endfor %}
+                    '</select>' +
+                    '</div>' +
+                    '</div>';
+                    i++;
+                $('div.form-row:last').after(html);
+                });
+            });
+        // remove button
+        $(document).ready(function() {
+                $('#remove').click(function() {
+                if (i > 1) {
+                    $('div.form-row:last').remove();
+                    i--;
+                }
+                });
+            });
+        
+      </script>
+   </body>
 </html>
