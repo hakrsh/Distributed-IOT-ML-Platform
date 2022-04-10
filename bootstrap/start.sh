@@ -9,12 +9,9 @@ mkdir -p ~/.ssh
 if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
-sudo apt -qq install sshpass jq -y
-pip3 install docker paramiko jinja2 
+sudo apt -qq install sshpass jq -y > /dev/null
+pip3 install docker paramiko jinja2 > /dev/null
 echo "installed dependencies - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
-
-
-
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -23,10 +20,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "installing azure cli..."
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash > /dev/null
         echo "Installed az-cli - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
         echo "Installing azure cli python..."
-        pip install azure-cli
+        pip install azure-cli --upgrade > /dev/null
         echo "Installed azure cli python - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
     fi
         az login
@@ -59,7 +56,7 @@ do
     echo "installing docker on $worker_ip"
     scp install-docker.sh $user:~/
     ssh $user 'chmod +x install-docker.sh'
-    ssh $user './install-docker.sh'
+    ssh $user './install-docker.sh' > /dev/null
 done
 echo "Installed docker on workers - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 # For Master
@@ -77,19 +74,19 @@ sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
 echo "$user now has passwordless access"
 sleep 1
 echo "installing docker on $user"
-ssh $user 'sudo apt-get -qq update'
-ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip sshpass -y'
-ssh $user 'pip3 install docker '
+ssh $user 'sudo apt-get -qq update' > /dev/null
+ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip sshpass -y' > /dev/null
+ssh $user 'pip3 install docker ' > /dev/null
 echo "installing docker on master"
 scp install-docker.sh $user:~/
 ssh $user 'chmod +x install-docker.sh'
-ssh $user './install-docker.sh'
+ssh $user './install-docker.sh' > /dev/null
 echo "Installed docker on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 
 echo "Installing kafka on master"
 scp install-kafka.sh $user:~/
 ssh $user 'chmod +x install-kafka.sh'
-ssh $user 'sudo ./install-kafka.sh'
+ssh $user 'sudo ./install-kafka.sh' > /dev/null
 echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 # prompt user to chose load balancer
 echo "Please choose a load balancer"
@@ -100,7 +97,7 @@ load_balancer=""
 if [ $choice -eq 1 ]; then
     load_balancer="haproxy"
     echo "Installing HAProxy"
-    ssh $user 'sudo apt-get -qq install haproxy -y'
+    ssh $user 'sudo apt-get -qq install haproxy -y' > /dev/null
     python3 config_haproxy.py platform_config.json
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
@@ -119,7 +116,7 @@ python3 copy_ssh.py platform_config.json
 scp copy_ssh.sh $user:~/
 rm copy_ssh.sh
 ssh $user 'chmod +x copy_ssh.sh'
-ssh $user './copy_ssh.sh'
+ssh $user './copy_ssh.sh' > /dev/null
 echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer

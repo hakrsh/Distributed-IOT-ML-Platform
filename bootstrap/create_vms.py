@@ -9,7 +9,7 @@ from azure.identity import AzureCliCredential
 import os
 import json
 import sys
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='create_vm.log',level=logging.INFO)
 
 credential = AzureCliCredential()
 

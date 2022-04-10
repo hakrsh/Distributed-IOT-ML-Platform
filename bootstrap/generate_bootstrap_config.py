@@ -1,9 +1,6 @@
 import json
-import logging
 from uuid import uuid4
-logging.basicConfig(level=logging.INFO)
 
-logging.info("Generating bootstrap config")
 number_of_vms = int(input("Enter number of VMs: (2-4): "))
 if number_of_vms < 2 or number_of_vms > 4:
     print("Invalid number of VMs")
@@ -49,4 +46,3 @@ server = {
 }
 with(open("platform_config.json", "w")) as f:
     json.dump(server, f)
-logging.info("Bootstrap config generated")
