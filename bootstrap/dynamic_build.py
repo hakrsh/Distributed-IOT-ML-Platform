@@ -47,15 +47,19 @@ def build(host,path,image_tag,container_name,config_path):
 def generate_service_config():
     logging.info('Generating service config')
     config = json.loads(open('../config.json').read())
+    platform_config = json.loads(open('platform_config.json').read())
     for worker in dynamic_servers['workers']:
         temp = {}
         temp['name'] = worker['user']
         temp['ip'] = worker['ip']
         config['workers'].append(temp)
+        platform_config['workers'].append(temp)
     
     logging.info('Writing config')
     with open('../config.json', 'w') as f:
         json.dump(config, f, indent=4)
+    with open('platform_config.json', 'w') as f:
+        json.dump(platform_config, f, indent=4)
     cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     logging.info('Copyied config to master')
     subprocess.call(cmd, shell=True)
