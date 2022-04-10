@@ -32,6 +32,11 @@
             "version": "1.0.0"
         },
         {
+            "name":"model_request_handler",
+            "path": "../model_request_handler",
+            "version": "1.0.0"
+        },
+        {
             "name":"monitor_ha",
             "path": "../monitor_ha",
             "version": "1.0.0"

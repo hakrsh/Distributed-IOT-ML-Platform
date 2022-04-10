@@ -8,7 +8,8 @@ from azure.identity import AzureCliCredential
 
 import os
 import json
-logging.basicConfig(level=logging.INFO)
+import sys
+logging.basicConfig(filename='create_vm.log',level=logging.INFO)
 
 credential = AzureCliCredential()
 
@@ -166,15 +167,17 @@ def create(subscription_id,vm_name,username,password,location):
     return contents[:-1]
 
 def run():
-    servers = json.loads(open('servers.json').read())
+    server_list = sys.argv[1]
+    servers = json.loads(open(server_list).read())
     subscription_id = servers['subscription_id']
-    vm_name = servers['master']['user']
-    username = servers['master']['user']
-    password = servers['master']['pass']
-    location = servers['master']['location']
-    ip = create(subscription_id,vm_name,username,password,location)
-    logging.info('Master IP: ' + ip)
-    servers['master']['ip'] = ip
+    if 'master' in servers:
+        vm_name = servers['master']['user']
+        username = servers['master']['user']
+        password = servers['master']['pass']
+        location = servers['master']['location']
+        ip = create(subscription_id,vm_name,username,password,location)
+        logging.info('Master IP: ' + ip)
+        servers['master']['ip'] = ip
     
     for worker in servers['workers']:
         vm_name = worker['user']
@@ -185,7 +188,7 @@ def run():
         logging.info('Worker IP: ' + ip)
         worker['ip'] = ip
     
-    with open('servers.json', 'w') as f:
+    with open(server_list, 'w') as f:
         json.dump(servers, f, indent=4)
 
 if __name__ == "__main__":

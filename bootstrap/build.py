@@ -4,11 +4,11 @@ import logging
 import sys
 import subprocess
 
-logging.basicConfig(level=logging.INFO)
-
+logging.basicConfig(filename='deploy.log', level=logging.INFO)
+logging.info('Starting deploy')
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open('platform_config.json').read())
 load_balancer = sys.argv[1]
 
 def build(host,path,image_tag,container_name,config_path):
@@ -62,6 +62,7 @@ def generate_service_config():
         "load_balancer": "http://localhost:9899/",
         "platform_api": "http://" + master_ip + ":5000/",
         "scheduler": "http://" + master_ip + ":8210/",
+        "model_req_handler": "http://" + master_ip + ":5050/",
         "workers": workers,
         "frequency": "10" 
     }
@@ -74,18 +75,17 @@ def generate_service_config():
     cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     logging.info('Copyied config to master')
     subprocess.call(cmd, shell=True)
-    # for service in services['services']:
-    #     path = '../' + service['name'] + '/' + service['name'] + '/config.json'
-    #     with open(path, 'w') as outfile:
-    #         json.dump(service_config, outfile)
-    #     logging.info('Wrote service config to ' + path)
+    for service in services['services']:
+        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+        with open(path, 'w') as outfile:
+            json.dump(service_config, outfile)
+        logging.info('Wrote service config to ' + path)
     
 def start_service():
     generate_service_config()
     logging.info('Starting service')
     for service in services['services']:
         image_name = f'{service["name"]}:{service["version"]}'
-        logging.info('building image ' + image_name)
         host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
         # host = 'unix://var/run/docker.sock'
         if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':

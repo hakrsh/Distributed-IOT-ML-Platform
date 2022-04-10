@@ -20,9 +20,9 @@ def deploy_model_thread(model_id, instance_id):
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
         f.write(fs.get(model['content']).read())
     logging.info('Got model: ' + model_id + ' from database')
-    image_name = aiDeployer.run(f'/tmp/{instance_id}.zip', instance_id)
+    aiDeployer.run(f'/tmp/{instance_id}.zip', instance_id)
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
-                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id}).start()
+                     'image_tag': model['ModelName'].lower(), 'instance_id': instance_id, 'package': instance_id}).start()
 
 
 @app.route('/model', methods=['POST'])

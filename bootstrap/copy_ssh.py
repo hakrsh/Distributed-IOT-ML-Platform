@@ -1,9 +1,6 @@
 import json
-import logging
 import sys
 
-logging.basicConfig(level=logging.INFO)
-logging.info('Reading config files')
 server_list = sys.argv[1]
 servers = json.loads(open(server_list).read())
 

@@ -13,6 +13,9 @@ fi
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    read -p "Do you want to install azure cli? [y/n] " -n 1 -r
+    echo
+    python3 generate_dynamic_scaling_config.py
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "installing azure cli..."
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -20,11 +23,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Installing azure cli python..."
         pip install azure-cli
         echo "Installed azure cli python"
+    fi
         az login
         echo "Logged in to azure"
         echo "Creating VMs..."
-        python3 create_vms.py
-    fi
+        python3 create_vms.py dynamic_servers.json
 fi
 
 echo "Reading dynamic_server list..."
@@ -53,6 +56,10 @@ do
 done
 
 echo "making passwordless access to workers from master"
+master=`python3 read_json_master.py platform_config.json`
+holder=($(echo $master | sed s/~/\\n/g))
+user=`echo "${holder}" | head -1`
+echo $user
 python3 copy_ssh.py dynamic_servers.json
 scp copy_ssh.sh $user:~/
 rm copy_ssh.sh

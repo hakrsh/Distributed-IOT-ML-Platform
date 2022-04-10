@@ -1,16 +1,16 @@
 import docker
 import json
 import logging
-import sys
+import subprocess
 import subprocess
 
 logging.basicConfig(level=logging.INFO)
 
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
-servers = json.loads(open('servers.json').read())
+servers = json.loads(open('platform_config.json').read())
 dynamic_servers = json.loads(open('dynamic_servers.json').read())
-load_balancer = sys.argv[1]
+
 
 def build(host,path,image_tag,container_name,config_path):
     logging.info('Connecing to ' + host)
@@ -46,21 +46,48 @@ def build(host,path,image_tag,container_name,config_path):
 
 def generate_service_config():
     logging.info('Generating service config')
-    master_ip = servers['master']['ip']
-    workers = []
+    config = json.loads(open('../config.json').read())
     for worker in dynamic_servers['workers']:
         temp = {}
         temp['name'] = worker['user']
         temp['ip'] = worker['ip']
-        workers.append(temp)
-    config = json.loads(open('../config.json').read())
-    config['workers'].append(workers)
+        config['workers'].append(temp)
+    
     logging.info('Writing config')
     with open('../config.json', 'w') as f:
         json.dump(config, f, indent=4)
     cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     logging.info('Copyied config to master')
     subprocess.call(cmd, shell=True)
+    logging.info('Updating config.json')
+    for service in services['services']:
+        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+        with open(path, 'w') as outfile:
+            json.dump(config, outfile)
+        logging.info('Update config ' + path)
+    
+def restart_services():
+    logging.info('Restarting services')
+    host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
+    logging.info('Connecting to ' + host)
+    client = docker.DockerClient(base_url=host)
+    logging.info('Connected to Docker')
+    services = ['deployer_master','monitor_ha','monitor_log_aggregator','load_balancer']
+    for service in services:
+        container = client.containers.get(service)
+        logging.info('Restarting ' + service)
+        container.restart()
+        logging.info('Restarted ' + service)
+    logging.info('Updating haproxy config')
+    cmd = 'python3 config_haproxy.py dynamic_servers.json'
+    subprocess.call(cmd, shell=True)
+    logging.info('Copy haproxy config to master')
+    cmd = 'scp haproxy.cfg ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    subprocess.call(cmd, shell=True)
+    logging.info('Restarting haproxy')
+    cmd = 'ssh ' + servers['master']['user'] + '@' + servers['master']['ip'] + ' "sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg && sudo systemctl restart haproxy"'
+    subprocess.call(cmd, shell=True)
+    
     
     
 def start_service():
@@ -68,10 +95,9 @@ def start_service():
     logging.info('Starting service')
     for service in services['services']:
         image_name = f'{service["name"]}:{service["version"]}'
-        logging.info('building image ' + image_name)
         # host = 'unix://var/run/docker.sock'
         if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
-            for worker in servers['workers']:
+            for worker in dynamic_servers['workers']:
                 host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
                 data = json.load(open('../config.json'))
                 data['host_ip'] = worker['ip']
@@ -86,5 +112,7 @@ def start_service():
                 build(host,service['path'],image_name,service['name'],config_path)
         
     logging.info('new servers added')
+    restart_services()
+    logging.info('Dynamic scaling complete')
 
 start_service()

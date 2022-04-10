@@ -4,37 +4,38 @@ set -o errexit
 set -o nounset
 
 IFS=$(printf '\n\t')
-
+SECONDS=0
 mkdir -p ~/.ssh
 if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
-sudo apt -qq install sshpass jq -y
-pip3 install docker paramiko jinja2 
-echo "installed dependencies"
-
+sudo apt -qq install sshpass jq -y > /dev/null
+pip3 install docker paramiko jinja2 > /dev/null
+echo "installed dependencies - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    python3 generate_bootstrap_config.py
     read -p "Do you want to install azure cli? [y/n] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "installing azure cli..."
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-        echo "Installed az-cli"
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash > /dev/null
+        echo "Installed az-cli - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
         echo "Installing azure cli python..."
-        pip install azure-cli
-        echo "Installed azure cli python"
-        az login
-        echo "Logged in to azure"
-        echo "Creating VMs..."
-        python3 create_vms.py
+        pip install azure-cli --upgrade > /dev/null
+        echo "Installed azure cli python - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
     fi
+        az login
+        echo "Logged in to azure - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+        echo "Creating VMs..."
+        python3 create_vms.py platform_config.json
 fi
 sleep 2
+echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "Reading server list..."
-master=`python3 read_json_master.py servers.json`
-workers=`python3 read_json_workers.py servers.json`
+master=`python3 read_json_master.py platform_config.json`
+workers=`python3 read_json_workers.py platform_config.json`
 IFS=',' ;
 worker_ips=""
 for i in $workers ; 
@@ -50,13 +51,14 @@ do
     # cat ~/.ssh/id_rsa.pub | sudo sshpass -p $pass ssh $user  'cat >> .ssh/authorized_keys'
     sleep 2
     sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
-    echo "made $user password less"
+    echo "made $user password less - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
     sleep 1
     echo "installing docker on $worker_ip"
     scp install-docker.sh $user:~/
     ssh $user 'chmod +x install-docker.sh'
-    ssh $user './install-docker.sh'
+    ssh $user './install-docker.sh' > /dev/null
 done
+echo "Installed docker on workers - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 # For Master
 holder=($(echo $master | sed s/~/\\n/g))
 user=`echo "${holder}" | head -1`
@@ -72,29 +74,31 @@ sshpass -p $pass ssh-copy-id -o StrictHostKeyChecking=no $user
 echo "$user now has passwordless access"
 sleep 1
 echo "installing docker on $user"
-ssh $user 'sudo apt-get -qq update'
-ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip sshpass -y'
-ssh $user 'pip3 install docker '
+ssh $user 'sudo apt-get -qq update' > /dev/null
+ssh $user 'sudo apt-get -qq install python3 default-jre python3-pip sshpass -y' > /dev/null
+ssh $user 'pip3 install docker ' > /dev/null
 echo "installing docker on master"
 scp install-docker.sh $user:~/
 ssh $user 'chmod +x install-docker.sh'
-ssh $user './install-docker.sh'
+ssh $user './install-docker.sh' > /dev/null
+echo "Installed docker on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 
 echo "Installing kafka on master"
 scp install-kafka.sh $user:~/
 ssh $user 'chmod +x install-kafka.sh'
-ssh $user 'sudo ./install-kafka.sh'
+ssh $user 'sudo ./install-kafka.sh' > /dev/null
+echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 # prompt user to chose load balancer
 echo "Please choose a load balancer"
 echo "1. HAProxy"
-echo "2. IAS Group 3 Load Balancer"
+echo "2. IAS Group_3 Load Balancer"
 read -p "Enter your choice: " choice
 load_balancer=""
 if [ $choice -eq 1 ]; then
     load_balancer="haproxy"
     echo "Installing HAProxy"
-    ssh $user 'sudo apt-get -qq install haproxy -y'
-    python3 config_haproxy.py
+    ssh $user 'sudo apt-get -qq install haproxy -y' > /dev/null
+    python3 config_haproxy.py platform_config.json
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
     rm haproxy.cfg
@@ -102,16 +106,19 @@ if [ $choice -eq 1 ]; then
     ssh $user 'sudo systemctl restart haproxy.service'
 elif [ $choice -eq 2 ]; then
     load_balancer="ias"
-    echo "Installing IAS Group 3 Load Balancer"
 else
-    echo "Invalid choice"
+    load_balancer="ias"
+    echo "Invald choice. Defaulting to IAS Group_3 Load Balancer"
 fi
+echo "Installed load balancer - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "making passwordless access to workers from master"
-python3 copy_ssh.py servers.json
+python3 copy_ssh.py platform_config.json
 scp copy_ssh.sh $user:~/
 rm copy_ssh.sh
 ssh $user 'chmod +x copy_ssh.sh'
-ssh $user './copy_ssh.sh'
+ssh $user './copy_ssh.sh' > /dev/null
+echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "!!!!!!!!!!!!!!!!BUILD STARTED!!!!!!!!!!!!!!!!!!!!"
 python3 build.py $load_balancer
-echo "!!!!!!!!!!!!!!!!BUILD COMPLETED!!!!!!!!!!!!!!!!!!!!"
+echo "Build completed - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+

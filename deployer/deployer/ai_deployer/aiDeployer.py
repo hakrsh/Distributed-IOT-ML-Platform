@@ -1,4 +1,3 @@
-import json
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -9,9 +8,6 @@ def run(package, model_id):
         zip_ref.extractall('/tmp/'+model_id)
     logging.info('Extracted package: ' + package)
 
-    contract = json.load(open(f'/tmp/{model_id}/model/model_contract.json'))
-    endpoint = contract['endpoint']
-    image_name = contract['name']
     # generate server.py
     server_code = ''
     server_code += "from flask import Flask, request\n"
@@ -23,8 +19,8 @@ def run(package, model_id):
     server_code += "def index():\n"
     server_code += "    return 'Model is running!'\n"
     server_code += "\n"
-    server_code += f"@app.route('/{endpoint}', methods=['POST'])\n"
-    server_code += f"def {endpoint}():\n"
+    server_code += "@app.route('/get-pred', methods=['POST'])\n"
+    server_code += "def get_pred():\n"
     server_code += "    data = preprocess(request.json)\n"
     server_code += "    model=None\n"
     server_code += "    try:\n"
@@ -37,7 +33,7 @@ def run(package, model_id):
     server_code += "    return postprocess(pred)\n"
     server_code += "\n"
     server_code += "if __name__ == \"__main__\":\n"
-    server_code += f"    app.run(host='0.0.0.0', port=80)\n"
+    server_code += "    app.run(host='0.0.0.0', port=80)\n"
     logging.info('Generated server.py')
 
     with open(f'/tmp/{model_id}/model/server.py', 'w') as f:
@@ -55,4 +51,3 @@ CMD [ "python3","server.py" ]"""
         f.write(dockerfile)
     logging.info('Wrote Dockerfile')
     logging.info('Ready to build the model image')
-    return image_name
