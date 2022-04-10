@@ -15,8 +15,7 @@ def get_running_models():
             document = instances.find_one(document_id)
             if document['type'] == 'model' and document['status'] == 'running':
                 logging.info('Model Name: {}'.format(document['model_name']))
-                endpoint = db.models.find_one({"ModelId": document['model_id']})['model_contract']['endpoint']
-                url = f'http://{document["ip"]}:{document["port"]}/{endpoint}'
+                url = f'http://{document["ip"]}:{document["port"]}get-pred'
                 logging.info(f'url: {url}')
                 models[document['model_id']] = url
                 logging.info('models hashmap updated')
@@ -25,7 +24,7 @@ def get_running_models():
 def index():
     return 'Model request handler running!'
 
-@app.route('/get-pred/<ModelId>', methods=['POST'])
+@app.route('/<ModelId>', methods=['POST'])
 def get_model(ModelId):
     logging.info('ModelId: ' + ModelId)
     if ModelId in models:    
