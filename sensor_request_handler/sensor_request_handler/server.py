@@ -20,6 +20,7 @@ logging.info("Connected to database")
 
 db = client["sensors"]
 sensor_config = db["sensordetails"]
+controller_config = db["controllerdetails"]
 logging.info("Sensor database created")
 
 app = Flask(__name__)
@@ -67,7 +68,6 @@ def getAllSensors():
         sensorinfo["sensor_location"] = document["Location"]
         list_of_sensors.append(sensorinfo)
     return jsonify(list_of_sensors)
-
 
 @app.route("/data/<sensor_id>")
 def getSensorData(sensor_id):

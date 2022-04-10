@@ -37,6 +37,4 @@ def start_all_threads(producer, sensor_config):
     sensors_cursor = sensor_config.find({})
     for document in sensors_cursor:
         logging.info("Starting thread for {}".format(document['topic_id']))
-        # thread1 = thread(document['topic_id'], document['IP'], document['PORT'], document['QueryFrequency'], producer)
-        # thread1.start()
         producerStart(document['IP'], document['PORT'] , document['QueryFrequency'], document['topic_id'], producer)
