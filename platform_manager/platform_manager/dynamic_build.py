@@ -51,11 +51,8 @@ def generate_service_config():
     config = json.loads(open('config.json').read())
     platform_config = json.loads(open('platform_config.json').read())
     for worker in dynamic_servers['workers']:
-        temp = {}
-        temp['name'] = worker['user']
-        temp['ip'] = worker['ip']
-        config['workers'].append(temp)
-        platform_config['workers'].append(temp)
+        config['workers'].append(worker)
+        platform_config['workers'].append(worker)
     
     logging.info('Writing config')
     with open('config.json', 'w') as f:
@@ -78,11 +75,12 @@ def restart_services():
     logging.info('Updating haproxy config')
     cmd = 'python3 config_haproxy.py dynamic_servers.json'
     subprocess.call(cmd, shell=True)
+    logging.info('Restarting haproxy')
     logging.info('Copy haproxy config to master')
-    cmd = 'scp haproxy.cfg ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    cmd = f"sshpass -p {servers['master']['pass']} scp -o StrictHostKeyChecking=no haproxy.cfg " + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
     subprocess.call(cmd, shell=True)
     logging.info('Restarting haproxy')
-    cmd = 'ssh ' + servers['master']['user'] + '@' + servers['master']['ip'] + ' "sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg && sudo systemctl restart haproxy"'
+    cmd = f"sshpass -p {servers['master']['pass']} ssh -o StrictHostKeyChecking=no " + servers['master']['user'] + '@' + servers['master']['ip'] + ' "sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg && sudo systemctl restart haproxy"'
     subprocess.call(cmd, shell=True)
     
 def start_service():
