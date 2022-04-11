@@ -28,7 +28,7 @@ password = platform_config["master"]["pass"]
 workers = []
 for i in range(number_of_vms):
     worker = {
-        "user": 'worker_'+str(uuid4())[:4],
+        "user": 'w'+str(uuid4())[:4],
         "ip": "",
         "pass": password,
         "location": location,

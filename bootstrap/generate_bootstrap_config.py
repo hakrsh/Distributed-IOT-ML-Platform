@@ -26,7 +26,7 @@ if passwd == 'y':
 workers = []
 for i in range(number_of_vms-1):
     worker = {
-        "user": 'worker_'+str(uuid4())[:4],
+        "user": 'w'+str(uuid4())[:4],
         "ip": "",
         "pass": password,
         "location": location,
@@ -35,7 +35,7 @@ for i in range(number_of_vms-1):
 
 server = {
     "master": {
-        "user": 'master_'+str(uuid4())[:4],
+        "user": 'm'+str(uuid4())[:4],
         "ip": "",
         "pass": password,
         "location": location
