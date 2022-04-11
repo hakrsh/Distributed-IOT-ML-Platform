@@ -12,7 +12,7 @@ fi
 cd platform_manager
 python3 generate_dynamic_scaling_config.py
 python3 create_vms.py dynamic_servers.json
-
+sleep 10
 echo "Reading dynamic_server list..."
 workers=`python3 read_json_workers.py dynamic_servers.json`
 IFS=',' ;

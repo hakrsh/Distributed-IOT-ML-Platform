@@ -32,7 +32,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Creating VMs..."
         python3 create_vms.py platform_config.json
 fi
-sleep 2
+sleep 10
 echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 echo "Reading server list..."
 master=`python3 read_json_master.py platform_config.json`
