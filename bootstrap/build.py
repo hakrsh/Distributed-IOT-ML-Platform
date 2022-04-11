@@ -43,7 +43,8 @@ def build(host,path,image_name,container_name,config_path):
             config_path: {'bind': container_config_path, 'mode': 'rw'},
             f"/home/{servers['master']['user']}/platform_config.json": {'bind': '/platform_manager/platform_config.json', 'mode': 'rw'},
             f"/home/{servers['master']['user']}/services.json": {'bind': '/platform_manager/services.json', 'mode': 'rw'},
-            f"/home/{servers['master']['user']}/.azure": {'bind': '/root/.azure', 'mode': 'rw'}})
+            f"/home/{servers['master']['user']}/.azure": {'bind': '/root/.azure', 'mode': 'rw'},
+            '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
         else:
             client.containers.run(image_name,name=container_name, detach=True, network='host',
                                   volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})

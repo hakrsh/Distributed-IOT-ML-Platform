@@ -65,7 +65,7 @@ def generate_service_config():
     
 def restart_services():
     logging.info('Restarting services')
-    host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
+    host = 'unix://var/run/docker.sock'
     logging.info('Connecting to ' + host)
     client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
@@ -94,13 +94,13 @@ def start_service():
         if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
             for worker in dynamic_servers['workers']:
                 host = 'ssh://' + worker['user'] + '@' + worker['ip'] 
-                data = json.load(open('../config.json'))
+                data = json.load(open('config.json'))
                 data['host_ip'] = worker['ip']
                 data['host_name'] = worker['user']
-                with open('../config.json', 'w') as outfile:
+                with open('config.json', 'w') as outfile:
                     json.dump(data, outfile)
                 logging.info('Updating config.json')
-                cmd = 'scp ../config.json ' + worker['user'] + '@' + worker['ip'] + ':~/'
+                cmd = 'scp config.json ' + worker['user'] + '@' + worker['ip'] + ':~/'
                 logging.info('Copying config to worker')
                 subprocess.call(cmd, shell=True)
                 config_path = f'/home/{worker["user"]}/config.json'

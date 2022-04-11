@@ -38,16 +38,16 @@ do
     ssh $user './install-docker.sh' > /dev/null
 done
 
-echo "making passwordless access to workers from master"
-master=`python3 read_json_master.py platform_config.json`
-holder=($(echo $master | sed s/~/\\n/g))
-user=`echo "${holder}" | head -1`
-echo $user
-python3 copy_ssh.py dynamic_servers.json
-scp copy_ssh.sh $user:~/ > /dev/null
-rm copy_ssh.sh
-ssh $user 'chmod +x copy_ssh.sh'
-ssh $user './copy_ssh.sh' > /dev/null
+# echo "making passwordless access to workers from master"
+# master=`python3 read_json_master.py platform_config.json`
+# holder=($(echo $master | sed s/~/\\n/g))
+# user=`echo "${holder}" | head -1`
+# echo $user
+# python3 copy_ssh.py dynamic_servers.json
+# scp copy_ssh.sh $user:~/ > /dev/null
+# rm copy_ssh.sh
+# ssh $user 'chmod +x copy_ssh.sh'
+# ssh $user './copy_ssh.sh' > /dev/null
 echo "!!!!!!!!!!!!!!!! DYNAMIC BUILD STARTED !!!!!!!!!!!!!!!!!!!!"
 python3 dynamic_build.py
 echo "!!!!!!!!!!!!!!!! DYNAMIC BUILD COMPLETED !!!!!!!!!!!!!!!!!!!!"
