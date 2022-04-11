@@ -9,7 +9,7 @@ services = json.loads(open('services.json').read())
 client = docker.from_env()
 client.login(username=services['username'], password=services['password'])
 for service in services['services']:
-    image_name = f'{service["username"]}/{service["name"]}'
+    image_name = f'{services["username"]}/{service["name"]}'
     logging.info(f'Building image {image_name}')
     client.images.build(path=service["path"], tag=image_name)
     logging.info(f'Pushing image {image_name}')
