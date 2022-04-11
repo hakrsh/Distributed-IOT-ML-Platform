@@ -50,8 +50,11 @@ def generate_service_config():
     logging.info('Generating service config')
     config = json.loads(open('config.json').read())
     platform_config = json.loads(open('platform_config.json').read())
+    temp = {}
     for worker in dynamic_servers['workers']:
-        config['workers'].append(worker)
+        temp['name'] = worker['user']
+        temp['ip'] = worker['ip']
+        config['workers'].append(temp)
         platform_config['workers'].append(worker)
     
     logging.info('Writing config')
