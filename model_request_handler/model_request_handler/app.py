@@ -1,8 +1,7 @@
 from flask import request
 import requests
 from model_request_handler import app, db, models
-import logging
-import json 
+import logging 
 logging.basicConfig(level=logging.INFO)
 
 def get_running_models():
@@ -18,9 +17,12 @@ def get_running_models():
                 url = f'http://{document["ip"]}:{document["port"]}/get-pred'
                 logging.info(f'url: {url}')
                 models[document['model_id']] = url
-                logging.info('models hashmap updated')
-                with open('models.json', 'w') as f:
-                    json.dump(models, f)
+                if len(list(db.model_map.find())) != 0:
+                    db.model_map.delete_many({})
+                db.model_map.insert_one(models)
+                logging.info('model_map updated')
+
+
 
 @app.route('/')
 def index():

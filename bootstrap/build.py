@@ -45,10 +45,6 @@ def build(host,path,image_name,container_name,config_path):
             f"/home/{servers['master']['user']}/services.json": {'bind': '/platform_manager/services.json', 'mode': 'rw'},
             f"/home/{servers['master']['user']}/.azure": {'bind': '/root/.azure', 'mode': 'rw'},
             '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
-        elif container_name == "model_request_handler":
-            client.containers.run(image_name,name=container_name, detach=True, network='host',
-                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'},
-                                  f"/home/{servers['master']['user']}/models.json": {'bind': '/model_request_handler/models.json', 'mode': 'rw'}})
         else:
             client.containers.run(image_name,name=container_name, detach=True, network='host',
                                   volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})
