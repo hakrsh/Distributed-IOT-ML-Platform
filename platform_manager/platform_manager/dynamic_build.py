@@ -73,7 +73,7 @@ def restart_services():
         container.restart()
         logging.info('Restarted ' + service)
     logging.info('Updating haproxy config')
-    cmd = 'python3 config_haproxy.py dynamic_servers.json'
+    cmd = 'python3 config_haproxy.py'
     subprocess.call(cmd, shell=True)
     logging.info('Restarting haproxy')
     logging.info('Copy haproxy config to master')

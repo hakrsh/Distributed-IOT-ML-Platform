@@ -99,7 +99,7 @@ if [ $choice -eq 1 ]; then
     load_balancer="haproxy"
     echo "Installing HAProxy"
     ssh $user 'sudo apt-get -qq install haproxy -y' > /dev/null
-    python3 config_haproxy.py platform_config.json
+    python3 config_haproxy.py
     scp haproxy.cfg $user:~/
     ssh $user 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
     rm haproxy.cfg
