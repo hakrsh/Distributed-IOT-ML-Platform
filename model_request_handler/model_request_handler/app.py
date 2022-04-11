@@ -2,7 +2,7 @@ from flask import request
 import requests
 from model_request_handler import app, db, models
 import logging
-
+import json 
 logging.basicConfig(level=logging.INFO)
 
 def get_running_models():
@@ -19,6 +19,8 @@ def get_running_models():
                 logging.info(f'url: {url}')
                 models[document['model_id']] = url
                 logging.info('models hashmap updated')
+                with open('models.json', 'w') as f:
+                    json.dump(models, f)
 
 @app.route('/')
 def index():

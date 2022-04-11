@@ -5,7 +5,7 @@ import importlib.resources as pkg_resources
 
 
 app = Flask(__name__)
-models = {}
+models = json.loads(pkg_resources.read_text(__name__, 'models.json'))
 module_config = json.loads(
     pkg_resources.read_binary('model_request_handler', 'config.json'))
 
