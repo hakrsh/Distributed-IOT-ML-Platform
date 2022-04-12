@@ -31,9 +31,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Logged in to azure - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
         echo "Creating VMs..."
         python3 create_vms.py platform_config.json
+        sleep 10
+        echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 fi
-sleep 10
-echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+
 echo "Reading server list..."
 master=`python3 read_json_master.py platform_config.json`
 workers=`python3 read_json_workers.py platform_config.json`

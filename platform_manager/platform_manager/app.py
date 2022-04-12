@@ -232,7 +232,7 @@ def get_model_dashboard():
             data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
                          'status': instance['status'], 'ip': instance['ip'],
                          'port': instance['port'], 'host': instance['hostname'],
-                         'url': 'http://localhost:5000/view-readme/' + instance['model_id']})
+                         'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id']})
     return render_template('model_dashboard.html', data=data)
 
 @app.route('/get-running-applications', methods=['GET'])
