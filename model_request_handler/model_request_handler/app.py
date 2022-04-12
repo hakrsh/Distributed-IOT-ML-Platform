@@ -40,6 +40,8 @@ def get_model(ModelId):
 
 @app.route('/get-all-models', methods=['GET'])
 def get_all_models():
+    if '_id' in models:
+        del models['_id']
     return models
 
 def start():
