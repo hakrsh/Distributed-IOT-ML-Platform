@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html>
+    
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+
 <style>
     body {
         font-family: Arial, Helvetica, sans-serif;
@@ -136,10 +141,26 @@
 </style>
 
 <body>
-    <form method="post" style="border:1px solid #ccc">
+    <form method="post" style="border:1px solid #ccc" action="/users/signup">
         <div class="container">
+            
             <h1>Sign Up</h1>
-            <p>Please fill in this form to create an account.</p>
+            <div>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                      {% for category, message in messages %}
+                          {% if category == 'message' %}
+                            <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                          {% else %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                          {% endif %}
+                            {{ message }}
+                          </div>
+                      {% endfor %}
+                    {% endif %}
+                {% endwith %}
+              </div>
+            <!-- <p>Please fill in this form to create an account.</p> -->
             <hr>
 
             <label for="username">Username</label>
@@ -153,11 +174,10 @@
 
             <label for="role"><b>Select Role</b></label>
             <select name="role">
-      <option value="ai-dev">Data Sc
-        ientist</option>
-      <option value="app-dev">App Developer</option>
-      <option value="snsr-mngr">Sensor Manager</option>
-      <option value="plt-mngr">Platform Manager</option>
+      <option value="ai_dev">Data Scientist</option>
+      <option value="app_dev">App Developer</option>
+      <option value="snsr_mngr">Sensor Manager</option>
+      <option value="plt_mngr">Platform Manager</option>
       <option value="scheduler">Scheduler</option>
     </select>
 
@@ -168,6 +188,11 @@
             <a href="login"><button type="button" class="checkbtn">Already have an account? Login</button></a>
         </div>
     </form>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 
 </html>

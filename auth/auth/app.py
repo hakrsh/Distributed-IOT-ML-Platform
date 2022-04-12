@@ -1,9 +1,7 @@
-from flask import request, render_template, redirect
+from flask import flash, request, render_template, redirect
 from auth import app, db, module_config
 
-# client = MongoClient('mongodb+srv://root:root@ias.tu9ec.mongodb.net/')
-# db = client.users
-
+app.secret_key = 'super secret key'
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -19,23 +17,27 @@ def signup():
         return render_template('signup.html')
     elif request.method == 'POST':
         req = request.form
-        username, role, passwd = req.get(
-            'username'), req.get('role'), req.get('password')
+        username, role, passwd,passwd_repeat = req.get(
+            'username'), req.get('role'), req.get('password'), req.get('password_repeat')
+        # if passwd != passwd_repeat:
+        #     flash('Passwords do not match', 'error')
+        #     return render_template('signup.html')
         collection = db[role]
-        cid = collection.find_one({'username': username, 'password': passwd})
-        response = {}
-        response['user'] = username
-        response['password'] = passwd
-        response['role'] = role
-        response['action'] = 'signup'
-        if cid is None:
-            cid = collection.insert_one(
+        if collection.find_one({'username': username}):
+            flash('Username already exists', 'error')
+            return render_template('signup.html')
+        else:
+            response = {}
+            response['user'] = username
+            response['password'] = passwd
+            response['role'] = role
+            response['action'] = 'signup'
+            collection.insert_one(
                 {'username': username, 'password': passwd})
             response['status'] = 200
+            flash('User created successfully!', 'success')
             return redirect('/users/login')
-        else:
-            response['status'] = 500
-        return render_template('login.html', response=response)
+
 
 
 @app.route('/users/login', methods=['GET', 'POST'])
@@ -47,30 +49,31 @@ def login():
         username, role, passwd = req.get(
             'username'), req.get('role'), req.get('password')
         collection = db[role]
-        cid = collection.find_one({'username': username, 'password': passwd})
-        response = {}
-        response['user'] = username
-        response['password'] = passwd
-        response['role'] = role
-        response['status'] = 200
-        response['action'] = 'login'
-        if cid is None:  # invalid
-            response['status'] = 500
-            return render_template('login.html', response=response)
-        if role == 'ai-dev':
-            # response['ip'] = module_config['model_dash']
-            return render_template('model-dash.html', response=response, url=module_config['platform_api'])
-        elif role == 'app-dev':
-            return render_template('application-dash.html', response=response, url=module_config['platform_api'])
-        elif role == 'plt-mngr':
-            return render_template('application-dash.html', response=response, url=module_config['platform_api'])
-        elif role == 'snsr-mngr':
-            return render_template('sensor-dash.html', response=response, url=module_config['sensor_reg_api'])
-        elif role == 'scheduler':
-            return render_template('scheduler-dash.html', response=response, url=module_config['scheduler'])
-
-        return render_template('login.html', response=response)
-
+        if collection.find_one({'username' : username}) is None:
+            flash('User not authorized', 'danger')
+            return redirect('/users/login')
+        elif collection.find_one({'username' : username, 'password' : passwd}) is None:
+            flash('Wrong password', 'danger')
+            return redirect('/users/login')
+        else:
+            flash('User authorized', 'success')
+            response = {}
+            response['user'] = username
+            response['password'] = passwd
+            response['role'] = role
+            response['status'] = 200
+            response['action'] = 'login'
+            if role == 'ai_dev':
+                # response['ip'] = module_config['model_dash']
+                return render_template('model-dash.html', response=response, url=module_config['platform_api'])
+            elif role == 'app_dev':
+                return render_template('application-dash.html', response=response, url=module_config['platform_api'])
+            elif role == 'plt_mngr':
+                return render_template('application-dash.html', response=response, url=module_config['platform_api'])
+            elif role == 'snsr_mngr':
+                return render_template('sensor-dash.html', response=response, url=module_config['sensor_reg_api'])
+            elif role == 'scheduler':
+                return render_template('scheduler-dash.html', response=response, url=module_config['scheduler'])
 
 def start():
     # app.run(debug=True)
