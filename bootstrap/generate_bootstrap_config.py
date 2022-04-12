@@ -11,7 +11,7 @@ location = "northeurope"
 mongo_server = "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority"
 password = "Hackathon@2022"
 
-sub = input('Default subscription id is {}. Do you want to change it? (y/n): '.format(subscription_id))
+sub = input('Default subscription id is {}. Do you want to change it? (y/n): '.format(subscription_id[:6] + '...'))
 if sub == 'y':
     subscription_id = input("Enter subscription id: ")
 loc = input(f'Default location is {location} for vm creation Do you want to change it? (y/n): ')
@@ -20,7 +20,7 @@ if loc == 'y':
 mongo = input('Do you want to change mongo server? (y/n): ')
 if mongo == 'y':
     mongo_server = input("Enter mongo server: ")
-passwd = input(f'Default password is {password} for vm creation Do you want to change it? (y/n): ')
+passwd = input(f'Do you want to change the default password? (y/n): ')
 if passwd == 'y':
     password = input("Enter password: ")
 workers = []
