@@ -1,6 +1,7 @@
 from flask import request
 import requests
 from model_request_handler import app, db, models
+from bson.json_util import dumps
 import logging 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,9 +41,7 @@ def get_model(ModelId):
 
 @app.route('/get-all-models', methods=['GET'])
 def get_all_models():
-    if '_id' in models:
-        del models['_id']
-    return models
+    return dumps(models)
 
 def start():
     app.run(host='0.0.0.0', port=5050)
