@@ -10,14 +10,17 @@ import zipfile
 import os
 import shutil
 import os
+import httpx
 from jsonschema import validate
 
 logging.basicConfig(level=logging.INFO)
+
 
 def clear(path):
     os.remove(path + '.zip')
     shutil.rmtree(path)
     logging.info('Temp files removed')
+
 
 @app.route('/')
 def index():
@@ -54,18 +57,22 @@ def upload_model():
         if not os.path.exists('/tmp/' + ModelId + '/model/postprocessing.py'):
             clear('/tmp/' + ModelId)
             return 'postprocessing.py not found'
-        
+        if not os.path.exists('/tmp/' + ModelId + '/model/readme.md'):
+            clear('/tmp/' + ModelId)
+            return 'readme.md not found'
+        readme = open('/tmp/' + ModelId + '/model/readme.md', 'r').read()
         logging.info('Model validation passed...')
         logging.info('Uploading model...')
         file = fs.put(content, filename=ModelId+'.zip')
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,
-                              "content": file})
+                              "content": file, "readme":readme})
         logging.info('Model uploaded successfully')
         clear('/tmp/' + ModelId)
         url = module_config['deployer_master'] + '/model'
         logging.info('Sending model to deployer')
 
-        response = requests.post(url, json={"ModelId": ModelId,"model_name":model_name}).content
+        response = requests.post(
+            url, json={"ModelId": ModelId, "model_name": model_name}).content
 
         return response.decode('ascii')
 
@@ -77,7 +84,8 @@ def get_running_models():
     for instance in instances:
         if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Model: ' + instance['model_id'])
-            data.append({'model_id': instance['model_id'], 'model_name': instance['model_name']})
+            data.append(
+                {'model_id': instance['model_id'], 'model_name': instance['model_name']})
     return json.dumps(data)
 
 
@@ -85,7 +93,7 @@ def get_running_models():
 def upload_app():
     if request.method == 'GET':
         running_models = json.loads(get_running_models())
-        return render_template('upload_app.html',models=running_models)
+        return render_template('upload_app.html', models=running_models)
     if request.method == 'POST':
         ApplicationID = str(uuid.uuid4())
         ApplicationName = request.form.get('ApplicationName')
@@ -138,7 +146,7 @@ def upload_app():
             clear('/tmp/' + ApplicationID)
             return 'app_contract.json is not valid'
         logging.info('Validations passed')
-        
+
         model_bindings = []
         i = 1
         while True:
@@ -152,7 +160,8 @@ def upload_app():
         logging.info('Binding models...')
         models = {}
         for model in model_bindings:
-            models[model['model_name']] = module_config['model_req_handler'] + '/' + model['model_id']
+            models[model['model_name']] = module_config['model_req_handler'] + \
+                '/' + model['model_id']
         app_contract['models'] = models
         with(open('/tmp/' + ApplicationID + '/app/app_contract.json', 'w')) as f:
             json.dump(app_contract, f)
@@ -162,7 +171,7 @@ def upload_app():
         logging.info('Uploading application...')
         file = ''
         with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
-            file = fs.put(f,filename=ApplicationID + '.zip')
+            file = fs.put(f, filename=ApplicationID + '.zip')
         db.applications.insert_one(
             {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
         logging.info('Application uploaded successfully')
@@ -190,19 +199,42 @@ def fetch_application(ApplicationID):
             'ApplicationName': application['ApplicationName'], 'Contract': application['app_contract']}
     return json.dumps(data)
 
+def render_readme(body):
+    response = httpx.post(
+        "https://api.github.com/markdown",
+        json={
+            "mode": "markdown",
+            "text": body,
+        })
+
+    if response.status_code == 200:
+        return response.text
+    else:
+        return "Error"
+
+@app.route('/view-readme/<model_id>', methods=['GET'])
+def view_readme(model_id):
+    logging.info('Fetching readme for model: ' + model_id)
+    model = db.models.find_one({"ModelId": model_id})
+    if model is None:
+        return 'Model not found'
+    if model['readme'] is None:
+        return 'No readme found'
+    return render_readme(model['readme'])
 
 @app.route('/get-model-dashboard', methods=['GET'])
 def get_model_dashboard():
     instances = db.instances.find()
     data = []
     for instance in instances:
-        if instance['type'] == 'model' :
+        if instance['type'] == 'model':
             logging.info('Model: ' + instance['model_id'])
             data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
                          'status': instance['status'], 'ip': instance['ip'],
-                         'port': instance['port'], 'host': instance['hostname']})
+                         'port': instance['port'], 'host': instance['hostname'],
+                         'url': 'http://localhost:5000/view-readme/' + instance['model_id']})
     return render_template('model_dashboard.html', data=data)
-    
+
 @app.route('/get-running-applications', methods=['GET'])
 def get_running_applications():
     instances = db.instances.find()
@@ -213,22 +245,26 @@ def get_running_applications():
             url = "http://" + instance['ip'] + ':' + str(instance['port'])
             data.append({'instance_id': instance['instance_id'],
                         'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
-                        'url': url, 'app_name': instance['app_name'], 'status': instance['status']  })
-    return render_template ("app_dashboard.html", data = data)
+                         'url': url, 'app_name': instance['app_name'], 'status': instance['status']})
+    return render_template("app_dashboard.html", data=data)
+
 
 def execute(cmd):
     subprocess.call(cmd, shell=True)
+
+
 @app.route('/create-new-vm', methods=['GET'])
 def create_vm():
     cmd = 'bash ./platform_manager/dynamic_scaling.sh'
     threading.Thread(target=execute, args=(cmd,)).start()
     return 'VM creation on progress...'
-    
-    
+
+
 def start():
     app.run(host='0.0.0.0', port=5000)
 
 # ----------------------------------------------------------------------------------------------------------------------
+
 
 @app.route('/get-load')
 def home():
@@ -242,10 +278,10 @@ def home():
     load_url = url+"get-load"
     print(load_url)
     load_data = json.loads(response.content.decode('utf-8'))
-    
+
     print(type(load_data))
-    
-    return render_template ("load-data.html", load_data = load_data, url = load_url)
+
+    return render_template("load-data.html", load_data=load_data, url=load_url)
 
 
 @app.route('/get-load-json')
@@ -260,6 +296,5 @@ def get_load_json():
     load_url = url+"get-load"
     print(load_url)
     load_data = jsonify(json.loads(response.content.decode('utf-8')))
-    
-    return load_data
 
+    return load_data

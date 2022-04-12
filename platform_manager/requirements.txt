@@ -19,3 +19,4 @@ azure-identity
 docker
 paramiko
 jinja2
+httpx
