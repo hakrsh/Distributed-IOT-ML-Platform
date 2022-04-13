@@ -2,6 +2,7 @@ from distutils.log import debug
 from flask import Flask, render_template, request
 import requests
 from datetime import datetime
+from datetime import timedelta
 import json
 import uuid
 import scheduler.sched as sh
@@ -152,7 +153,7 @@ def schedule():
 
     # print(sensor_to_func_mapping)
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
-    sched_id = insert_into_db(app_id, app_name, sensor_info, start_time, end_time)
+    sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, start_time, end_time)
     query = {
         "ApplicationID":app_id,
         "app_name":app_name,
@@ -166,18 +167,21 @@ def schedule():
 
 @app.route('/reschedule/<instance_id>', methods = ["GET"])
 def reshedule(instance_id):
-    app_data = db.scheduleinfo.find({"instance_id":instance_id})
+    app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
+    start_time = datetime.now() + timedelta(seconds=2)
+    end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
+    new_sched_id = insert_into_db(app_data["Application_ID"], app_data["app_name"], app_data["sensor_info"], start_time, end_time)
     query = {
         "ApplicationID":app_data["Application_ID"],
         "app_name":app_data["app_name"],
         "sensor_ids":app_data["sensor_info"],
-        "sched_id":app_data["sched_id"]
+        "sched_id":new_sched_id
     }
-    start_time = datetime.now() + datetime.timedelta(0,3)
-    end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
-    response = requests.post(f"{module_config['deployer_master']}app",json=query).content
-    new_instance_id = response.decode('ascii')
-    sh.update_instance_id(new_instance_id, app_data["sched_id"])
+    print(query)
+    response = requests.post(f"{module_config['deployer_master']}app",json=query)
+    response = json.loads(response.text)
+    new_instance_id = response["InstanceID"]
+    sh.update_instance_id(new_instance_id, new_sched_id)
     sh.schedule_a_stop_task(end_time, {"instance_id":new_instance_id})
     return str(new_instance_id)
 
