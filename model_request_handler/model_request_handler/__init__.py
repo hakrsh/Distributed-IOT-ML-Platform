@@ -11,9 +11,4 @@ module_config = json.loads(
 
 client = MongoClient(module_config['mongo_server'])
 db = client.repo
-
-if len(list(db.model_map.find())) != 0:
-    models = db.model_map.find_one()
-else:
-    models = {}
-
+models = {}
