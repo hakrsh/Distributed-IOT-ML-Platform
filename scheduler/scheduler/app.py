@@ -185,7 +185,6 @@ def reshedule(instance_id):
     sh.schedule_a_stop_task(end_time, {"instance_id":new_instance_id})
     return str(new_instance_id)
 
-
 @app.route('/get_app_contract',methods =["POST"])  
 def get_app_contract():
     app_id = json.loads(request.get_data())["app_id"]

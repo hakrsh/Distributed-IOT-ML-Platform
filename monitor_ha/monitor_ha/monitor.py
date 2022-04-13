@@ -8,7 +8,7 @@ import requests
 
 logging.basicConfig(level=logging.INFO)
 
-monitor_interval = 1
+monitor_interval = 5
 
 mongo_server = module_config["mongo_server"]
 
@@ -19,28 +19,17 @@ db = client[ "repo" ]
 instances = db["instances"]
 logging.info('instance database created')
 
-def cleanup(client, instance_id, container_id):
-	logging.info("Cleaning up {}".format(container_id))
-	instances.delete_one({"instance_id":instance_id})
-	client.remove(container_id)
-
-def recover(instance_id):
-	logging.info("Recovering {}".format(container_id))
-	scheduler_endpoint = module_config["scheduler_endpoint"]
-	reschedule_api = "{}/reschedule/{}".format(scheduler_endpoint, instance_id)
-	response = requests.get(reschedule_api)
-	return response
-
 def app_handler(app_info):
 	instance_id = app_info["instance_id"]
-	container_id = app_info["container_id"]
 	hostname = app_info["hostname"]
 	ip = app_info["ip"]
 	port = app_info["port"]
+	itype = app_info["type"]	
+	container_id = app_info["container_id"]
 	try:
 		client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
 	except Exception as e:
-		print("Could not connect to docker daemon")
+		logging.error("Could not connect to docker daemon")
 	while True:
 		try:
 			cont = client.containers.get(container_id)
@@ -48,14 +37,40 @@ def app_handler(app_info):
 			logging.info("Container {} {}".format(container_id, cont_status))
 			if cont_status != "running":
 				logging.info("Container {} not running".format(container_id))
-				cleanup(client, container_id)
-				recover(instance_id)
+				logging.info("Cleaning up {}".format(container_id))
+				instances.delete_one({"instance_id":instance_id})
+				logging.info("Removing container from worker")
+				cont.remove()
+				logging.info("Recovering {}".format(container_id))
+				if itype == "model":
+					url = module_config['deployer_master'] + '/model'
+					logging.info('Sending model to deployer')
+					response = requests.post(url, json={"ModelId": app_info["model_id"],"model_name":app_info["model_name"]}).content
+					print(response)
+				else:
+					scheduler_endpoint = module_config["scheduler_endpoint"]
+					reschedule_api = "{}/reschedule/{}".format(scheduler_endpoint, instance_id)
+					response = requests.get(reschedule_api)
+				logging.info("Recovery done!")
 		except Exception as e:
-			print("Could not find any such container")
+			logging.info("Container {} not running".format(container_id))
+			instances.delete_one({"instance_id":instance_id})
+			logging.info("Recovering {}".format(container_id))
+			if itype == "model":
+				url = module_config['deployer_master'] + '/model'
+				logging.info('Sending model to deployer')
+				response = requests.post(url, json={"ModelId": app_info["model_id"],"model_name":app_info["model_name"]}).content
+				print(response)
+			else:
+				scheduler_endpoint = module_config["scheduler_endpoint"]
+				reschedule_api = "{}/reschedule/{}".format(scheduler_endpoint, instance_id)
+				response = requests.get(reschedule_api)
+			logging.info("Recovery done!")
 		document = db.instances.find_one({"instance_id": instance_id})
 		if document == None:
 			break
 		time.sleep(monitor_interval)
+	logging.info("Exiting thread")
 
 def run():
 	instance_cursor = instances.find({})
@@ -67,7 +82,9 @@ def run():
 
 	for change in instances.watch():
 		change_type = change['operationType']
-		if change_type == "insert":
+		logging.info(change)
+		if change_type == "update":
+			logging.info("Starting thread")
 			document_id = change['documentKey']
 			document = instances.find_one(document_id)
 			thread = threading.Thread(target=app_handler, args=(document,))
