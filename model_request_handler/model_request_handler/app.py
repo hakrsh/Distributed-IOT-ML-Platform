@@ -15,7 +15,7 @@ def get_running_models():
             document = instances.find_one(document_id)
             if document['type'] == 'model' and document['status'] == 'running':
                 logging.info('Model Name: {}'.format(document['model_name']))
-                url = f'http://{document["ip"]}:{document["port"]}/get-pred'
+                url = f'http://{document["ip"]}:{document["port"]}'
                 logging.info(f'url: {url}')
                 models[document['model_id']] = url
                 if len(list(db.model_map.find())) != 0:
@@ -29,11 +29,11 @@ def get_running_models():
 def index():
     return 'Model request handler running!'
 
-@app.route('/<ModelId>', methods=['POST'])
-def get_model(ModelId):
+@app.route('/<ModelId>/<endpoint>', methods=['POST'])
+def get_model(ModelId, endpoint):
     logging.info('ModelId: ' + ModelId)
     if ModelId in models:    
-        url = models[ModelId]
+        url = models[ModelId] + '/' + endpoint
         res = requests.post(url, json=request.json)
         return res.text
     else:

@@ -83,8 +83,10 @@ def get_running_models():
     for instance in instances:
         if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Model: ' + instance['model_id'])
-            data.append(
-                {'model_id': instance['model_id'], 'model_name': instance['model_name']})
+            model_contract = db.models.find_one({'ModelId': instance['model_id']})['contract']
+            for model in model_contract['models']:
+                model_name = instance['model_name'] + '/' + model['api_endpoint']    
+                data.append({'model_id': instance['model_id'], 'model_name': model_name})
     return json.dumps(data)
 
 
