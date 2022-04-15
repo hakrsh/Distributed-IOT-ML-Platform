@@ -8,7 +8,7 @@
             "name": "diabetes_checker",
             "module_path": "patient_monitoring.diabetes_checker.diabetes_checker",
             "model_file_type": "pkl",
-            "model_file": "./diabetes_checker/diabetes_checker.pkl",
+            "model_file": "patient_monitoring/diabetes_checker/diabetes_checker.pkl",
             "function_name": "predict_diabetes",
             "function_input_type": "dict",
             "output_type": "string",
@@ -19,20 +19,24 @@
                     "input_type": "json",
                     "input_schema": {
                         "type": "object",
-                        "properties": {
-                            "glucose": {
+                        "properties": [
+                            {
+                                "name": "glucose",
                                 "type": "float"
                             },
-                            "insuline": {
+                            {
+                                "name": "insuline",
                                 "type": "float"
                             },
-                            "age": {
-                                "type": "int"
+                            {
+                                "name": "age",
+                                "type": "number"
                             },
-                            "bmi": {
+                            {
+                                "name": "bmi",
                                 "type": "float"
                             }
-                        }
+                        ]
                     },
                     "response": {
                         "type": "string",
@@ -48,7 +52,7 @@
             "name": "vitals_checker",
             "module_path": "patient_monitoring.vitals_checker.vitals_checker",
             "model_file_type": "pkl",
-            "model_file": "./vitals_checker/vitals_checker.pkl",
+            "model_file": "patient_monitoring/vitals_checker/vitals_checker.pkl",
             "function_name": "predict_condition",
             "function_input_type": "dict",
             "output_type": "string",
@@ -59,17 +63,20 @@
                     "input_type": "json",
                     "input_schema": {
                         "type": "object",
-                        "properties": {
-                            "spo2": {
+                        "properties": [
+                            {
+                                "name": "spo2",
                                 "type": "int"
                             },
-                            "pulserate": {
+                            {
+                                "name": "pulse",
                                 "type": "int"
                             },
-                            "temperature": {
+                            {
+                                "name": "temperature",
                                 "type": "int"
                             }
-                        }
+                        ]
                     },
                     "response": {
                         "type": "string",

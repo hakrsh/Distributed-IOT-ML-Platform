@@ -12,6 +12,7 @@ import shutil
 import os
 import httpx
 from jsonschema import validate
+import importlib.resources as pkg_resources
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,36 +34,33 @@ def upload_model():
         return render_template('upload_model.html')
     elif request.method == 'POST':
         model_name = request.form['model_name']
-        model_contract = request.form['model_contract']
         if db.models.find_one({'ModelName': model_name}) is not None:
             return 'Model already exists'
         ModelId = str(uuid.uuid4())
         logging.info('ModelId: ' + ModelId)
-        content = request.files['file'].read()
+        content = request.files['model_zip'].read()
+        model_contract = json.loads(request.files['model_contract'].read())
+        model_contract_schema = json.loads(pkg_resources.read_binary('platform_manager', 'model_contract_schema.json'))
+        try:
+            validate(instance=model_contract, schema=model_contract_schema)
+        except Exception as e:
+            return 'Model contract validation failed: '
+        logging.info('Model contract validation passed')
         with open('/tmp/' + ModelId + '.zip', 'wb') as f:
             f.write(content)
         logging.info('Model saved to /tmp/' + ModelId + '.zip')
         with zipfile.ZipFile('/tmp/' + ModelId + '.zip', 'r') as zip_ref:
             zip_ref.extractall('/tmp/' + ModelId)
         logging.info('Model extracted to /tmp/' + ModelId)
-        # logging.info('Validating model...')
-        # if not os.path.exists('/tmp/' + ModelId + '/model/requirements.txt'):
-        #     clear('/tmp/' + ModelId)
-        #     return 'requirements.txt not found'
-        # if not os.path.exists('/tmp/' + ModelId + '/model/model.pkl') and not os.path.exists('/tmp/' + ModelId + '/model/model.h5'):
-        #     clear('/tmp/' + ModelId)
-        #     return 'model.pkl or model.h5 not found'
-        # if not os.path.exists('/tmp/' + ModelId + '/model/preprocessing.py'):
-        #     clear('/tmp/' + ModelId)
-        #     return 'preprocessing.py not found'
-        # if not os.path.exists('/tmp/' + ModelId + '/model/postprocessing.py'):
-        #     clear('/tmp/' + ModelId)
-        #     return 'postprocessing.py not found'
-        # if not os.path.exists('/tmp/' + ModelId + '/model/readme.md'):
-        #     clear('/tmp/' + ModelId)
-        #     return 'readme.md not found'
-        # logging.info('Model validation passed...')
-        readme = open('/tmp/' + ModelId + '/model/readme.md', 'r').read()
+        logging.info('Validating model zip...')
+        if not os.path.exists(f'/tmp/{ModelId}/{model_contract["root_dir"]}'):
+            return 'Model zip is invalid'
+        if not os.path.exists(f'/tmp/{ModelId}/{model_contract["requirements"]}'):
+            return 'Model requirements not found'
+        if not os.path.exists(f'/tmp/{ModelId}/{model_contract["readme"]}'):
+            return 'Model readme not found'
+        logging.info('Model validation passed...')
+        readme = open(f'/tmp/{ModelId}/{model_contract["readme"]}', 'r').read()
         logging.info('Uploading model...')
         file = fs.put(content, filename=ModelId+'.zip')
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,

@@ -19,17 +19,15 @@
 <body>
     <h1 style="margin: 50px;">Upload Model</h1>
     <form action="/upload-model" method="post" style="margin: 50px;" enctype="multipart/form-data">
-        <label for="exampleInputEmail1">Model Name</label>
+        <label for="model_name">Model Name</label>
         <input type="text" class="form-control"  placeholder="Enter Model name"
             name="model_name">
         <br>
-        <label for="exampleInputEmail1">Model Contract</label>
-        <input type="text" class="form-control"  placeholder="Enter Model name"
-            name="model_contract">
+        <label for="model_contract">Model Contract</label>
+        <input class="form-control" type="file" id="formFile" name="model_contract">
         <br>
-        <div class="mb-3">
-            <input class="form-control" type="file" id="formFile" name="file">
-        </div>
+        <label for="model_zip">Model Zip</label>
+        <input class="form-control" type="file" id="formFile" name="model_zip">
         <br>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
