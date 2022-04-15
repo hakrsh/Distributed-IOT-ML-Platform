@@ -1,0 +1,17 @@
+from flask import Flask, request
+app = Flask(__name__)
+@app.route('/')
+def index():
+    return '<h1>{{contract.name}} is running!</h1>'
+{% for model in contract.models %}
+@app.route('/{{model.api_endpoint}}', methods=['GET', 'POST'])
+def {{model.name}}():
+    from {{model.module_path}} import {{model.function_name}}
+    {% for method in model.methods %}
+    if request.method == '{{method.method_type}}':
+        data = request.{{method.input_type}}
+        return {{model.function_name}}(data)    
+    {% endfor %}
+{% endfor %}
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80)

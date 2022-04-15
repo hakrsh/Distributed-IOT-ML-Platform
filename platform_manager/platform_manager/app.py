@@ -33,6 +33,7 @@ def upload_model():
         return render_template('upload_model.html')
     elif request.method == 'POST':
         model_name = request.form['model_name']
+        model_contract = request.form['model_contract']
         if db.models.find_one({'ModelName': model_name}) is not None:
             return 'Model already exists'
         ModelId = str(uuid.uuid4())
@@ -44,28 +45,28 @@ def upload_model():
         with zipfile.ZipFile('/tmp/' + ModelId + '.zip', 'r') as zip_ref:
             zip_ref.extractall('/tmp/' + ModelId)
         logging.info('Model extracted to /tmp/' + ModelId)
-        logging.info('Validating model...')
-        if not os.path.exists('/tmp/' + ModelId + '/model/requirements.txt'):
-            clear('/tmp/' + ModelId)
-            return 'requirements.txt not found'
-        if not os.path.exists('/tmp/' + ModelId + '/model/model.pkl') and not os.path.exists('/tmp/' + ModelId + '/model/model.h5'):
-            clear('/tmp/' + ModelId)
-            return 'model.pkl or model.h5 not found'
-        if not os.path.exists('/tmp/' + ModelId + '/model/preprocessing.py'):
-            clear('/tmp/' + ModelId)
-            return 'preprocessing.py not found'
-        if not os.path.exists('/tmp/' + ModelId + '/model/postprocessing.py'):
-            clear('/tmp/' + ModelId)
-            return 'postprocessing.py not found'
-        if not os.path.exists('/tmp/' + ModelId + '/model/readme.md'):
-            clear('/tmp/' + ModelId)
-            return 'readme.md not found'
+        # logging.info('Validating model...')
+        # if not os.path.exists('/tmp/' + ModelId + '/model/requirements.txt'):
+        #     clear('/tmp/' + ModelId)
+        #     return 'requirements.txt not found'
+        # if not os.path.exists('/tmp/' + ModelId + '/model/model.pkl') and not os.path.exists('/tmp/' + ModelId + '/model/model.h5'):
+        #     clear('/tmp/' + ModelId)
+        #     return 'model.pkl or model.h5 not found'
+        # if not os.path.exists('/tmp/' + ModelId + '/model/preprocessing.py'):
+        #     clear('/tmp/' + ModelId)
+        #     return 'preprocessing.py not found'
+        # if not os.path.exists('/tmp/' + ModelId + '/model/postprocessing.py'):
+        #     clear('/tmp/' + ModelId)
+        #     return 'postprocessing.py not found'
+        # if not os.path.exists('/tmp/' + ModelId + '/model/readme.md'):
+        #     clear('/tmp/' + ModelId)
+        #     return 'readme.md not found'
+        # logging.info('Model validation passed...')
         readme = open('/tmp/' + ModelId + '/model/readme.md', 'r').read()
-        logging.info('Model validation passed...')
         logging.info('Uploading model...')
         file = fs.put(content, filename=ModelId+'.zip')
         db.models.insert_one({"ModelId": ModelId, "ModelName": model_name,
-                              "content": file, "readme":readme})
+                              "content": file, "readme":readme, "contract": model_contract})
         logging.info('Model uploaded successfully')
         clear('/tmp/' + ModelId)
         url = module_config['deployer_master'] + '/model'
