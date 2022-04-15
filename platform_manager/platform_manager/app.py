@@ -86,7 +86,8 @@ def get_running_models():
             model_contract = db.models.find_one({'ModelId': instance['model_id']})['contract']
             for model in model_contract['models']:
                 model_name = instance['model_name'] + '/' + model['api_endpoint']    
-                data.append({'model_id': instance['model_id'], 'model_name': model_name})
+                model_id = instance['model_id'] + '/' + model['api_endpoint']
+                data.append({'model_id': model_id, 'model_name': model_name})
     return json.dumps(data)
 
 
