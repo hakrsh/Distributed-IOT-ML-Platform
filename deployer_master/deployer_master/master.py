@@ -2,7 +2,7 @@ from flask import jsonify, request
 import requests
 import logging
 import uuid
-from deployer_master import app, db, module_config, messenger, kafka_server
+from deployer_master import app, db, module_config, kafka_server
 import threading
 import time 
 import json
@@ -21,12 +21,12 @@ def worker_status():
 def index():
     return 'Deployer Master is running'
 
-consumer = KafkaConsumer('model_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
+model_consumer = KafkaConsumer('model_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
+app_consumer = KafkaConsumer('app_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
+stop_instance_consumer = KafkaConsumer('stop_instance_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
 
 def deploy_model(message):
-    if not worker_status():
-        return jsonify({"error": "No worker available"}), 500
-    print(message,flush=True)
+    logging.info("Deploying model " + str(message))
     model_id = message['ModelId']
     model_name = message['model_name']
     logging.info('ModelID: ' + model_id)
@@ -50,16 +50,14 @@ def deploy_model(message):
 def model_deployment_thread():
     logging.info("Inside model deployment thread")
     while True:
+        while not worker_status():
+            logging.info("No workers available")
+            time.sleep(5)
         logging.info("Checking for new model deployments")
-        for message in consumer:
+        for message in model_consumer:
             logging.info("Received new model deployment request")
-            print(message.value.decode('utf-8'), flush=True)
             threading.Thread(target=deploy_model, args=(json.loads(message.value.decode('utf-8')),)).start()
-        
-        # model_req = messenger.receive_message(topic='model_deploy_request',group_id = 'deployer')
-        # logging.info("Received model deployment request " + str(model_req))
-        # threading.Thread(target=deploy_model, args=(model_req,)).start()
-        # threading.Thread(target=deploy_model, args=(messenger.receive_message('model_deploy_request', 'deployer', 'deploy_model'),)).start()
+        logging.info("No new model deployments")
 
 @app.route('/app', methods=['POST'])
 def deploy_app():
