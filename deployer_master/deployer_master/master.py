@@ -45,10 +45,13 @@ def deploy_model(message):
     return res.text
 
 def model_deployment_thread():
-    logging.info("Starting model deployment thread")
+    logging.info("Inside model deployment thread")
     while True:
         logging.info("Checking for new model deployments")
-        threading.Thread(target=deploy_model, args=(messenger.receive_message('model_deploy_request', 'deployer', 'deploy_model'),)).start()
+        model_req = messenger.receive_message(topic='model_deploy_request',group_id = 'deployer')
+        logging.info("Received model deployment request " + str(model_req))
+        threading.Thread(target=deploy_model, args=(model_req,)).start()
+        # threading.Thread(target=deploy_model, args=(messenger.receive_message('model_deploy_request', 'deployer', 'deploy_model'),)).start()
 
 @app.route('/app', methods=['POST'])
 def deploy_app():

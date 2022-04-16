@@ -28,9 +28,12 @@ class KafkaAdmin:
         producer.send(topic, message)
         producer.close()
     
-    def receive_message(self, topic, group_id, target_function,auto_offset_reset='earliest'):
-        consumer = KafkaConsumer(topic, bootstrap_servers=self.bootstrap_servers, group_id=group_id, auto_offset_reset=auto_offset_reset)
+    def receive_message(self, topic, group_id,auto_offset_reset='earliest'):
+        print('inside receive_message',flush=True)
+        consumer = KafkaConsumer(topic, bootstrap_servers=self.bootstrap_servers, group_id=group_id, auto_offset_reset=auto_offset_reset,enable_auto_commit=True)
         for message in consumer:
-            threading.Thread(target=target_function, args=(message.value,)).start()
+            print(message.value.decode('utf-8'), flush=True)
+            return message.value.decode('utf-8')
+            # threading.Thread(target=target_function, args=(message.value.decode('utf-8'),)).start()
         consumer.close()
 
