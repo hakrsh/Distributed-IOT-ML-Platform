@@ -5,6 +5,7 @@ import uuid
 from deployer_master import app, db, module_config, messenger, kafka_server
 import threading
 import time 
+import json
 from kafka import KafkaConsumer
 
 
@@ -53,7 +54,7 @@ def model_deployment_thread():
         for message in consumer:
             logging.info("Received new model deployment request")
             print(message.value.decode('utf-8'), flush=True)
-            threading.Thread(target=deploy_model, args=(message.value.decode('utf-8'),)).start()
+            threading.Thread(target=deploy_model, args=(json.loads(message.value.decode('utf-8')),)).start()
         
         # model_req = messenger.receive_message(topic='model_deploy_request',group_id = 'deployer')
         # logging.info("Received model deployment request " + str(model_req))

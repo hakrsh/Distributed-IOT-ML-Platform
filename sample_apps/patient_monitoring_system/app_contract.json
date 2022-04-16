@@ -1,0 +1,29 @@
+{
+    "version": "1.0.0",
+    "secret_key": "top_secret",
+    "root_dir": "patient_monitoring_system",
+    "name": "patient_monitoring_system",
+    "entry_point": "patient_monitoring_system/src/app.py",
+    "port": 8080,
+    "sensor_interface" : "patient_monitoring_system/src/getdata.py",
+    "sensors":[
+        {
+            "function":"getspo2",
+            "sensor_type":"Spo2"
+        },
+        {
+            "function":"getpulserate",
+            "sensor_type":"Pulse"
+        },
+        {
+            "function":"gettemperature",
+            "sensor_type":"Temperature"
+        }
+    ],
+    "health_check":{
+        "url":"http://localhost:8080/health",
+        "method":"GET",
+        "timeout":5
+    },
+    "requirements": "requirements.txt"
+}

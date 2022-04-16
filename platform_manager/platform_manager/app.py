@@ -17,7 +17,7 @@ import importlib.resources as pkg_resources
 from platform_manager import messenger
 
 logging.basicConfig(level=logging.INFO)
-messenger.create_topic('model_deploy_request')
+# messenger.create_topic('model_deploy_request')
 
 def clear(path):
     os.remove(path + '.zip')

@@ -1,10 +1,10 @@
 {
-    "kafka_ip": "localhost",
+    "kafka_ip": "13.74.193.188",
     "kafka_port": "9092",
     "mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
     "sensor_api": "http://13.74.193.188:7000/",
     "sensor_reg_api": "http://13.74.193.188:7005/",
-    "deployer_master": "http://localhost:9999/",
+    "deployer_master": "http://13.74.193.188:9999/",
     "load_balancer": "http://localhost:9898/",
     "platform_api": "http://13.74.193.188:5000/",
     "scheduler": "http://13.74.193.188:8210/",

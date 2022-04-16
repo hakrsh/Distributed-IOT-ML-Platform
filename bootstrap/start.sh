@@ -10,7 +10,7 @@ mkdir -p ~/.ssh
 if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
-sudo apt -qq update && apt -qq install python3 python3-pip sshpass jq -y > /dev/null
+sudo apt -qq update && sudo apt -qq install python3 python3-pip sshpass jq -y > /dev/null
 pip3 install docker paramiko jinja2 > /dev/null
 echo "installed dependencies - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r

@@ -15,7 +15,7 @@ def index():
     return 'Deployer is running on ' + module_config['host_name'] + '@' + module_config['host_ip']
 
 
-def deploy_model_thread(model_id, instance_id):
+def deploy_model_thread(model_id, instance_id,job_id):
     model = db.models.find_one({"ModelId": model_id})
     logging.info("ModelId: " + model_id)
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
@@ -23,7 +23,7 @@ def deploy_model_thread(model_id, instance_id):
     logging.info('Got model: ' + model_id + ' from database')
     aiDeployer.run(f'/tmp/{instance_id}.zip', instance_id,model['contract'])
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
-                     'image_tag': model['ModelName'].lower(), 'instance_id': instance_id, 'package': instance_id}).start()
+                     'image_tag': model['ModelName'].lower(), 'instance_id': instance_id, 'package': instance_id,'job_id':job_id}).start()
 
 
 @app.route('/model', methods=['POST'])
@@ -33,14 +33,14 @@ def deploy_model():
     instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
     logging.info("Creating deployment record")
-    job_id = uuid.uuid4()
+    job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "model","status": "pending", "instance_id": instance_id, "model_id": model_id, "job_id": job_id})
     threading.Thread(target=deploy_model_thread,
-                     args=(model_id, instance_id)).start()
+                     args=(model_id, instance_id,job_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
 
 
-def deploy_app_thread(application_id, sensor_id, instance_id):
+def deploy_app_thread(application_id, sensor_id, instance_id,job_id):
     application = db.applications.find_one({"ApplicationID": application_id})
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
         f.write(fs.get(application['content']).read())
@@ -48,7 +48,7 @@ def deploy_app_thread(application_id, sensor_id, instance_id):
     image_name = appDeployer.run(
         f'/tmp/{instance_id}.zip', sensor_id, instance_id)
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
-                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id}).start()
+                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id,'job_id':job_id}).start()
 
 
 @app.route('/app', methods=['POST'])
@@ -59,10 +59,10 @@ def deploy_app():
     logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
     logging.info("Creating deployment record")
-    job_id = uuid.uuid4()
+    job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "sched_id": sched_id, "job_id": job_id})
     threading.Thread(target=deploy_app_thread, args=(
-        application_id, sensors, instance_id)).start()
+        application_id, sensors, instance_id,job_id)).start()
     return {"InstanceID": instance_id,"sched_id":sched_id, "Status": "pending"}
 
 
@@ -72,7 +72,7 @@ def stop_instance():
     container_id = request.json['ContainerID']
     logging.info("InstanceID: " + instance_id)
     logging.info("ContainerID: " + container_id)
-    job_id = uuid.uuid4()
+    job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "stop_instance","status": "pending", "instance_id": instance_id, "container_id": container_id, "job_id": job_id})
     threading.Thread(target=stopInstance, kwargs={
                      'instance_id': instance_id, 'container_id': container_id,'job_id': job_id}).start()
