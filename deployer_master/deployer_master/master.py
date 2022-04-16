@@ -2,9 +2,10 @@ from flask import jsonify, request
 import requests
 import logging
 import uuid
-from deployer_master import app, db, module_config, messenger
+from deployer_master import app, db, module_config, messenger, kafka_server
 import threading
 import time 
+from kafka import KafkaConsumer
 
 
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +20,7 @@ def worker_status():
 def index():
     return 'Deployer Master is running'
 
+consumer = KafkaConsumer('model_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
 
 def deploy_model(message):
     if not worker_status():
@@ -48,9 +50,14 @@ def model_deployment_thread():
     logging.info("Inside model deployment thread")
     while True:
         logging.info("Checking for new model deployments")
-        model_req = messenger.receive_message(topic='model_deploy_request',group_id = 'deployer')
-        logging.info("Received model deployment request " + str(model_req))
-        threading.Thread(target=deploy_model, args=(model_req,)).start()
+        for message in consumer:
+            logging.info("Received new model deployment request")
+            print(message.value.decode('utf-8'), flush=True)
+            threading.Thread(target=deploy_model, args=(message.value.decode('utf-8'),)).start()
+        
+        # model_req = messenger.receive_message(topic='model_deploy_request',group_id = 'deployer')
+        # logging.info("Received model deployment request " + str(model_req))
+        # threading.Thread(target=deploy_model, args=(model_req,)).start()
         # threading.Thread(target=deploy_model, args=(messenger.receive_message('model_deploy_request', 'deployer', 'deploy_model'),)).start()
 
 @app.route('/app', methods=['POST'])

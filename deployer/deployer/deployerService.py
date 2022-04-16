@@ -5,6 +5,7 @@ from deployer.deploy import Deploy, stopInstance, systemStats
 from deployer import app, db, module_config, fs
 import logging
 import threading
+import uuid
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,6 +32,9 @@ def deploy_model():
     logging.info('ModelID: ' + model_id)
     instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
+    logging.info("Creating deployment record")
+    job_id = uuid.uuid4()
+    db.jobs.insert_one({"type": "model","status": "pending", "instance_id": instance_id, "model_id": model_id, "job_id": job_id})
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
@@ -54,6 +58,9 @@ def deploy_app():
     sched_id = request.json['sched_id']
     logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
+    logging.info("Creating deployment record")
+    job_id = uuid.uuid4()
+    db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "sched_id": sched_id, "job_id": job_id})
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensors, instance_id)).start()
     return {"InstanceID": instance_id,"sched_id":sched_id, "Status": "pending"}
@@ -65,10 +72,27 @@ def stop_instance():
     container_id = request.json['ContainerID']
     logging.info("InstanceID: " + instance_id)
     logging.info("ContainerID: " + container_id)
+    job_id = uuid.uuid4()
+    db.jobs.insert_one({"type": "stop_instance","status": "pending", "instance_id": instance_id, "container_id": container_id, "job_id": job_id})
     threading.Thread(target=stopInstance, kwargs={
-                     'instance_id': instance_id, 'container_id': container_id}).start()
+                     'instance_id': instance_id, 'container_id': container_id,'job_id': job_id}).start()
     return {"InstanceID": instance_id, "Status": "stopping"}
 
+def execute_job(job_id):
+    job = db.jobs.find_one({"job_id": job_id})
+    if job['type'] == 'model':
+        deploy_model_thread(job['model_id'], job['instance_id'])
+    elif job['type'] == 'app':
+        deploy_app_thread(job['application_id'], job['sensor_ids'], job['instance_id'])
+    elif job['type'] == 'stop_instance':
+        stopInstance(job['instance_id'], job['container_id'], job['job_id'])
+    else:
+        logging.info("Job type not recognized")
+
+def pending_jobs():
+    jobs = db.jobs.find({"status": "pending"})
+    for job in jobs:
+        execute_job(job['job_id'])
 
 @app.route('/get-load', methods=['GET'])
 def get_load():

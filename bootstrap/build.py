@@ -34,20 +34,21 @@ def build(host,path,image_name,container_name,config_path):
         container_config_path = f'/{container_name}/config.json'
         if container_name == 'deployer' or container_name == 'monitor_logger' :
             client.containers.run(image_name,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
-            config_path: {'bind': container_config_path, 'mode': 'rw'}})
+            config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
         elif container_name == "monitor_ha":
             client.containers.run(image_name,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
-            config_path: {'bind': container_config_path, 'mode': 'rw'}})
+            config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
         elif container_name == "platform_manager":
             client.containers.run(image_name,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
             config_path: {'bind': container_config_path, 'mode': 'rw'},
             f"/home/{servers['master']['user']}/platform_config.json": {'bind': '/platform_manager/platform_config.json', 'mode': 'rw'},
             f"/home/{servers['master']['user']}/services.json": {'bind': '/platform_manager/services.json', 'mode': 'rw'},
             f"/home/{servers['master']['user']}/.azure": {'bind': '/root/.azure', 'mode': 'rw'},
-            '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}})
+            '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'}},
+            restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
         else:
             client.containers.run(image_name,name=container_name, detach=True, network='host',
-                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})
+                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
     except Exception as e:
         logging.info('Error: ' + str(e))
     logging.info('Started ' + container_name)

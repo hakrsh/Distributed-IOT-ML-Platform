@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import json
 import subprocess
 import threading
@@ -105,54 +106,27 @@ def upload_app():
         ApplicationName = request.form.get('ApplicationName')
         if db.applications.find_one({"ApplicationId": ApplicationID}):
             return 'Application already exists'
-        content = request.files['file'].read()
+        content = request.files['app_zip'].read()
+        app_contract = json.loads(request.files['app_contract'].read())
+        app_contract_schema = json.loads(pkg_resources.read_binary('platform_manager', 'app_contract_schema.json'))
+        try:
+            validate(instance=app_contract, schema=app_contract_schema)
+        except Exception as e:
+            return 'Application contract validation failed: '
+        logging.info('Application contract validation passed')
         with open('/tmp/' + ApplicationID + '.zip', 'wb') as f:
             f.write(content)
         logging.info('Application saved to /tmp/' + ApplicationID + '.zip')
         with zipfile.ZipFile('/tmp/' + ApplicationID + '.zip', 'r') as zip_ref:
             zip_ref.extractall('/tmp/' + ApplicationID)
         logging.info('Application extracted to /tmp/' + ApplicationID)
-        logging.info('Validating application...')
-        if not os.path.exists('/tmp/' + ApplicationID + '/app/app_contract.json'):
-            clear('/tmp/' + ApplicationID)
-            return 'app_contract.json not found'
-        if not os.path.exists('/tmp/' + ApplicationID + '/app/src'):
-            clear('/tmp/' + ApplicationID)
-            return 'src directory not found'
-        if not os.path.exists('/tmp/' + ApplicationID + '/app/requirements.txt'):
-            clear('/tmp/' + ApplicationID)
-            return 'requirements.txt not found'
-        logging.info('Validating app_contract.json...')
-        schema = {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string"},
-                "sensors": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "function": {"type": "string"},
-                            "sensor_type": {"type": "string"}
-                        },
-                        "required": ["function", "sensor_type"]
-                    },
-                    "minItems": 1,
-                    "uniqueItems": True,
-                },
-            },
-            "required": ["name", "sensors"]
-        }
-        app_contract = {}
-        with open('/tmp/' + ApplicationID + '/app/app_contract.json', 'r') as f:
-            app_contract = json.load(f)
-        try:
-            validate(app_contract, schema)
-        except:
-            clear('/tmp/' + ApplicationID)
-            return 'app_contract.json is not valid'
-        logging.info('Validations passed')
-
+        logging.info('Validating application zip...')
+        if not os.path.exists(f'/tmp/{ApplicationID}/{app_contract["root_dir"]}'):
+            return 'Application zip is invalid'
+        if not os.path.exists(f'/tmp/{ApplicationID}/{app_contract["requirements"]}'):
+            return 'Application requirements not found'
+        logging.info('Application zip validation passed...')
+        logging.info('Binding models to application...')
         model_bindings = []
         i = 1
         while True:
@@ -163,17 +137,11 @@ def upload_app():
                 'model_name': request.form.get('model' + str(i) + '_name')
             })
             i += 1
-        logging.info('Binding models...')
         models = {}
         for model in model_bindings:
             models[model['model_name']] = module_config['model_req_handler'] + \
                 '/' + model['model_id']
         app_contract['models'] = models
-        with(open('/tmp/' + ApplicationID + '/app/app_contract.json', 'w')) as f:
-            json.dump(app_contract, f)
-        logging.info('model details saved to app_contract.json')
-        shutil.make_archive('/tmp/' + ApplicationID,
-                            'zip', '/tmp/' + ApplicationID)
         logging.info('Uploading application...')
         file = ''
         with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
@@ -183,7 +151,6 @@ def upload_app():
         logging.info('Application uploaded successfully')
         clear('/tmp/' + ApplicationID)
         return 'Application stored successfully'
-
 
 @app.route('/api/get-applications', methods=['GET'])
 def fetch_applications():

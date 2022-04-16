@@ -3,6 +3,9 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return '<h1>{{contract.name}} is running!</h1>'
+@app.route('/health')
+def health():
+    return '<h1>{{contract.name}} is healthy!</h1>', 200
 {% for model in contract.models %}
 @app.route('/{{model.api_endpoint}}', methods=['GET', 'POST'])
 def {{model.name}}():

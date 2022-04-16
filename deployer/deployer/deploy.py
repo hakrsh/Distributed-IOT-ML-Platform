@@ -1,7 +1,3 @@
-from concurrent.futures import thread
-import json
-from pydoc import cli
-import stat
 import threading
 import docker
 from deployer.load_balancer import loadbalancer
@@ -10,10 +6,12 @@ from deployer import module_config
 import os
 import shutil
 import requests
+from deployer import db
 logging.basicConfig(level=logging.INFO)
 
 
-def Deploy(dockerfile_path, image_tag, instance_id, package):
+
+def Deploy(dockerfile_path, image_tag, instance_id, package,job_id):
     client = docker.from_env()
     logging.info('Building image: ' + image_tag)
     client.images.build(path=dockerfile_path, tag=image_tag)
@@ -43,24 +41,28 @@ def Deploy(dockerfile_path, image_tag, instance_id, package):
         'res': res
     })
     logging.info('Sent update to master')
+    db.jobs.update_one({'job_id': job_id}, {"$set": {'status': 'done'}})
 
 
-def stopInstance(container_id, instance_id):
+def stopInstance(container_id, instance_id, job_id):
     logging.info('Got stop request for instance: ' + instance_id)
     logging.info('Connecting to Docker')
     client = docker.from_env()
     logging.info('Getting container: ' + container_id)
-    container = client.containers.get(container_id)
-    logging.info('Stopping container: ' + container_id)
-    container.stop()
-    logging.info('Stopped container: ' + container_id)
-    logging.info('Removing container: ' + container_id)
-    container.remove()
-    logging.info('Removed container: ' + container_id)
+    try:
+        container = client.containers.get(container_id)
+        logging.info('Stopping container: ' + container_id)
+        container.stop()
+        logging.info('Stopped container: ' + container_id)
+        logging.info('Removing container: ' + container_id)
+        container.remove()
+        logging.info('Removed container: ' + container_id)
+    except Exception:
+        logging.info('Container not found')
     requests.post(module_config['deployer_master']+'/stopped',
                   json={'instance_id': instance_id, 'container_status': 'stopped'})
     logging.info('Sent update to master')
-
+    db.jobs.update_one({'_id': job_id}, {"$set": {'status': 'done'}})
 
 def calculate_mem_percentage(stats):
     mem_used = stats["memory_stats"]["usage"] - stats["memory_stats"]["stats"]["cache"] + \

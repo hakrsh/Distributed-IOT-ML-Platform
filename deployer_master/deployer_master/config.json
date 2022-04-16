@@ -1,5 +1,5 @@
 {
-    "kafka_ip": "13.74.193.188",
+    "kafka_ip": "localhost",
     "kafka_port": "9092",
     "mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
     "sensor_api": "http://13.74.193.188:7000/",

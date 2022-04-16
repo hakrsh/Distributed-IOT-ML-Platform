@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "secret_key": {
+      "type": "string"
+    },
+    "root_dir": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "entry_point": {
+      "type": "string"
+    },
+    "port": {
+      "type": "integer"
+    },
+    "sensor_interface": {
+      "type": "string"
+    },
+    "sensors": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "function": {
+              "type": "string"
+            },
+            "sensor_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "function",
+            "sensor_type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "function": {
+              "type": "string"
+            },
+            "sensor_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "function",
+            "sensor_type"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "function": {
+              "type": "string"
+            },
+            "sensor_type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "function",
+            "sensor_type"
+          ]
+        }
+      ]
+    },
+    "health_check": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "url",
+        "method",
+        "timeout"
+      ]
+    },
+    "requirements": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "secret_key",
+    "root_dir",
+    "name",
+    "entry_point",
+    "port",
+    "sensor_interface",
+    "sensors",
+    "health_check",
+    "requirements"
+  ]
+}
