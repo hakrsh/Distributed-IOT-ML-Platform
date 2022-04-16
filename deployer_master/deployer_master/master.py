@@ -2,22 +2,30 @@ from flask import jsonify, request
 import requests
 import logging
 import uuid
-from deployer_master import app, db, module_config
+from deployer_master import app, db, module_config, messenger
 import threading
 import time 
 
+
 logging.basicConfig(level=logging.INFO)
 
+def worker_status():
+    for worker in module_config['workers']:
+        if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
+            return True
+    return False
 
 @app.route('/')
 def index():
     return 'Deployer Master is running'
 
 
-@app.route('/model', methods=['POST'])
-def deploy_model():
-    model_id = request.json['ModelId']
-    model_name = request.json['model_name']
+def deploy_model(message):
+    if not worker_status():
+        return jsonify({"error": "No worker available"}), 500
+    print(message,flush=True)
+    model_id = message['ModelId']
+    model_name = message['model_name']
     logging.info('ModelID: ' + model_id)
     instance_id = str(uuid.uuid4())
     logging.info("InstanceID: " + instance_id)
@@ -36,6 +44,11 @@ def deploy_model():
     logging.info("Sent request to model service")
     return res.text
 
+def model_deployment_thread():
+    logging.info("Starting model deployment thread")
+    while True:
+        logging.info("Checking for new model deployments")
+        threading.Thread(target=deploy_model, args=(messenger.receive_message('model_deploy_request', 'deployer', 'deploy_model'),)).start()
 
 @app.route('/app', methods=['POST'])
 def deploy_app():

@@ -13,9 +13,10 @@ import os
 import httpx
 from jsonschema import validate
 import importlib.resources as pkg_resources
+from platform_manager import messenger
 
 logging.basicConfig(level=logging.INFO)
-
+messenger.create_topic('model_deploy_request')
 
 def clear(path):
     os.remove(path + '.zip')
@@ -67,13 +68,16 @@ def upload_model():
                               "content": file, "readme":readme, "contract": model_contract})
         logging.info('Model uploaded successfully')
         clear('/tmp/' + ModelId)
-        url = module_config['deployer_master'] + '/model'
-        logging.info('Sending model to deployer')
+        messenger.send_message('deployment_request', {"ModelId": ModelId, "model_name": model_name})
+        logging.info('Model deployment request has been written to kafka')
+        return 'Model uploaded successfully'
+        # url = module_config['deployer_master'] + '/model'
+        # logging.info('Sending model to deployer')
 
-        response = requests.post(
-            url, json={"ModelId": ModelId, "model_name": model_name}).content
+        # response = requests.post(
+        #     url, json={"ModelId": ModelId, "model_name": model_name}).content
 
-        return response.decode('ascii')
+        # return response.decode('ascii')
 
 
 @app.route('/get-running-models', methods=['GET'])
