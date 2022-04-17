@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify
 import requests
 import logging
 import uuid
@@ -34,7 +34,7 @@ def deploy_model(message):
                             "type": "model",
                              "model_id": model_id,
                              "model_name": model_name,
-                             "status": "pending",
+                             "status": "init",
                              "container_id": "",
                              "hostname": "",
                              "ip": "",
@@ -60,7 +60,8 @@ def deploy_app(message):
                              "app_name": app_name,
                              "application_id": application_id,
                              "sched_id": sched_id,
-                             "status": "pending",
+                             "sensor_ids": sensor_ids,
+                             "status": "init",
                              "container_id": "",
                              "hostname": "",
                              "ip": "",
@@ -89,9 +90,6 @@ def stopInstance(message):
 def kafka_thread():
     logging.info("Inside kafka thread")
     while True:
-        while not worker_status():
-            logging.info("No workers available")
-            time.sleep(5)
         logging.info("Checking for new requests")
         for message in consumer:
             message = json.loads(message.value.decode('utf-8'))
@@ -106,31 +104,47 @@ def kafka_thread():
                 threading.Thread(target=stopInstance, args=(message,)).start()            
         logging.info("No new model deployments")
 
-@app.route('/deployed', methods=['POST'])
-def update_deployed_status():
-    instance_id = request.json['instance_id']
-    res = request.json['res']
-    # update instance status
-    db.instances.update_one({"instance_id": instance_id}, {"$set": {
-                            "status": res['container_status'],
-                            "container_id": res['container_id'],
-                            "hostname": res['host_name'],
-                            "ip": res['host_ip'],
-                            "port": res['port']}})
-    logging.info('Updated instance db status')
-    return {"Status": "success"}
+def execute_pending():
+    for instance in db.instances.find({"status": "init"}):
+        logging.info("Executing pending instance ")
+        if instance['type'] == 'model':
+            logging.info("Executing model instance")
+            requests.post(f'{module_config["load_balancer"]}/model',
+                        json={'ModelId': instance['model_id'], 'InstanceId': instance['instance_id']})
+            logging.info("Sent request to model service")
+        elif instance['type'] == 'app':
+            logging.info("Executing app instance")
+            requests.post(f'{module_config["load_balancer"]}/app', json={
+                        'ApplicationID': instance['application_id'], 'InstanceId': instance['instance_id'], 'sensor_ids': instance['sensor_ids'],'sched_id':instance['sched_id']})
+            logging.info("Sent request to app service")
+    logging.info("Executed all pending instances")
+        
+
+# @app.route('/deployed', methods=['POST'])
+# def update_deployed_status():
+#     instance_id = request.json['instance_id']
+#     res = request.json['res']
+#     # update instance status
+#     db.instances.update_one({"instance_id": instance_id}, {"$set": {
+#                             "status": res['container_status'],
+#                             "container_id": res['container_id'],
+#                             "hostname": res['host_name'],
+#                             "ip": res['host_ip'],
+#                             "port": res['port']}})
+#     logging.info('Updated instance db status')
+#     return {"Status": "success"}
 
 
-@app.route('/stopped', methods=['POST'])
-def update_stopped_status():
-    instance_id = request.json['instance_id']
-    container_status = request.json['container_status']
-    logging.info('InstanceID: ' + instance_id)
-    logging.info('Container status: ' + container_status)
-    # remove instance from db
-    db.instances.delete_one({"instance_id": instance_id})
-    logging.info('Removed instance from db')
-    return {"Status": "success"}
+# @app.route('/stopped', methods=['POST'])
+# def update_stopped_status():
+#     instance_id = request.json['instance_id']
+#     container_status = request.json['container_status']
+#     logging.info('InstanceID: ' + instance_id)
+#     logging.info('Container status: ' + container_status)
+#     # remove instance from db
+#     db.instances.delete_one({"instance_id": instance_id})
+#     logging.info('Removed instance from db')
+#     return {"Status": "success"}
 
 def get_load_thread(worker):
     ip = worker['ip']

@@ -36,11 +36,18 @@ def Deploy(dockerfile_path, image_tag, instance_id, package,job_id):
     logging.info('Removed temporary file: /tmp/'+package+'.zip')
     shutil.rmtree(f'/tmp/{package}/')
     logging.info('Removed temporary directory /tmp/'+package+'/')
-    requests.post(module_config['deployer_master']+'/deployed', json={
-        'instance_id': instance_id,
-        'res': res
-    })
-    logging.info('Sent update to master')
+    db.instances.update_one({"instance_id": instance_id}, {"$set": {
+                            "status": res['container_status'],
+                            "container_id": res['container_id'],
+                            "hostname": res['host_name'],
+                            "ip": res['host_ip'],
+                            "port": res['port']}})
+    logging.info('Updated instance db status')
+    # requests.post(module_config['deployer_master']+'/deployed', json={
+    #     'instance_id': instance_id,
+    #     'res': res
+    # })
+    # logging.info('Sent update to master')
     db.jobs.update_one({'job_id': job_id}, {"$set": {'status': 'done'}})
 
 
@@ -59,10 +66,12 @@ def stopInstance(container_id, instance_id, job_id):
         logging.info('Removed container: ' + container_id)
     except Exception:
         logging.info('Container not found')
-    requests.post(module_config['deployer_master']+'/stopped',
-                  json={'instance_id': instance_id, 'container_status': 'stopped'})
-    logging.info('Sent update to master')
+    # requests.post(module_config['deployer_master']+'/stopped',
+    #               json={'instance_id': instance_id, 'container_status': 'stopped'})
+    # logging.info('Sent update to master')
+    db.instances.delete_one({"instance_id": instance_id})
     db.jobs.update_one({'_id': job_id}, {"$set": {'status': 'done'}})
+    logging.info('Removed instance from db')
 
 def calculate_mem_percentage(stats):
     mem_used = stats["memory_stats"]["usage"] - stats["memory_stats"]["stats"]["cache"] + \

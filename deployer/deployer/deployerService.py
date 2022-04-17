@@ -35,6 +35,9 @@ def deploy_model():
     logging.info("Creating deployment record")
     job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "model","status": "pending", "instance_id": instance_id, "model_id": model_id, "job_id": job_id})
+    logging.info("Job created")
+    db.instances.update_one({"InstanceId": instance_id}, {"$set": {"status": "pending"}})
+    logging.info("Instance status updated")
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id,job_id)).start()
     return {"InstanceID": instance_id, "Status": "pending"}
@@ -61,6 +64,9 @@ def deploy_app():
     logging.info("Creating deployment record")
     job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "sched_id": sched_id, "job_id": job_id})
+    logging.info("Job created")
+    db.instances.update_one({"InstanceId": instance_id}, {"$set": {"status": "pending"}})
+    logging.info("Instance status updated")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensors, instance_id,job_id)).start()
     return {"InstanceID": instance_id,"sched_id":sched_id, "Status": "pending"}
