@@ -68,7 +68,7 @@ def upload_model():
                               "content": file, "readme":readme, "contract": model_contract})
         logging.info('Model uploaded successfully')
         clear('/tmp/' + ModelId)
-        messenger.send_message('model_deploy_request', {"ModelId": ModelId, "model_name": model_name})
+        messenger.send_message('model_deploy_request', {"type":"model","ModelId": ModelId, "model_name": model_name})
         logging.info('Model deployment request has been written to kafka topic model_deploy_request')
         return 'Model uploaded successfully'
         # url = module_config['deployer_master'] + '/model'

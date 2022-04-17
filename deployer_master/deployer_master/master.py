@@ -2,7 +2,7 @@ from flask import jsonify, request
 import requests
 import logging
 import uuid
-from deployer_master import app, db, module_config, kafka_server
+from deployer_master import app, db, module_config, kafka_server, messenger
 import threading
 import time 
 import json
@@ -21,9 +21,7 @@ def worker_status():
 def index():
     return 'Deployer Master is running'
 
-model_consumer = KafkaConsumer('model_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
-app_consumer = KafkaConsumer('app_deploy_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
-stop_instance_consumer = KafkaConsumer('stop_instance_request', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
+consumer = KafkaConsumer('to_deployer_master', bootstrap_servers=kafka_server, group_id='deployer', enable_auto_commit=True)
 
 def deploy_model(message):
     logging.info("Deploying model " + str(message))
@@ -47,24 +45,12 @@ def deploy_model(message):
     logging.info("Sent request to model service")
     return res.text
 
-def model_deployment_thread():
-    logging.info("Inside model deployment thread")
-    while True:
-        while not worker_status():
-            logging.info("No workers available")
-            time.sleep(5)
-        logging.info("Checking for new model deployments")
-        for message in model_consumer:
-            logging.info("Received new model deployment request")
-            threading.Thread(target=deploy_model, args=(json.loads(message.value.decode('utf-8')),)).start()
-        logging.info("No new model deployments")
 
-@app.route('/app', methods=['POST'])
-def deploy_app():
-    application_id = request.json['ApplicationID']
-    app_name = request.json['app_name']
-    sched_id = request.json['sched_id']
-    sensor_ids = request.json['sensor_ids']
+def deploy_app(message):
+    application_id = message['ApplicationID']
+    app_name = message['app_name']
+    sched_id = message['sched_id']
+    sensor_ids = message['sensor_ids']
     logging.info("ApplicationID: " + application_id)
     instance_id = str(uuid.uuid4())
     logging.info("InstanceID: " + instance_id)
@@ -83,8 +69,42 @@ def deploy_app():
     res = requests.post(f'{module_config["load_balancer"]}/app', json={
                         'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id})
     logging.info("Sent request to app service")
+    messenger.send_message('from_deployer_master', res.text)
     return res.text
 
+def stopInstance(message):
+    instance_id = message['instance_id']
+    logging.info("InstanceID: " + instance_id)
+    instance = db.instances.find_one({"instance_id": instance_id})
+    if instance is None:
+        return {"InstanceID": instance_id, "Status": "not found"}
+    if instance['status'] != 'running':
+        return {"InstanceID": instance_id, "Status": "not running"}
+    ip = instance['ip']
+    logging.info('Connecting to ' + ip)
+    res = requests.post(f'http://{ip}:9898/stop-instance', json={
+                        'InstanceID': instance_id, 'ContainerID': instance['container_id']})
+    return res.text
+
+def kafka_thread():
+    logging.info("Inside kafka thread")
+    while True:
+        while not worker_status():
+            logging.info("No workers available")
+            time.sleep(5)
+        logging.info("Checking for new requests")
+        for message in consumer:
+            message = json.loads(message.value.decode('utf-8'))
+            if message['type'] == 'model':
+                logging.info("New model deploy request")
+                threading.Thread(target=deploy_model, args=(message,)).start()
+            elif message['type'] == 'app':
+                logging.info("Received app deploy request")
+                threading.Thread(target=deploy_app, args=(message,)).start()
+            elif message['type'] == 'stop':
+                logging.info("Received stop instance request")
+                threading.Thread(target=stopInstance, args=(message,)).start()            
+        logging.info("No new model deployments")
 
 @app.route('/deployed', methods=['POST'])
 def update_deployed_status():
@@ -111,22 +131,6 @@ def update_stopped_status():
     db.instances.delete_one({"instance_id": instance_id})
     logging.info('Removed instance from db')
     return {"Status": "success"}
-
-
-@app.route('/stop-instance', methods=['POST'])
-def stopInstance():
-    instance_id = request.json['instance_id']
-    logging.info("InstanceID: " + instance_id)
-    instance = db.instances.find_one({"instance_id": instance_id})
-    if instance is None:
-        return {"InstanceID": instance_id, "Status": "not found"}
-    if instance['status'] != 'running':
-        return {"InstanceID": instance_id, "Status": "not running"}
-    ip = instance['ip']
-    logging.info('Connecting to ' + ip)
-    res = requests.post(f'http://{ip}:9898/stop-instance', json={
-                        'InstanceID': instance_id, 'ContainerID': instance['container_id']})
-    return res.text
 
 def get_load_thread(worker):
     ip = worker['ip']
