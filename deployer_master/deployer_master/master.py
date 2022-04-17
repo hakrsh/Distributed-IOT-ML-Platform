@@ -13,8 +13,12 @@ logging.basicConfig(level=logging.INFO)
 
 def worker_status():
     for worker in module_config['workers']:
-        if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
-            return True
+        try:
+            if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
+                time.sleep(5)
+                return True
+        except:
+            continue
     return False
 
 @app.route('/')
@@ -93,6 +97,9 @@ def kafka_thread():
         logging.info("Checking for new requests")
         for message in consumer:
             message = json.loads(message.value.decode('utf-8'))
+            while worker_status() == False:
+                logging.info("Waiting for workers to come online")
+                time.sleep(2)
             if message['type'] == 'model':
                 logging.info("New model deploy request")
                 threading.Thread(target=deploy_model, args=(message,)).start()
@@ -106,6 +113,9 @@ def kafka_thread():
 
 def execute_pending():
     for instance in db.instances.find({"status": "init"}):
+        while worker_status() == False:
+            logging.info("Waiting for workers to come online")
+            time.sleep(2)
         logging.info("Executing pending instance ")
         if instance['type'] == 'model':
             logging.info("Executing model instance")
