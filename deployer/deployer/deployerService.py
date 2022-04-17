@@ -36,7 +36,7 @@ def deploy_model():
     job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "model","status": "pending", "instance_id": instance_id, "model_id": model_id, "job_id": job_id})
     logging.info("Job created")
-    db.instances.update_one({"InstanceId": instance_id}, {"$set": {"status": "pending"}})
+    db.instances.update_one({"instance_id": instance_id}, {"$set": {"status": "pending"}})
     logging.info("Instance status updated")
     threading.Thread(target=deploy_model_thread,
                      args=(model_id, instance_id,job_id)).start()
@@ -49,7 +49,7 @@ def deploy_app_thread(application_id, sensor_id, instance_id,job_id):
         f.write(fs.get(application['content']).read())
     logging.info('Got application: ' + application_id + ' from database')
     image_name = appDeployer.run(
-        f'/tmp/{instance_id}.zip', sensor_id, instance_id)
+        f'/tmp/{instance_id}.zip', sensor_id, instance_id, application['app_contract'])
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
                      'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id,'job_id':job_id}).start()
 
@@ -65,7 +65,7 @@ def deploy_app():
     job_id = str(uuid.uuid4())
     db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "sched_id": sched_id, "job_id": job_id})
     logging.info("Job created")
-    db.instances.update_one({"InstanceId": instance_id}, {"$set": {"status": "pending"}})
+    db.instances.update_one({"instance_id": instance_id}, {"$set": {"status": "pending"}})
     logging.info("Instance status updated")
     threading.Thread(target=deploy_app_thread, args=(
         application_id, sensors, instance_id,job_id)).start()

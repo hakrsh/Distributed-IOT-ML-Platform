@@ -1,5 +1,5 @@
 FROM python:3
-ADD {{ contract.dir }} {{ contract.dir }}
+ADD {{ contract.root_dir }} {{ contract.root_dir }}
 COPY requirements.txt .
 RUN pip install -r requirements.txt 
 EXPOSE {{ contract.port }}

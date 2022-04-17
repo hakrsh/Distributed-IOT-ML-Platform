@@ -12,8 +12,7 @@ def run(package, sensors, app_id,app_contract):
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('/tmp/'+app_id)
     logging.info('Extracted package: ' + package)
-    contract = json.load(open(f'/tmp/{app_id}/app/app_contract.json'))
-    image_name = contract['name']
+    image_name = app_contract['name']
     logging.info('Generating sensor interface')
     template = Template(pkg_resources.read_text('deployer.app_deployer','sensor_template.j2'))
     with open(f'/tmp/{app_id}/{app_contract["sensor_interface"]}', 'w') as f:
