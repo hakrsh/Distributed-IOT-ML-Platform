@@ -3,4 +3,4 @@ ADD {{ contract.root_dir }} {{ contract.root_dir }}
 COPY requirements.txt .
 RUN pip install -r requirements.txt 
 EXPOSE {{ contract.port }}
-CMD [ "python3","{{ contract.entry_point}}" ]
+CMD {{contract.cmd}}

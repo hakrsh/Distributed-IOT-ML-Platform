@@ -14,13 +14,16 @@
     "name": {
       "type": "string"
     },
-    "entry_point": {
+    "cmd": {
       "type": "string"
     },
     "port": {
       "type": "integer"
     },
     "sensor_interface": {
+      "type": "string"
+    },
+    "model_interface": {
       "type": "string"
     },
     "sensors": {
@@ -101,9 +104,10 @@
     "secret_key",
     "root_dir",
     "name",
-    "entry_point",
+    "cmd",
     "port",
     "sensor_interface",
+    "model_interface",
     "sensors",
     "health_check",
     "requirements"

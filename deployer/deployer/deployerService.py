@@ -87,11 +87,11 @@ def stop_instance():
 def execute_job(job_id):
     job = db.jobs.find_one({"job_id": job_id})
     if job['type'] == 'model':
-        deploy_model_thread(job['model_id'], job['instance_id'])
+        deploy_model_thread(job['model_id'], job['instance_id'],job_id)
     elif job['type'] == 'app':
-        deploy_app_thread(job['application_id'], job['sensor_ids'], job['instance_id'])
+        deploy_app_thread(job['application_id'], job['sensor_ids'], job['instance_id'],job_id)
     elif job['type'] == 'stop_instance':
-        stopInstance(job['instance_id'], job['container_id'], job['job_id'])
+        stopInstance(job['instance_id'], job['container_id'], job['job_id'],job_id)
     else:
         logging.info("Job type not recognized")
 
