@@ -32,7 +32,7 @@ def deploy_model(message):
     model_id = message['ModelId']
     model_name = message['model_name']
     logging.info('ModelID: ' + model_id)
-    instance_id = str(uuid.uuid4())
+    instance_id = str(uuid.uuid4())[:8]
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id,
                             "type": "model",
@@ -56,7 +56,7 @@ def deploy_app(message):
     sched_id = message['sched_id']
     sensor_ids = message['sensor_ids']
     logging.info("ApplicationID: " + application_id)
-    instance_id = str(uuid.uuid4())
+    instance_id = str(uuid.uuid4())[:8]
     logging.info("InstanceID: " + instance_id)
     db.instances.insert_one({"instance_id": instance_id,
                             "type": "app",

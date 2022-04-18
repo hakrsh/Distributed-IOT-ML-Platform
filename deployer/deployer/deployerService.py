@@ -33,7 +33,7 @@ def deploy_model():
     instance_id = request.json['InstanceId']
     logging.info("InstanceID: " + instance_id)
     logging.info("Creating deployment record")
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())[:8]
     db.jobs.insert_one({"type": "model","status": "pending", "instance_id": instance_id, "model_id": model_id, "job_id": job_id})
     logging.info("Job created")
     db.instances.update_one({"instance_id": instance_id}, {"$set": {"status": "pending"}})
@@ -62,7 +62,7 @@ def deploy_app():
     logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
     logging.info("Creating deployment record")
-    job_id = str(uuid.uuid4())
+    job_id = str(uuid.uuid4())[:8]
     db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "sched_id": sched_id, "job_id": job_id})
     logging.info("Job created")
     db.instances.update_one({"instance_id": instance_id}, {"$set": {"status": "pending"}})

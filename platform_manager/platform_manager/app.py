@@ -37,7 +37,7 @@ def upload_model():
         model_name = request.form['model_name']
         if db.models.find_one({'ModelName': model_name}) is not None:
             return 'Model already exists'
-        ModelId = str(uuid.uuid4())
+        ModelId = str(uuid.uuid4())[:8]
         logging.info('ModelId: ' + ModelId)
         content = request.files['model_zip'].read()
         model_contract = json.loads(request.files['model_contract'].read())
@@ -101,7 +101,7 @@ def upload_app():
         running_models = json.loads(get_running_models())
         return render_template('upload_app.html', models=running_models)
     if request.method == 'POST':
-        ApplicationID = str(uuid.uuid4())
+        ApplicationID = str(uuid.uuid4())[:8]
         ApplicationName = request.form.get('ApplicationName')
         if db.applications.find_one({"ApplicationId": ApplicationID}):
             return 'Application already exists'
