@@ -1,8 +1,10 @@
-from model_request_handler.app import start, get_running_models, db, models
+import logging
+from model_request_handler.app import start, get_running_models
 import threading
+logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
-    if len(list(db.model_map.find())) != 0:
-        models = db.model_map.find_one()
+    logging.info('Starting db watcher')
     threading.Thread(target=get_running_models, args=()).start()
+    logging.info('Starting server')
     start()

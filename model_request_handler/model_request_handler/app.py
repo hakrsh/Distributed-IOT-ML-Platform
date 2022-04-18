@@ -6,6 +6,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 def get_running_models():
+    logging.info('Starting db watcher')
+    logging.info('Waiting for models to be deployed')
+    while len(list(db.instances.find({'type': 'model'}))) == 0:
+        continue
     instances = db.instances
     # if there any changes in instances collections update models hashmap
     for change in instances.watch():
