@@ -2,7 +2,7 @@ import schedule
 import time
 import requests
 import datetime
-from scheduler import module_config, db
+from scheduler import module_config, db, messenger
 import logging
 import json
 
@@ -72,18 +72,20 @@ def call_deployer(query, end_time):
     print("Scheduling")
     try:
         print("Doing job....")
-        response = requests.post(f"{module_config['deployer_master']}app",json=query)
-        print(type(response.text))
-        print(type(json.loads(response.text)))
-        response = json.loads(response.text)
-        instance_id = response["InstanceID"]
-        print(instance_id)
-        update_instance_id(instance_id, query['sched_id'])
-        delta,time_to_execute = get_scheduled_time(end_time)
-        if(delta=="Invalid time"):
-            return "Invalid time"
-        schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
-        print(instance_id)
+        messenger.send_message('to_deployer_master', query)
+        logging.info("Wrote to kafka topic: to_deployer")
+        # response = requests.post(f"{module_config['deployer_master']}app",json=query)
+        # print(type(response.text))
+        # print(type(json.loads(response.text)))
+        # response = json.loads(response.text)
+        # instance_id = response["InstanceID"]
+        # print(instance_id)
+        # update_instance_id(instance_id, query['sched_id'])
+        # delta,time_to_execute = get_scheduled_time(end_time)
+        # if(delta=="Invalid time"):
+        #     return "Invalid time"
+        # schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
+        # print(instance_id)
         return schedule.CancelJob
 
     except Exception as e:

@@ -155,6 +155,7 @@ def schedule():
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
     sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, start_time, end_time)
     query = {
+        "type": "app",
         "ApplicationID":app_id,
         "app_name":app_name,
         "sensor_ids":sensor_to_func_mapping,
@@ -172,6 +173,7 @@ def reshedule(instance_id):
     end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
     new_sched_id = insert_into_db(app_data["Application_ID"], app_data["app_name"], app_data["sensor_info"], start_time, end_time)
     query = {
+        "type":"app",
         "ApplicationID":app_data["Application_ID"],
         "app_name":app_data["app_name"],
         "sensor_ids":app_data["sensor_info"],
