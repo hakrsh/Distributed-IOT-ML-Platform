@@ -62,7 +62,6 @@ def refresh_data():
     data = dict()
     data["app"] = app_data
     data["sensor"] = sensor_data
-    print("dataaaaaaaaaaaaaaa",data)
     return data
 
 def insert_into_db(app_id, app_name, sensor_info, start_time, end_time):
