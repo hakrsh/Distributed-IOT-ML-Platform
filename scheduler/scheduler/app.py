@@ -15,13 +15,24 @@ logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
 
+db_sensors = client["sensors"]
+sensor_config = db_sensors["sensordetails"]
+db_app = client.repo
 
 def get_sensor_data():
     
     """ To request sensor details from sensor team"""
     try:
-        sensor_data = requests.get(f"{module_config['sensor_api']}getAllSensors")
-        return sensor_data.json()
+        # app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
+        sensors_cursor = sensor_config.find({})
+        list_of_sensors = []
+        for document in sensors_cursor:
+            sensorinfo = {}
+            sensorinfo["sensor_id"] = document["topic_id"]
+            sensorinfo["sensor_type"] = document["Type"]
+            sensorinfo["sensor_location"] = document["Location"]
+            list_of_sensors.append(sensorinfo)
+        return list_of_sensors
     except Exception as e:
         logging.error(e)
 
@@ -30,8 +41,16 @@ def get_app_data():
 
     """To request apps name from the storage team"""
     try:
-        apps_name = requests.get(f'{module_config["platform_api"]}/api/get-applications')
-        return apps_name.json()
+
+        app_cursor = db_app.applications.find({})
+        apps_name = []
+        for document in app_cursor:
+            appinfo = {}
+            appinfo["ApplicationID"] = document["ApplicationID"]
+            appinfo["ApplicationName"] = document["ApplicationName"]
+            appinfo["Contract"] = document["app_contract"]
+            apps_name.append(appinfo)
+        return apps_name
     except Exception as e:
         logging.error(e)
 
@@ -43,6 +62,7 @@ def refresh_data():
     data = dict()
     data["app"] = app_data
     data["sensor"] = sensor_data
+    print("dataaaaaaaaaaaaaaa",data)
     return data
 
 def insert_into_db(app_id, app_name, sensor_info, start_time, end_time):
