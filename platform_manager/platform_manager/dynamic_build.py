@@ -71,10 +71,13 @@ def restart_services():
     logging.info('Connected to Docker')
     services = ['deployer_master','monitor_ha','monitor_log_aggregator','load_balancer']
     for service in services:
-        container = client.containers.get(service)
-        logging.info('Restarting ' + service)
-        container.restart()
-        logging.info('Restarted ' + service)
+        try:
+            container = client.containers.get(service)
+            logging.info('Restarting ' + service)
+            container.restart()
+            logging.info('Restarted ' + service)
+        except Exception as e:
+            logging.info('Error: ' + str(e))
     logging.info('Updating haproxy config')
     cmd = 'python3 config_haproxy.py'
     subprocess.call(cmd, shell=True)
