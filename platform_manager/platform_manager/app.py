@@ -260,7 +260,7 @@ def create_vm():
 def worker_status_update():
     while True:
         workers = db.workers
-        for worker in module_config['workers']:
+        for worker in json.loads(pkg_resources.read_binary('platform_manager', 'config.json'))['workers']:
             try:
                 if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
                     time.sleep(5)
@@ -273,7 +273,7 @@ def worker_status_update():
                         db.workers.insert_one({"ip": worker["ip"], "name": worker["name"], "status": "down"})
                 else:
                     db.workers.update_one({"ip": worker["ip"]}, {"$set": {"status": "down"}})
-        time.sleep(30)
+        time.sleep(10)
 
 @app.route('/get-workers-status', methods=['GET'])
 def get_workers_status():
