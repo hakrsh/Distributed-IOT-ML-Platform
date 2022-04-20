@@ -5,6 +5,8 @@ import threading
 import time
 import docker
 import requests
+import json
+from kafka import KafkaProducer
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,17 +17,55 @@ mongo_server = module_config["mongo_server"]
 client = pymongo.MongoClient(mongo_server)
 logging.info('Connected to database')
 
+kafka_ip = module_config['kafka_ip']
+kafka_port = module_config['kafka_port']
+
+kafka_server = "{}:{}".format(kafka_ip, kafka_port)
+mongo_server = module_config["mongo_server"]
+
+producer = KafkaProducer(bootstrap_servers=[kafka_server],api_version=(0,10,1), value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+logging.info('Connected to kafka')
+
+deployer_topic = "to_deployer_master"
+
 db = client[ "repo" ]
 instances = db["instances"]
 logging.info('instance database created')
 
-def app_handler(app_info):
+def cleanup(container, container_id, instance_id):
+	logging.info("Cleaning up {}".format(container_id))
+	instances.delete_one({"instance_id":instance_id})
+	logging.info("Removing container from worker")
+	try:
+		container.stop()
+		container.remove()
+	except Exception as e:
+		logging.error(e)
+
+def recover(itype, app_info, instance_id):
+	if itype == "model":
+		logging.info('Sending model to deployer')
+		producer.send(deployer_topic, {"type":"model", "ModelId": app_info["model_id"],"model_name":app_info["model_name"]})
+	else:
+		query = {
+			"type":"app",
+			"ApplicationID":app_info["application_id"],
+			"app_name":app_info["app_name"],
+			"sensor_ids":app_info["sensor_ids"],
+			"sched_id":app_info["sched_id"]
+		}
+		logging.info('Sending app to deployer')
+		producer.send(deployer_topic, query)
+
+def handler(app_info):
 	instance_id = app_info["instance_id"]
 	hostname = app_info["hostname"]
 	ip = app_info["ip"]
 	port = app_info["port"]
 	itype = app_info["type"]	
 	container_id = app_info["container_id"]
+	logging.info(ip)
+	logging.info(port)
 	try:
 		client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
 	except Exception as e:
@@ -34,40 +74,18 @@ def app_handler(app_info):
 		try:
 			cont = client.containers.get(container_id)
 			cont_status = cont.status
-			logging.info("Container {} {}".format(container_id, cont_status))
-			if cont_status != "running":
+			logging.info("{} {} {}".format(itype, container_id, cont_status))
+			if cont_status == "exited":
 				logging.info("Container {} not running".format(container_id))
-				logging.info("Cleaning up {}".format(container_id))
-				instances.delete_one({"instance_id":instance_id})
-				logging.info("Removing container from worker")
-				cont.remove()
+				cleanup(cont, container_id, instance_id)
 				logging.info("Recovering {}".format(container_id))
-				if itype == "model":
-					url = module_config['deployer_master'] + '/model'
-					logging.info('Sending model to deployer')
-					response = requests.post(url, json={"ModelId": app_info["model_id"],"model_name":app_info["model_name"]}).content
-					print(response)
-				else:
-					scheduler_endpoint = module_config["scheduler_endpoint"]
-					reschedule_api = "{}/reschedule/{}".format(scheduler_endpoint, instance_id)
-					response = requests.get(reschedule_api)
+				recover(itype, app_info, instance_id)
 				logging.info("Recovery done!")
 		except Exception as e:
-			logging.info("Container {} not running".format(container_id))
-			instances.delete_one({"instance_id":instance_id})
-			logging.info("Recovering {}".format(container_id))
-			if itype == "model":
-				url = module_config['deployer_master'] + '/model'
-				logging.info('Sending model to deployer')
-				response = requests.post(url, json={"ModelId": app_info["model_id"],"model_name":app_info["model_name"]}).content
-				print(response)
-			else:
-				scheduler_endpoint = module_config["scheduler_endpoint"]
-				reschedule_api = "{}/reschedule/{}".format(scheduler_endpoint, instance_id)
-				response = requests.get(reschedule_api)
-			logging.info("Recovery done!")
+			logging.error(e)	
 		document = db.instances.find_one({"instance_id": instance_id})
 		if document == None:
+			logging.info("Stopping monitoring for {}".format(container_id))
 			break
 		time.sleep(monitor_interval)
 	logging.info("Exiting thread")
@@ -76,9 +94,11 @@ def run():
 	instance_cursor = instances.find({})
 	thread_list = []
 	for document in instance_cursor:
-		thread = threading.Thread(target=app_handler, args=(document,))
-		thread_list.append(thread)
-		thread.start()
+		if document["status"] != "init" or document["status"] != "pending":
+			logging.info("Starting thread for {}".format(document))
+			thread = threading.Thread(target=handler, args=(document,))
+			thread_list.append(thread)
+			thread.start()
 
 	for change in instances.watch():
 		change_type = change['operationType']
@@ -87,9 +107,10 @@ def run():
 			logging.info("Starting thread")
 			document_id = change['documentKey']
 			document = instances.find_one(document_id)
-			thread = threading.Thread(target=app_handler, args=(document,))
-			thread_list.append(thread)
-			thread.start()
+			if document["status"] == "running":
+				thread = threading.Thread(target=handler, args=(document,))
+				thread_list.append(thread)
+				thread.start()
 
 	for thread in thread_list:
 		thread.join()
