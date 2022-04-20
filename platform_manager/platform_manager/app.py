@@ -194,6 +194,21 @@ def view_readme(model_id):
         return 'No readme found'
     return render_readme(model['readme'])
 
+@app.route('/view-contract/<model_id>', methods=['GET'])
+def view_contract(model_id):
+    logging.info('Fetching contract for model: ' + model_id)
+    model = db.models.find_one({"ModelId": model_id})
+    if model is None:
+        return 'Model not found'
+    if model['contract'] is None:
+        return 'No readme found'
+    data = model['contract']
+    response = app.response_class(
+        response=json.dumps(data, indent=4),
+        mimetype='application/json'
+    )
+    return response
+
 @app.route('/get-model-dashboard', methods=['GET'])
 def get_model_dashboard():
     instances = db.instances.find()
@@ -204,7 +219,8 @@ def get_model_dashboard():
             data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
                          'status': instance['status'], 'ip': instance['ip'],
                          'port': instance['port'], 'host': instance['hostname'],
-                         'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id']})
+                         'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id'],
+                         'contract': f'{module_config["platform_api"]}/view-contract/' + instance['model_id']})
     return render_template('model_dashboard.html', data=data)
 
 @app.route('/get-running-applications', methods=['GET'])
