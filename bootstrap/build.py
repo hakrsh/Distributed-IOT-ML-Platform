@@ -11,13 +11,10 @@ services = json.loads(open('services.json').read())
 servers = json.loads(open('platform_config.json').read())
 load_balancer = sys.argv[1]
 
-def build(host,path,image_name,container_name,config_path):
+def build(host,image_name,container_name,config_path):
     logging.info('Connecing to ' + host)
     client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
-    # logging.info('Building ' + image_tag)
-    # client.images.build(path=path, tag=image_tag)
-    # logging.info('Built image: ' + image_tag)
     logging.info('Pulling image: ' + image_name)
     client.images.pull(image_name)
     logging.info('Pulled image: ' + image_name)
@@ -112,10 +109,10 @@ def start_service():
                 logging.info('Copying config to worker')
                 subprocess.call(cmd, shell=True)
                 config_path = f'/home/{worker["user"]}/config.json'
-                build(host,service['path'],image_name,service['name'],config_path)
+                build(host,image_name,service['name'],config_path)
         else:
             config_path = f'/home/{servers["master"]["user"]}/config.json'
-            build(host,service['path'],image_name,service['name'],config_path)
+            build(host,image_name,service['name'],config_path)
     logging.info('Platform has been deployed ' + servers['master']['ip'] + ':2500')
 
 start_service()
