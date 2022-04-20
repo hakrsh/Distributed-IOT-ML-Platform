@@ -194,15 +194,23 @@ def view_readme(model_id):
         return 'No readme found'
     return render_readme(model['readme'])
 
-@app.route('/view-contract/<model_id>', methods=['GET'])
-def view_contract(model_id):
-    logging.info('Fetching contract for model: ' + model_id)
-    model = db.models.find_one({"ModelId": model_id})
-    if model is None:
-        return 'Model not found'
-    if model['contract'] is None:
-        return 'No readme found'
-    data = model['contract']
+@app.route('/view-contract/<type>/<id>', methods=['GET'])
+def view_contract(type, id):
+    logging.info('Fetching contract for : ' + type + ' ' + id)
+    if type == 'model':
+        model = db.models.find_one({"ModelId": id})
+        if model is None:
+            return 'Model not found'
+        if model['contract'] is None:
+            return 'No contract found'
+        data = model['contract']
+    elif type == 'app':
+        application = db.applications.find_one({"ApplicationID": id})
+        if application is None:
+            return 'Application not found'
+        if application['app_contract'] is None:
+            return 'No contract found'
+        data = application['app_contract']
     response = app.response_class(
         response=json.dumps(data, indent=4),
         mimetype='application/json'
@@ -220,7 +228,7 @@ def get_model_dashboard():
                          'status': instance['status'], 'ip': instance['ip'],
                          'port': instance['port'], 'host': instance['hostname'],
                          'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id'],
-                         'contract': f'{module_config["platform_api"]}/view-contract/' + instance['model_id']})
+                         'contract': f'{module_config["platform_api"]}/view-contract/model/' + instance['model_id']})
     return render_template('model_dashboard.html', data=data)
 
 @app.route('/get-running-applications', methods=['GET'])
@@ -233,7 +241,8 @@ def get_running_applications():
             url = "http://" + instance['ip'] + ':' + str(instance['port'])
             data.append({'instance_id': instance['instance_id'],
                         'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
-                         'url': url, 'app_name': instance['app_name'], 'status': instance['status']})
+                         'url': url, 'app_name': instance['app_name'], 'status': instance['status'],
+                         'contract': f'{module_config["platform_api"]}/view-contract/app/' + instance['application_id']})
     return render_template("app_dashboard.html", data=data)
 
 

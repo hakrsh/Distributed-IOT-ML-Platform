@@ -96,7 +96,7 @@ def start_service():
     generate_service_config()
     logging.info('Starting service')
     for service in services['services']:
-        image_name = f'{services["username"]}/{service["name"]}'
+        image_name = f'{services["username"]}/{service["name"]}:{service["version"]}'
         host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
         # host = 'unix://var/run/docker.sock'
         if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
