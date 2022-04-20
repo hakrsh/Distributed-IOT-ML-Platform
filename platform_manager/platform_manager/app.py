@@ -1,6 +1,7 @@
 import json
 import subprocess
 import threading
+import time
 from flask import request, render_template, jsonify
 import requests
 import uuid
@@ -256,6 +257,31 @@ def create_vm():
     threading.Thread(target=execute, args=(cmd,)).start()
     return 'VM creation on progress...'
 
+def worker_status_update():
+    while True:
+        workers = db.workers
+        for worker in module_config['workers']:
+            try:
+                if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
+                    time.sleep(5)
+                    if workers.find_one({"ip": worker["ip"]}) is None:
+                        db.workers.insert_one({"ip": worker["ip"], "name": worker["name"], "status": "up"})
+                    else:
+                        db.workers.update_one({"ip": worker["ip"]}, {"$set": {"status": "up"}})
+            except:
+                if workers.find_one({"ip": worker["ip"]}) is None:
+                        db.workers.insert_one({"ip": worker["ip"], "name": worker["name"], "status": "down"})
+                else:
+                    db.workers.update_one({"ip": worker["ip"]}, {"$set": {"status": "down"}})
+        time.sleep(30)
+
+@app.route('/get-workers-status', methods=['GET'])
+def get_workers_status():
+    workers = db.workers.find()
+    data = []
+    for worker in workers:
+        data.append({'ip': worker['ip'], 'name': worker['name'], 'status': worker['status']})
+    return render_template('workers_status.html', workers=data)
 
 def start():
     app.run(host='0.0.0.0', port=5000)

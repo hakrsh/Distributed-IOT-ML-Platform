@@ -1,19 +1,26 @@
 {
-    "kafka_ip": "20.234.8.60",
+    "kafka_ip": "20.223.160.105",
     "kafka_port": "9092",
     "mongo_server": "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority",
-    "sensor_api": "http://20.234.8.60:7000/",
-    "sensor_reg_api": "http://20.234.8.60:7005/",
-    "deployer_master": "http://20.234.8.60:9999/",
+    "sensor_api": "http://20.223.160.105:7000/",
+    "sensor_reg_api": "http://20.223.160.105:7005/",
+    "deployer_master": "http://20.223.160.105:9999/",
     "load_balancer": "http://localhost:9898/",
-    "platform_api": "http://20.234.8.60:5000/",
-    "scheduler": "http://20.234.8.60:8210/",
-    "model_req_handler": "http://20.234.8.60:5050/",
+    "platform_api": "http://20.223.160.105:5000/",
+    "scheduler": "http://20.223.160.105:8210/",
+    "model_req_handler": "http://20.223.160.105:5050/",
     "workers": [
-        {
-            "name": "w2409",
-            "ip": "20.223.185.204"
-        }
+      {
+        "name": "w3ba3",
+        "ip": "20.223.224.47"
+      },
+      {
+        "name": "w9cf9",
+        "ip": "168.63.40.214"
+      }
     ],
-    "frequency": "10"
-}
+    "frequency": "10",
+    "host_ip": "168.63.40.214",
+    "host_name": "w9cf9"
+  }
+  
