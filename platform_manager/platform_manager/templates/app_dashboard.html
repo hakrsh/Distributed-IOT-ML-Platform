@@ -23,12 +23,12 @@
 
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{data.app_name}}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ data.hostname }}</h6>
+                <h5 class="card-title">App Name: {{data.app_name}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Host: {{ data.hostname }}</h6>
                 <p class="card-text">
                     <strong>Instance ID</strong>  : {{ data.instance_id }} <br>
                     <strong>Status</strong>  : {{ data.status }} <br>
-                    <li><a href="{{ data.contract }}" target="_blank">View Contract</a></li>
+                    <a href="{{ data.contract }}" target="_blank">View Contract</a>
                 </p>
                 <a href="{{ data.url }}" target="_blank">
                     <button type="button" class="btn btn-primary card-link">
