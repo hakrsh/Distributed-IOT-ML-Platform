@@ -6,14 +6,11 @@ if number_of_vms < 2 or number_of_vms > 4:
     print("Invalid number of VMs")
     exit(1)
 
-subscription_id = "33f4f7cd-44fe-4cbe-b482-a5bce2fe048b"
 location = "northeurope"
 mongo_server = "mongodb+srv://root:root@ias.tu9ec.mongodb.net/repo?retryWrites=true&w=majority"
 password = "Hackathon@2022"
 
-sub = input('Default subscription id is {}. Do you want to change it? (y/n): '.format(subscription_id[:6] + '...'))
-if sub == 'y':
-    subscription_id = input("Enter subscription id: ")
+subscription_id = input("Enter subscription id: ")
 loc = input(f'Default location is {location} for vm creation Do you want to change it? (y/n): ')
 if loc == 'y':
     location = input("Enter location: ")
