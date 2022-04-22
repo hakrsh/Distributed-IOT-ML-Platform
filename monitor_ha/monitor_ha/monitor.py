@@ -66,10 +66,14 @@ def handler(app_info):
 	container_id = app_info["container_id"]
 	logging.info(ip)
 	logging.info(port)
-	try:
-		client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
-	except Exception as e:
-		logging.error("Could not connect to docker daemon")
+	while True:
+		try:
+			client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+			break
+		except Exception as e:
+			logging.error("Could not connect to docker daemon")
+			logging.info("Retrying connection to docker client")
+	logging.info("Connected to daemon, Starting monitoring")
 	while True:
 		try:
 			cont = client.containers.get(container_id)
@@ -82,7 +86,12 @@ def handler(app_info):
 				recover(itype, app_info, instance_id)
 				logging.info("Recovery done!")
 		except Exception as e:
-			logging.error(e)	
+			logging.error(e)
+			logging.info("Reconnecting to docker client")
+			try:
+				client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+			except Exception as e:
+				logging.error("Could not connect to docker daemon")
 		document = db.instances.find_one({"instance_id": instance_id})
 		if document == None:
 			logging.info("Stopping monitoring for {}".format(container_id))
