@@ -259,4 +259,6 @@ def start():
     t.start()
     pending_jobs = threading.Thread(target = schedule_pending_tasks)
     pending_jobs.start()
+    db_watch_thread = threading.Thread(target=sh.db_change_detector, args=())
+    db_watch_thread.start()
     app.run(debug=True, port = 8210, host='0.0.0.0')

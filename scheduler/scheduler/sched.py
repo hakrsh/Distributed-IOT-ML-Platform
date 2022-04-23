@@ -5,6 +5,9 @@ import datetime
 from scheduler import module_config, db, messenger
 import logging
 import json
+from scheduler import db, client
+from dateutil import parser
+instance_db = client.repo
 
 logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
@@ -117,3 +120,28 @@ def run_schedule():
     while True:
         schedule.run_pending()
         time.sleep(1)
+
+def db_change_detector():
+
+    while len(list(instance_db.instances.find({'type': 'app'}))) == 0:
+        continue
+
+    first_row =  instance_db.instances.find_one({'type': 'app'})
+    instance_id = first_row['instance_id']
+    sched_id = first_row['sched_id']
+    update_instance_id(instance_id, sched_id)
+    end_time = parser.parse(first_row['end_time'])
+    schedule_a_stop_task(end_time,query={"instance_id":instance_id})
+
+    instance_collection = instance_db.instances
+    for change in instance_collection.watch():
+        change_type = change['operationType']
+        if change_type == "insert" and change["fullDocument"]["type"]=="app":
+            instance_id = change["fullDocument"]['instance_id']
+            sched_id = change["fullDocument"]['sched_id']
+            query = {'sched_id':sched_id}
+            update_instance_id(instance_id, sched_id)
+            end_time = parser.parse(change["fullDocument"]['end_time'])
+            schedule_a_stop_task(end_time,query={"instance_id":instance_id})
+            # db.scheduleinfo.update_one(query,{"$set": { "instance_id": instance_id }})
+            # schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
