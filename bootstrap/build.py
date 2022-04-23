@@ -1,8 +1,10 @@
+import shutil
 import docker
 import json
 import logging
 import sys
 import subprocess
+from jinja2 import Template
 
 logging.basicConfig(filename='deploy.log', level=logging.INFO,filemode='w')
 logging.info('Starting deploy')
@@ -80,15 +82,26 @@ def generate_service_config():
     logging.info('Writing config')
     with open('../config.json', 'w') as f:
         json.dump(service_config, f, indent=4)
-    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
-    logging.info('Copyied config to master')
-    subprocess.call(cmd, shell=True)
+    logging.info('Setting up the context for building...')
+    template = Template(open('docker_template.j2').read())
     for service in services['services']:
-        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
-        with open(path, 'w') as outfile:
+        config_path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+        dockerfile_path = '../' + service['name'] + '/Dockerfile'
+        with open(config_path, 'w') as outfile:
             json.dump(service_config, outfile)
-        logging.info('Wrote service config to ' + path)
-    
+        logging.info('Wrote service config to ' + config_path)
+        if service['name'] != 'platform_manager':
+            with open(dockerfile_path, 'w') as outfile:
+                outfile.write(template.render(service=service))
+            logging.info('Wrote dockerfile to ' + dockerfile_path)
+        shutil.copy('wait-for-it.sh', '../' + '/' + service['name'] + '/wait-for-it.sh')
+        shutil.copy('wait-for-kafka.sh', '../' + '/' + service['name'] + '/wait-for-kafka.sh')
+    logging.info('Ready to build')
+    logging.info('Copying config.json to master')
+    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    subprocess.call(cmd, shell=True)
+    logging.info('Copyied config to master')
+
 def start_service():
     generate_service_config()
     logging.info('Starting service')
