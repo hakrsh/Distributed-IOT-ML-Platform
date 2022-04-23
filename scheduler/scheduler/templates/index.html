@@ -38,6 +38,14 @@
                 {% endfor %}
             </select> -->
         </div>
+        <div class="form-group" id="controllers_list">
+            <!-- <label for="sensor_loc">Sensor Type and Location</label>
+            <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
+                {% for loc in sensors %}
+                <option value="{{loc}}">{{loc}}</option>"
+                {% endfor %}
+            </select> -->
+        </div>
         <div class="form-group">
             <label for="datetime">Start Date and Time</label>
             <input type="datetime-local" id="starttime" name="starttime">
@@ -66,13 +74,20 @@
             success: function (data) {
 
                 $("#sensors_list").empty();
+                $("#controllers_list").empty();
+
                 data = JSON.parse(data)
-                for (var i = 0; i < data.length; i++) {
+
+                sensor = data['sensor']
+                controller = data['controller']
+
+                $('#sensors_list').append('<h3> Select sensors </h1>');
+                for (var i = 0; i < sensor.length; i++) {
 
 
-                    var sensor_type = data[i].sensor_type
-                    var count = parseInt(data[i].count)
-                    var sensor_list = data[i].sensors_list
+                    var sensor_type = sensor[i].sensor_type
+                    var count = parseInt(sensor[i].count)
+                    var sensor_list = sensor[i].sensors_list
 
                     if (count == 1) {
                         $('#sensors_list').append('<label for="sensor_loc">Sensor Type: ' + sensor_type + "<br>Select only " + count + " sensor" + '</label>\
@@ -89,6 +104,33 @@
                         for (var j = 0; j < sensor_list.length; j++) {
                             $('#' + id_s).append(
                                 "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                        }
+                    }
+                }
+
+                $('#controllers_list').append('<h3> Select controllers </h1>');
+                for (var i = 0; i < controller.length; i++) {
+
+
+                    var controller_type = controller[i].controller_type
+                    var count = parseInt(controller[i].count)
+                    var controller_list = controller[i].controllers_list
+
+                    if (count == 1) {
+                        $('#controllers_list').append('<label for="controller_loc">controller Type: ' + controller_type + "<br>Select only " + count + " controller" + '</label>\
+                            <select class="form-control form-control-lg" id='+ i + '_controller name="my_controllers" count=' + count + ' multiple>');
+                        var id_s = i + "_controller"
+                        for (var j = 0; j < controller_list.length; j++) {
+                            $('#' + id_s).append(
+                                "<option value=" + controller_type + "-" + controller_list[j][1] + '-' + controller_list[j][0] + '>' + controller_type + "-" + controller_list[j][1] + '</option>');
+                        }
+                    } else {
+                        $('#controllers_list').append('<label for="controller_loc">controller Type: ' + controller_type + "<br>Select only " + count + " controllers" + '</label>\
+                            <select class="form-control form-control-lg" id='+ i + '_controller name="my_controllers" count=' + count + ' multiple>');
+                        var id_s = i + "_controller"
+                        for (var j = 0; j < controller_list.length; j++) {
+                            $('#' + id_s).append(
+                                "<option value=" + controller_type + "-" + controller_list[j][1] + '-' + controller_list[j][0] + '>' + controller_type + "-" + controller_list[j][1] + '</option>');
                         }
                     }
                 }

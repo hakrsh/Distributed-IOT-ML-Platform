@@ -14,8 +14,10 @@ import logging
 logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
+
 db_sensors = client["sensors"]
 sensor_config = db_sensors["sensordetails"]
+controller_config = db_sensors["controllerdetails"]
 db_app = client.repo
 
 def get_sensor_data():
@@ -32,6 +34,25 @@ def get_sensor_data():
             sensorinfo["sensor_location"] = document["Location"]
             list_of_sensors.append(sensorinfo)
         return list_of_sensors
+    except Exception as e:
+        logging.error(e)
+
+def get_controller_data():
+    
+    """ To request controller details from controller team"""
+    try:
+        # app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
+        controllers_cursor = controller_config.find({})
+        list_of_controllers = []
+        for document in controllers_cursor:
+            controllerinfo = {}
+
+            # controllerinfo["controller_id"] = document["topic_id"]
+            controllerinfo["controller_id"] = 1
+            controllerinfo["controller_type"] = document["Type"]
+            controllerinfo["controller_location"] = document["Location"]
+            list_of_controllers.append(controllerinfo)
+        return list_of_controllers
     except Exception as e:
         logging.error(e)
 
@@ -58,9 +79,11 @@ def refresh_data():
     logging.info("Refreshing data from APIs")
     app_data = get_app_data()
     sensor_data = get_sensor_data()
+    controller_data = get_controller_data()
     data = dict()
     data["app"] = app_data
     data["sensor"] = sensor_data
+    data["controller"] = controller_data
     return data
 
 def insert_into_db(app_id, app_name, sensor_info, start_time, end_time):
@@ -123,6 +146,8 @@ def schedule():
     start_time = request.form['starttime']
     end_time = request.form['endtime']
     my_sensors = request.form.getlist('my_sensors')
+    my_controllers = request.form.getlist('my_controllers')
+
     logging.info("User selected data: " + str(app_id) + str(my_sensors) + str(start_time) + str(end_time))
     start_time = format_time(start_time)
     end_time = format_time(end_time)
@@ -133,6 +158,7 @@ def schedule():
     if end_time < start_time:
         error_msg = "End time is less than start time"
         return render_template("error.html", error_msg=error_msg)
+
     sensor_info = {}
     for s in my_sensors:
         s_type, loc, s_id = s.split("-")
@@ -169,11 +195,48 @@ def schedule():
                 error_msg = "select required number of sensors"
                 return render_template("error.html", error_msg=error_msg)
 
+    """Controller to function mapping"""
+
+    controller_info = {}
+    for s in my_controllers:
+        s_type, loc, s_id = s.split("-")
+        if s_type not in controller_info.keys():
+            controller_info[s_type] = [s_id]
+        else:
+            controller_info[s_type].append(s_id)
+
+    req_func = []
+    for app_dict in app_data:
+        if(app_id == app_dict["ApplicationID"]):
+            app_name = app_dict["ApplicationName"]
+            req_func = app_dict["Contract"]["controllers"]
+            break
+    
+
+    func_of_controllers = {}
+    for controller in req_func:
+        type_of_controller = controller["controller_type"]
+        if(type_of_controller in func_of_controllers):
+            func_of_controllers[type_of_controller].append(controller["function"])
+        else:
+            func_of_controllers[type_of_controller] = []
+            func_of_controllers[type_of_controller].append(controller["function"])
+    controller_to_func_mapping =[]
+    for controller_type,funcs in func_of_controllers.items():      
+        for i in range(len(funcs)):
+            d = {}
+            if(len(controller_info[controller_type]) == len(func_of_controllers[controller_type])):
+                d["controller_id"] = controller_info[controller_type][i]
+                d["function"] = funcs[i]
+                controller_to_func_mapping.append(d)
+            else:
+                error_msg = "select required number of controllers"
+                return render_template("error.html", error_msg=error_msg)
+
     # print(sensor_to_func_mapping)
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
     sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, start_time, end_time)
     query = {
-        "type": "app",
         "ApplicationID":app_id,
         "app_name":app_name,
         "sensor_ids":sensor_to_func_mapping,
@@ -191,7 +254,6 @@ def reshedule(instance_id):
     end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
     new_sched_id = insert_into_db(app_data["Application_ID"], app_data["app_name"], app_data["sensor_info"], start_time, end_time)
     query = {
-        "type":"app",
         "ApplicationID":app_data["Application_ID"],
         "app_name":app_data["app_name"],
         "sensor_ids":app_data["sensor_info"],
@@ -211,7 +273,9 @@ def get_app_contract():
     data = refresh_data()
     app_data = data["app"]
     sensor_data = data["sensor"]
+    controller_data = data["controller"]
     list_of_sensors = [[sensor["sensor_id"],sensor['sensor_type'],sensor['sensor_location']] for sensor in sensor_data]
+    list_of_controllers = [[controller["controller_id"],controller['controller_type'],controller['controller_location']] for controller in controller_data]
 
 
     req_sensors = []
@@ -243,7 +307,41 @@ def get_app_contract():
         d["count"] = v[0]
         sensors_of_app_send.append(d)
 
-    return json.dumps(sensors_of_app_send)
+
+    req_controllers = []
+    for app in app_data:
+        if(app["ApplicationID"] == app_id):
+            req_controllers = app["Contract"]["controllers"]
+    
+
+    controllers_of_app = {}
+    for controller in req_controllers:
+        type_of_controller = controller["controller_type"]
+        if(type_of_controller in controllers_of_app):
+            controllers_of_app[type_of_controller][0] +=1
+        else:
+
+            controllers_list = []
+            for type in list_of_controllers:
+                if(type[1] == type_of_controller):
+                    controllers_list.append([type[0],type[2]])
+
+            controllers_of_app[type_of_controller] = [1,[]]
+            controllers_of_app[type_of_controller][1] = controllers_list
+
+    controllers_of_app_send =[]
+    for k,v in controllers_of_app.items():
+        d={}
+        d["controller_type"] = k
+        d["controllers_list"] = v[1]
+        d["count"] = v[0]
+        controllers_of_app_send.append(d)
+
+    data_to_send = {}
+    data_to_send['sensor'] = sensors_of_app_send
+    data_to_send['controller'] = controllers_of_app_send
+
+    return json.dumps(data_to_send)
 
 
 def schedule_pending_tasks():
@@ -277,6 +375,5 @@ def start():
     t.start()
     pending_jobs = threading.Thread(target = schedule_pending_tasks)
     pending_jobs.start()
-    db_watch_thread = threading.Thread(target=sh.db_change_detector, args=())
-    db_watch_thread.start()
     app.run(debug=True, port = 8210, host='0.0.0.0')
+    
