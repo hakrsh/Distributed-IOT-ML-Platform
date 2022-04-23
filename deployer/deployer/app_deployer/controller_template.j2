@@ -1,0 +1,13 @@
+import requests
+import json
+{% for controller in controllers %}
+def {{controller.function}}({{controller.args_list}}):
+    url = "{{controller_api}}/controller/{{controller.controller_id}}"
+    data = {}
+    {% for arg in controller.args %}
+    data["{{arg.name}}"] = {{arg.name}}
+    {% endfor %}
+    response = requests.post(url, data=json.dumps(data))
+    res = json.loads(response.text)
+    return res
+{% endfor %}
