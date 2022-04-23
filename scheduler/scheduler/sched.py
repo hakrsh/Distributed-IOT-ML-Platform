@@ -121,6 +121,8 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
+
+
 def db_change_detector():
 
     while len(list(instance_db.instances.find({'type': 'app'}))) == 0:
