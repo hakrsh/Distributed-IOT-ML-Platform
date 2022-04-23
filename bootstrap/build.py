@@ -90,10 +90,9 @@ def generate_service_config():
         with open(config_path, 'w') as outfile:
             json.dump(service_config, outfile)
         logging.info('Wrote service config to ' + config_path)
-        if service['name'] != 'platform_manager':
-            with open(dockerfile_path, 'w') as outfile:
-                outfile.write(template.render(service=service))
-            logging.info('Wrote dockerfile to ' + dockerfile_path)
+        with open(dockerfile_path, 'w') as outfile:
+            outfile.write(template.render(service=service))
+        logging.info('Wrote dockerfile to ' + dockerfile_path)
         shutil.copy('wait-for-it.sh', '../' + '/' + service['name'] + '/wait-for-it.sh')
         shutil.copy('wait-for-kafka.sh', '../' + '/' + service['name'] + '/wait-for-kafka.sh')
     logging.info('Ready to build')
