@@ -55,6 +55,7 @@ def deploy_app(message):
     app_name = message['app_name']
     sched_id = message['sched_id']
     sensor_ids = message['sensor_ids']
+    controller_ids = message['controller_ids']
     logging.info("ApplicationID: " + application_id)
     instance_id = str(uuid.uuid4())[:8]
     logging.info("InstanceID: " + instance_id)
@@ -65,6 +66,7 @@ def deploy_app(message):
                              "application_id": application_id,
                              "sched_id": sched_id,
                              "sensor_ids": sensor_ids,
+                             "controller_ids": controller_ids,
                              "status": "init",
                              "container_id": "",
                              "hostname": "",
@@ -72,7 +74,7 @@ def deploy_app(message):
                              "port": ""})
     logging.info("Created deployment record")
     res = requests.post(f'{module_config["load_balancer"]}/app', json={
-                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id})
+                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id,'controller_ids':controller_ids})
     logging.info("Sent request to app service")
     messenger.send_message('from_deployer_master', res.text)
     return res.text
@@ -125,7 +127,7 @@ def execute_pending():
         elif instance['type'] == 'app':
             logging.info("Executing app instance")
             requests.post(f'{module_config["load_balancer"]}/app', json={
-                        'ApplicationID': instance['application_id'], 'InstanceId': instance['instance_id'], 'sensor_ids': instance['sensor_ids'],'sched_id':instance['sched_id']})
+                        'ApplicationID': instance['application_id'], 'InstanceId': instance['instance_id'], 'sensor_ids': instance['sensor_ids'],'sched_id':instance['sched_id'], 'controller_ids':instance['controller_ids']})
             logging.info("Sent request to app service")
     logging.info("Executed all pending instances")
         
