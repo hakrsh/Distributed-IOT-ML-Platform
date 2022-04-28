@@ -11,7 +11,8 @@ services = json.loads(open('services.json').read())
 servers = json.loads(open('platform_config.json').read())
 load_balancer = sys.argv[1]
 
-def build(host,image_name,container_name,config_path):
+def deploy(host,image_name,container_name,config_path):
+    logging.info('Deploying ' + container_name)
     logging.info('Connecing to ' + host)
     client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
@@ -48,7 +49,7 @@ def build(host,image_name,container_name,config_path):
                                   volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
     except Exception as e:
         logging.info('Error: ' + str(e))
-    logging.info('Started ' + container_name)
+    logging.info('Deployed ' + container_name)
 
 
 def generate_service_config():
@@ -80,18 +81,21 @@ def generate_service_config():
     logging.info('Writing config')
     with open('../config.json', 'w') as f:
         json.dump(service_config, f, indent=4)
-    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
-    logging.info('Copyied config to master')
-    subprocess.call(cmd, shell=True)
-    for service in services['services']:
-        path = '../' + service['name'] + '/' + service['name'] + '/config.json'
-        with open(path, 'w') as outfile:
-            json.dump(service_config, outfile)
-        logging.info('Wrote service config to ' + path)
     
+    # for service in services['services']:
+    #     config_path = '../' + service['name'] + '/' + service['name'] + '/config.json'
+    #     with open(config_path, 'w') as outfile:
+    #         json.dump(service_config, outfile)
+    #     logging.info('Wrote service config to ' + config_path)
+        
+    logging.info('Copying config.json to master')
+    cmd = 'scp ../config.json ' + servers['master']['user'] + '@' + servers['master']['ip'] + ':~/'
+    subprocess.call(cmd, shell=True)
+    logging.info('Copyied config to master')
+
 def start_service():
     generate_service_config()
-    logging.info('Starting service')
+    logging.info('Starting services...')
     for service in services['services']:
         image_name = f'{services["username"]}/{service["name"]}:{service["version"]}'
         host = 'ssh://' + servers['master']['user'] + '@' + servers['master']['ip']
@@ -109,10 +113,11 @@ def start_service():
                 logging.info('Copying config to worker')
                 subprocess.call(cmd, shell=True)
                 config_path = f'/home/{worker["user"]}/config.json'
-                build(host,image_name,service['name'],config_path)
+                deploy(host,image_name,service['name'],config_path)
         else:
             config_path = f'/home/{servers["master"]["user"]}/config.json'
-            build(host,image_name,service['name'],config_path)
+            deploy(host,image_name,service['name'],config_path)
     logging.info('Platform has been deployed ' + servers['master']['ip'] + ':2500')
 
-start_service()
+if __name__ == '__main__':
+    start_service()
