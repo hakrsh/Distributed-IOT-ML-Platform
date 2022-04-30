@@ -240,7 +240,9 @@ def schedule():
         "ApplicationID":app_id,
         "app_name":app_name,
         "sensor_ids":sensor_to_func_mapping,
-        "sched_id":sched_id
+        "controller_ids":controller_to_func_mapping,
+        "sched_id":sched_id,
+        "type":"app"
     }
     print(query)
     msg = sh.schedule_a_task(start_time, end_time, query=query)
