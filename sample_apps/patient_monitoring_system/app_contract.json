@@ -38,6 +38,7 @@
             "controller_type":"SMS"
         }
     ],
+    "models":["vital_check", "diabetes_check"],
     "health_check":{
         "url":"http://localhost:8080/health",
         "method":"GET",

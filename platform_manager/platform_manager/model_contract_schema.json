@@ -14,6 +14,9 @@
     "name": {
       "type": "string"
     },
+    "tensorflow_support": {
+      "type": "string"
+    },
     "models": {
       "type": "array",
       "items": [
@@ -355,6 +358,7 @@
     "secret_key",
     "root_dir",
     "name",
+    "tensorflow_support",
     "models",
     "requirements",
     "readme",

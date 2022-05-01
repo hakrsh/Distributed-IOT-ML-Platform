@@ -3,6 +3,7 @@
     "secret_key": "top_secret",
     "root_dir": "patient_monitoring",
     "name": "Patient Monitoring",
+    "tensorflow_support":"False",
     "models": [
         {
             "name": "diabetes_checker",

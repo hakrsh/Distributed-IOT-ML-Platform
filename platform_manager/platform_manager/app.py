@@ -1,8 +1,10 @@
+from crypt import methods
 import json
 import subprocess
 import threading
 import time
-from flask import request, render_template, jsonify
+from django.shortcuts import redirect
+from flask import request, render_template, jsonify, url_for
 import requests
 import uuid
 from platform_manager import app, db, module_config, fs
@@ -80,27 +82,31 @@ def upload_model():
 
         # return response.decode('ascii')
 
+app_contract = None
 
 @app.route('/get-running-models', methods=['GET'])
 def get_running_models():
+    global app_contract
+    if app_contract is None:
+        return 'Secret key not set'
     instances = db.instances.find()
     data = []
     for instance in instances:
         if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Model: ' + instance['model_id'])
             model_contract = db.models.find_one({'ModelId': instance['model_id']})['contract']
-            for model in model_contract['models']:
-                model_name = instance['model_name'] + '/' + model['api_endpoint']    
-                model_id = instance['model_id'] + '/' + model['api_endpoint']
-                data.append({'model_id': model_id, 'model_name': model_name})
+            if model_contract['secret_key'] == app_contract['secret_key']:
+                for model in model_contract['models']:
+                    model_name = instance['model_name'] + '/' + model['api_endpoint']    
+                    model_id = instance['model_id'] + '/' + model['api_endpoint']
+                    data.append({'model_id': model_id, 'model_name': model_name})
     return json.dumps(data)
-
 
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
+    global app_contract
     if request.method == 'GET':
-        running_models = json.loads(get_running_models())
-        return render_template('upload_app.html', models=running_models)
+        return render_template('upload_app_contract.html')
     if request.method == 'POST':
         ApplicationID = str(uuid.uuid4())[:8]
         ApplicationName = request.form.get('ApplicationName')
@@ -126,6 +132,22 @@ def upload_app():
         if not os.path.exists(f'/tmp/{ApplicationID}/{app_contract["requirements"]}'):
             return 'Application requirements not found'
         logging.info('Application zip validation passed...')
+        logging.info('Uploading application...')
+        file = ''
+        with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
+            file = fs.put(f, filename=ApplicationID + '.zip')
+        db.applications.insert_one(
+            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
+        logging.info('Application uploaded successfully')
+        clear('/tmp/' + ApplicationID)
+        running_models = json.loads(get_running_models())
+        return render_template('choose_models.html', models=running_models, app_contract=app_contract)
+        
+
+@app.route('/choose-models',methods=['GET','POST'])
+def choose_models():
+    global app_contract
+    if request.method == 'POST':
         logging.info('Binding models to application...')
         model_bindings = []
         i = 1
@@ -142,16 +164,11 @@ def upload_app():
             models[model['model_name']] = module_config['model_req_handler'] + \
                 '/' + model['model_id']
         app_contract['models'] = models
-        logging.info('Uploading application...')
-        file = ''
-        with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
-            file = fs.put(f, filename=ApplicationID + '.zip')
-        db.applications.insert_one(
-            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
-        logging.info('Application uploaded successfully')
-        clear('/tmp/' + ApplicationID)
-        return 'Application stored successfully'
-
+        logging.info('Updating application contract...')
+        db.applications.update_one({'ApplicationID': app_contract['ApplicationID']},{'$set': {'app_contract': app_contract}})
+        logging.info('Application contract updated successfully')
+        return 'Application uploaded successfully'
+           
 @app.route('/api/get-applications', methods=['GET'])
 def fetch_applications():
     applications = db.applications.find()
