@@ -1,10 +1,8 @@
-from crypt import methods
 import json
 import subprocess
 import threading
 import time
-from django.shortcuts import redirect
-from flask import request, render_template, jsonify, url_for
+from flask import request, render_template, jsonify
 import requests
 import uuid
 from platform_manager import app, db, module_config, fs
