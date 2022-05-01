@@ -7,6 +7,9 @@ import requests
 import logging
 import urllib3
 
+from PIL import Image
+from io import BytesIO
+
 logging.basicConfig(level=logging.INFO)
 
 class thread(threading.Thread):
@@ -19,11 +22,14 @@ class thread(threading.Thread):
         self.producer = producer
 
     def run(self):
+        count = 0
         while(True):
             url = "http://"+self.ip+":"+self.port+"/"
             response = requests.get(url=url)
-            res = bytes(response.text, 'utf-8')
-            self.producer.send(str(self.topic_id),res)
+
+            stream = BytesIO(response.content)
+
+            self.producer.send(str(self.topic_id), stream.getvalue())
             logging.info(str(threading.current_thread().ident))
             logging.info("Pushed value for {}".format(self.topic_id))
             sleep(self.frequency)

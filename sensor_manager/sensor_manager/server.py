@@ -31,8 +31,13 @@ logging.info('Sensor database created')
 app = Flask(__name__)
 
 def check_socket(conn_ip, conn_port):
+	print("Checking", flush=True)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	sock.settimeout(1)
+	print("Sock estabilished", flush=True)
 	result = sock.connect_ex((conn_ip,int(conn_port)))
+	print("Connected", flush=True)
 	if result == 0:
 		sock.close()
 		return True
@@ -86,8 +91,10 @@ def register_sensor():
 	qf = int(request.form['qf'])
 	loc = request.form['loc']
 	topic_id = "{}{}".format(ip, port).replace('.','')
+	print(request.form, flush=True)
 	if not check_socket(ip, port):
 		return "Sensor instance not reachable"
+	print("Check done", flush=True)
 	if sensor_config.find({'topic_id':topic_id}).count() > 0:
 		return "Sensor instance already exists!"
 	data_dict = dict() 
@@ -97,7 +104,9 @@ def register_sensor():
 	data_dict["QueryFrequency"] = qf
 	data_dict["Location"] = loc
 	data_dict["topic_id"] = topic_id
+	print("Reached 1", flush=True)
 	sensor_config.insert_one(data_dict)
+	print("Reached 2", flush=True)
 	producerStart(ip, port,qf, topic_id, producer)
 	return "Sensor instance registered successfully!"
 
@@ -111,10 +120,12 @@ def register_controller():
 		return "Controller instance not reachable"
 	if controller_config.find({'IP':ip, 'PORT':port}).count() > 0:
 		return "Controller instance already exists!"
+	controller_id = "{}{}".format(ip, port).replace('.','')
 	data_dict = dict() 
 	data_dict["Type"] = c_type
 	data_dict["IP"] = ip
 	data_dict["PORT"] = port
 	data_dict["Location"] = loc
+	data_dict["controller_id"] = controller_id
 	controller_config.insert_one(data_dict)
 	return "Controller instance registered successfully!"
