@@ -236,11 +236,13 @@ def schedule():
     # print(sensor_to_func_mapping)
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
     sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, start_time, end_time)
+    for controller in req_func:
+        controller["controller_id"] =  1111
     query = {
         "ApplicationID":app_id,
         "app_name":app_name,
         "sensor_ids":sensor_to_func_mapping,
-        "controller_ids":controller_to_func_mapping,
+        "controller_ids":req_func,
         "sched_id":sched_id,
         "type":"app"
     }
