@@ -25,7 +25,7 @@ def run(package, sensors, controllers, app_id,app_contract):
         for arg in controller['args']:
             args += arg['name'] + ', '
         controller['args_list'] = args[:-2]
-    template = Template(pkg_resources.read_text('deployer.app_deployer','controllers_template.j2'))
+    template = Template(pkg_resources.read_text('deployer.app_deployer','controller_template.j2'))
     with open(f'/tmp/{app_id}/{app_contract["controller_interface"]}', 'w') as f:
         f.write(template.render(controllers=controllers,controller_api=module_config['sensor_api']))
     logging.info('Generated ' + app_contract['controller_interface'])
