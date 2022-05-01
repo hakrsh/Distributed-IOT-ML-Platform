@@ -1,9 +1,10 @@
 import ast
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response, request
 import json
 import pymongo
 import logging
 import threading
+import requests
 from kafka import KafkaConsumer
 from sensor_request_handler.config import module_config
 
@@ -44,7 +45,7 @@ class thread(threading.Thread):
     def run(self):
         consumer = KafkaConsumer(self.topic, bootstrap_servers=[kafka_server], enable_auto_commit=True)
         for msg in consumer:
-            buffer[self.topic]=ast.literal_eval(msg.value.decode("utf-8"))
+            buffer[self.topic]=msg.value
 
 def sensorThread(topic,buffer):
     logging.info('Starting consumer')
@@ -69,8 +70,27 @@ def getAllSensors():
         list_of_sensors.append(sensorinfo)
     return jsonify(list_of_sensors)
 
+@app.route("/controller/<controller_id>", methods=["GET", "POST"])
+def send_to_controller(controller_id):
+    controller = controller_config.find_one({'controller_id': controller_id })
+    url = "http://{}:{}/".format(controller["IP"], controller["PORT"])
+    resp = requests.request(
+        method=request.method,
+        url=url,
+        headers={key: value for (key, value) in request.headers if key != 'Host'},
+        data=request.get_data(),
+        cookies=request.cookies,
+        allow_redirects=False)
+    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+    headers = [(name, value) for (name, value) in resp.raw.headers.items()
+               if name.lower() not in excluded_headers]
+
+    response = Response(resp.content, resp.status_code, headers)
+    return response
+
 @app.route("/data/<sensor_id>")
 def getSensorData(sensor_id):
     logging.info("Connected to kafka")
     data=buffer[sensor_id]
-    return jsonify(data)
+    logging.info(type(data))
+    return data
