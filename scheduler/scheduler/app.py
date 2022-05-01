@@ -24,7 +24,6 @@ def get_sensor_data():
     
     """ To request sensor details from sensor team"""
     try:
-        # app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
         sensors_cursor = sensor_config.find({})
         list_of_sensors = []
         for document in sensors_cursor:
@@ -41,12 +40,10 @@ def get_controller_data():
     
     """ To request controller details from controller team"""
     try:
-        # app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
         controllers_cursor = controller_config.find({})
         list_of_controllers = []
         for document in controllers_cursor:
             controllerinfo = {}
-
             # controllerinfo["controller_id"] = document["topic_id"]
             controllerinfo["controller_id"] = 1
             controllerinfo["controller_type"] = document["Type"]
@@ -86,7 +83,7 @@ def refresh_data():
     data["controller"] = controller_data
     return data
 
-def insert_into_db(app_id, app_name, sensor_info, start_time, end_time):
+def insert_into_db(app_id, app_name, sensor_info, controller_info, start_time, end_time):
     logging.info("Inserting into db")
     try:
         sched_id = str(uuid.uuid4())
@@ -94,6 +91,7 @@ def insert_into_db(app_id, app_name, sensor_info, start_time, end_time):
                                             "Application_ID":app_id, 
                                             "app_name":app_name,
                                             "sensor_info":sensor_info, 
+                                            "controller_info": controller_info,
                                             "start_time":str(start_time),
                                             "end_time":str(end_time), 
                                             "instance_id":"blank", 
@@ -111,16 +109,8 @@ def home():
     logging.info("Running scheduler")
     data = refresh_data()
     app_data = data["app"]
-    sensor_data = data["sensor"]
-    # app_lst = [app['ApplicationName'] for app in app_data]
-    # app_lst = list(dict.fromkeys(app_lst))
     app_lst = [{app['ApplicationID']:app['ApplicationName']} for app in app_data]
-    sensor_type = [sensor['sensor_type'] for sensor in sensor_data]
-    sensor_type = list(dict.fromkeys(sensor_type))
-    sensor_loc = [sensor['sensor_location'] for sensor in sensor_data]
-    sensor_loc = list(dict.fromkeys(sensor_loc))
-    sensors = [sensor['sensor_type'] + "-" + sensor['sensor_location'] for sensor in sensor_data]
-    return render_template ("index.html", app_list = app_lst, sensors = sensors)
+    return render_template ("index.html", app_list = app_lst)
   
 
 def format_time(time):
@@ -205,71 +195,49 @@ def schedule():
         else:
             controller_info[s_type].append(s_id)
 
-    req_func = []
+    app_controller_data = []
     for app_dict in app_data:
         if(app_id == app_dict["ApplicationID"]):
             app_name = app_dict["ApplicationName"]
-            req_func = app_dict["Contract"]["controllers"]
+            app_controller_data = app_dict["Contract"]["controllers"]
             break
     
 
     func_of_controllers = {}
-    for controller in req_func:
+    for controller in app_controller_data:
         type_of_controller = controller["controller_type"]
         if(type_of_controller in func_of_controllers):
-            func_of_controllers[type_of_controller].append(controller["function"])
+            func_of_controllers[type_of_controller].append(controller)
         else:
             func_of_controllers[type_of_controller] = []
-            func_of_controllers[type_of_controller].append(controller["function"])
+            func_of_controllers[type_of_controller].append(controller)
     controller_to_func_mapping =[]
-    for controller_type,funcs in func_of_controllers.items():      
-        for i in range(len(funcs)):
+    for controller_type,data in func_of_controllers.items():      
+        for i in range(len(data)):
             d = {}
-            if(len(controller_info[controller_type]) == len(func_of_controllers[controller_type])):
-                d["controller_id"] = controller_info[controller_type][i]
-                d["function"] = funcs[i]
-                controller_to_func_mapping.append(d)
+            # print(type(data), type(controller_info))
+            if(len(controller_info[controller_type]) == len(func_of_controllers[controller_type])): 
+                data[i]["controller_id"] = controller_info[controller_type][i]
+                controller_to_func_mapping.append(data[i])
             else:
                 error_msg = "select required number of controllers"
                 return render_template("error.html", error_msg=error_msg)
 
-    # print(sensor_to_func_mapping)
     logging.info("Sending data to deployer: " + str(app_id) + str(sensor_info))
-    sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, start_time, end_time)
-    for controller in req_func:
-        controller["controller_id"] =  1111
+    sched_id = insert_into_db(app_id, app_name, sensor_to_func_mapping, controller_to_func_mapping, start_time, end_time)
     query = {
         "ApplicationID":app_id,
         "app_name":app_name,
         "sensor_ids":sensor_to_func_mapping,
-        "controller_ids":req_func,
         "sched_id":sched_id,
-        "type":"app"
+        "controller_ids": controller_to_func_mapping,
+        "type" : "app"
     }
     print(query)
     msg = sh.schedule_a_task(start_time, end_time, query=query)
     print(msg)
     return render_template ("deploy.html", time = start_time)
 
-@app.route('/reschedule/<instance_id>', methods = ["GET"])
-def reshedule(instance_id):
-    app_data = db.scheduleinfo.find_one({"instance_id":instance_id})
-    start_time = datetime.now() + timedelta(seconds=2)
-    end_time = datetime.strptime(app_data["end_time"], '%Y-%m-%d %H:%M:%S')
-    new_sched_id = insert_into_db(app_data["Application_ID"], app_data["app_name"], app_data["sensor_info"], start_time, end_time)
-    query = {
-        "ApplicationID":app_data["Application_ID"],
-        "app_name":app_data["app_name"],
-        "sensor_ids":app_data["sensor_info"],
-        "sched_id":new_sched_id
-    }
-    print(query)
-    response = requests.post(f"{module_config['deployer_master']}app",json=query)
-    response = json.loads(response.text)
-    new_instance_id = response["InstanceID"]
-    sh.update_instance_id(new_instance_id, new_sched_id)
-    sh.schedule_a_stop_task(end_time, {"instance_id":new_instance_id})
-    return str(new_instance_id)
 
 @app.route('/get_app_contract',methods =["POST"])  
 def get_app_contract():
@@ -281,13 +249,11 @@ def get_app_contract():
     list_of_sensors = [[sensor["sensor_id"],sensor['sensor_type'],sensor['sensor_location']] for sensor in sensor_data]
     list_of_controllers = [[controller["controller_id"],controller['controller_type'],controller['controller_location']] for controller in controller_data]
 
-
     req_sensors = []
     for app in app_data:
         if(app["ApplicationID"] == app_id):
             req_sensors = app["Contract"]["sensors"]
     
-
     sensors_of_app = {}
     for sensor in req_sensors:
         type_of_sensor = sensor["sensor_type"]
@@ -344,7 +310,6 @@ def get_app_contract():
     data_to_send = {}
     data_to_send['sensor'] = sensors_of_app_send
     data_to_send['controller'] = controllers_of_app_send
-
     return json.dumps(data_to_send)
 
 
@@ -355,7 +320,9 @@ def schedule_pending_tasks():
             "ApplicationID":task["Application_ID"],
             "app_name":task["app_name"],
             "sensor_ids":task["sensor_info"],
-            "sched_id":task["sched_id"]
+            "controller_ids": task["controller_info"],
+            "sched_id":task["sched_id"],
+            "type":"app"
         }
         start_time = datetime.strptime(task["start_time"], '%Y-%m-%d %H:%M:%S')
         if datetime.now() <= start_time:
@@ -370,6 +337,7 @@ def schedule_pending_tasks():
             }
             end_time = datetime.strptime(task["end_time"], '%Y-%m-%d %H:%M:%S')
             if datetime.now() <= end_time:
+                query["type"] = "stop"
                 msg = sh.schedule_a_stop_task(end_time, query=query)
 
 
@@ -379,5 +347,7 @@ def start():
     t.start()
     pending_jobs = threading.Thread(target = schedule_pending_tasks)
     pending_jobs.start()
-    app.run(debug=True, port = 8210, host='0.0.0.0')
+    db_watch_thread = threading.Thread(target=sh.db_change_detector, args=())
+    db_watch_thread.start()
+    app.run(debug = True, port = 8210, host='0.0.0.0')
     

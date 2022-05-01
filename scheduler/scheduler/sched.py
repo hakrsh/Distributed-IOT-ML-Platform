@@ -23,10 +23,10 @@ def update_stopped_status(instance_id):
 
 def get_scheduled_time(time):
     try:
-        # time_to_execute = str(time.hour)+":"+str(time.minute)
         time_to_execute = "{:02d}:{:02d}".format(time.hour,time.minute)
         print(time_to_execute)
         today = datetime.datetime.now()
+        print(today)
         if(today>=time):
             return "Invalid time","None"
         delta = time - today
@@ -46,8 +46,9 @@ def update_instance_id(instance_id, sched_id):
 
 def end_app_instance(query):
     try:
-        response = requests.post(f"{module_config['deployer_master']}stop-instance",json=query).content
-        print(response.decode('ascii'))
+        query["type"] = "stop"
+        messenger.send_message('to_deployer_master', query)
+        logging.info("Wrote to kafka topic: to_deployer")
         print("FROM STOPPING INSTANCE!!!!")
         update_stopped_status(query["instance_id"])
         return schedule.CancelJob
@@ -77,18 +78,6 @@ def call_deployer(query, end_time):
         print("Doing job....")
         messenger.send_message('to_deployer_master', query)
         logging.info("Wrote to kafka topic: to_deployer")
-        # response = requests.post(f"{module_config['deployer_master']}app",json=query)
-        # print(type(response.text))
-        # print(type(json.loads(response.text)))
-        # response = json.loads(response.text)
-        # instance_id = response["InstanceID"]
-        # print(instance_id)
-        # update_instance_id(instance_id, query['sched_id'])
-        # delta,time_to_execute = get_scheduled_time(end_time)
-        # if(delta=="Invalid time"):
-        #     return "Invalid time"
-        # schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
-        # print(instance_id)
         return schedule.CancelJob
 
     except Exception as e:
@@ -124,16 +113,16 @@ def run_schedule():
 
 
 def db_change_detector():
-
-    while len(list(instance_db.instances.find({'type': 'app'}))) == 0:
+    print("***********Db watcher**************")
+    while len(list(instance_db.instances.find())) == 0:
         continue
 
-    first_row =  instance_db.instances.find_one({'type': 'app'})
-    instance_id = first_row['instance_id']
-    sched_id = first_row['sched_id']
-    update_instance_id(instance_id, sched_id)
-    end_time = parser.parse(first_row['end_time'])
-    schedule_a_stop_task(end_time,query={"instance_id":instance_id})
+    # first_row =  instance_db.instances.find_one({'type': 'app'})
+    # instance_id = first_row['instance_id']
+    # sched_id = first_row['sched_id']
+    # update_instance_id(instance_id, sched_id)
+    # end_time = datetime.datetime.strptime(first_row['end_time'], '%Y-%m-%d %H:%M:%S')
+    # schedule_a_stop_task(end_time,query={"instance_id":instance_id})
 
     instance_collection = instance_db.instances
     for change in instance_collection.watch():
@@ -143,7 +132,6 @@ def db_change_detector():
             sched_id = change["fullDocument"]['sched_id']
             query = {'sched_id':sched_id}
             update_instance_id(instance_id, sched_id)
-            end_time = parser.parse(change["fullDocument"]['end_time'])
+            task = db.scheduleinfo.find_one({"sched_id":sched_id})
+            end_time = datetime.datetime.strptime(task['end_time'], '%Y-%m-%d %H:%M:%S')
             schedule_a_stop_task(end_time,query={"instance_id":instance_id})
-            # db.scheduleinfo.update_one(query,{"$set": { "instance_id": instance_id }})
-            # schedule.every(delta.days + 1).days.at(time_to_execute).do(end_app_instance,query = {"instance_id":instance_id})
