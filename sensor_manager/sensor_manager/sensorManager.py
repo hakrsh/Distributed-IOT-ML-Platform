@@ -1,13 +1,8 @@
-import json
-import pymongo
-from flask import Flask
 import threading
 from time import sleep
 import requests
 import logging
-import urllib3
 
-from PIL import Image
 from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)

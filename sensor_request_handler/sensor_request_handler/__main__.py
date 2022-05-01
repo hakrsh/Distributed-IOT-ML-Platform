@@ -8,5 +8,5 @@ if __name__ == "__main__":
 	start_pending_threads()
 	thread = threading.Thread(target=db_change_detector, args=())
 	thread.start()
-	app.run(port=6999,host='0.0.0.0')
+	app.run(port=7000,host='0.0.0.0')
 	thread.join()

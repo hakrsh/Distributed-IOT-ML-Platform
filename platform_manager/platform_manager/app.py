@@ -81,6 +81,7 @@ def upload_model():
         # return response.decode('ascii')
 
 app_contract = None
+ApplicationID = None
 
 @app.route('/get-running-models', methods=['GET'])
 def get_running_models():
@@ -103,6 +104,7 @@ def get_running_models():
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
     global app_contract
+    global ApplicationID
     if request.method == 'GET':
         return render_template('upload_app_contract.html')
     if request.method == 'POST':
@@ -163,7 +165,7 @@ def choose_models():
                 '/' + model['model_id']
         app_contract['models'] = models
         logging.info('Updating application contract...')
-        db.applications.update_one({'ApplicationID': app_contract['ApplicationID']},{'$set': {'app_contract': app_contract}})
+        db.applications.update_one({'ApplicationID': ApplicationID},{'$set': {'app_contract': app_contract}})
         logging.info('Application contract updated successfully')
         return 'Application uploaded successfully'
            
