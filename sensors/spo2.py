@@ -16,9 +16,9 @@ def change_data():
 		time.sleep(2)
 		val = random.randint(95, 100)
 		i += 1
-		if i > 150:
+		if i > 30:
 			val = random.randint(85, 94)
-		if i == 155:
+		if i == 35:
 			i = 0
 
 thread = threading.Thread(target=change_data)
