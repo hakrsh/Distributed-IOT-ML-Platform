@@ -10,5 +10,5 @@ ADD server.py .
 COPY requirements.txt .
 RUN pip install -r requirements.txt 
 RUN pip install flask
-EXPOSE 80
+EXPOSE {{ contract.port }}
 CMD [ "python3","server.py" ]
