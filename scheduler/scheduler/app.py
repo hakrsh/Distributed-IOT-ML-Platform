@@ -44,8 +44,7 @@ def get_controller_data():
         list_of_controllers = []
         for document in controllers_cursor:
             controllerinfo = {}
-            # controllerinfo["controller_id"] = document["topic_id"]
-            controllerinfo["controller_id"] = 1
+            controllerinfo["controller_id"] = document["controller_id"]
             controllerinfo["controller_type"] = document["Type"]
             controllerinfo["controller_location"] = document["Location"]
             list_of_controllers.append(controllerinfo)
