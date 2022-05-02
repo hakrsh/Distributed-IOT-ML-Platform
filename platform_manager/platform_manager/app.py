@@ -110,7 +110,7 @@ def upload_app():
     if request.method == 'POST':
         ApplicationID = str(uuid.uuid4())[:8]
         ApplicationName = request.form.get('ApplicationName')
-        if db.applications.find_one({"ApplicationId": ApplicationID}):
+        if db.applications.find_one({"ApplicationName": ApplicationName}):
             return 'Application already exists'
         content = request.files['app_zip'].read()
         app_contract = json.loads(request.files['app_contract'].read())
