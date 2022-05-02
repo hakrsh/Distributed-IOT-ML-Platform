@@ -161,8 +161,7 @@ def choose_models():
             i += 1
         models = {}
         for model in model_bindings:
-            models[model['model_name']] = module_config['model_req_handler'] + \
-                '/' + model['model_id']
+            models[model['model_name']] = module_config['model_req_handler'] + '/' + model['model_id']
         app_contract['models'] = models
         logging.info('Updating application contract...')
         db.applications.update_one({'ApplicationID': ApplicationID},{'$set': {'app_contract': app_contract}})
