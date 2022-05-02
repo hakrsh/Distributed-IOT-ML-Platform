@@ -12,7 +12,7 @@ def {{model.name}}():
     from {{model.module_path}} import {{model.function_name}}
     {% for method in model.methods %}
     if request.method == '{{method.method_type}}':
-        data = request.{{method.input_type}}
+        data = request.data
         return {{model.function_name}}(data)    
     {% endfor %}
 {% endfor %}
