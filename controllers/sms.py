@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+import json
 url = "https://www.fast2sms.com/dev/bulk"
 
 headers = {
@@ -16,11 +17,10 @@ app = Flask(__name__)
 
 @app.route('/', methods=['POST'])
 def sms():
-    data = request.json
-    print(data)
+    data = request.data
+    data = json.loads(data)
     send_sms(data['phone'],data['msg'])
-    return jsonify({"Status":"success"})
+    return 'ok'
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7500)
-

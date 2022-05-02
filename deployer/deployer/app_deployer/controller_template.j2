@@ -8,6 +8,4 @@ def {{controller.function}}({{controller.args_list}}):
     data["{{arg.name}}"] = {{arg.name}}
     {% endfor %}
     response = requests.post(url, data=json.dumps(data))
-    res = json.loads(response.text)
-    return res
 {% endfor %}
