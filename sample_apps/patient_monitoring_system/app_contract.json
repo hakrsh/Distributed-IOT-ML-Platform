@@ -7,6 +7,7 @@
     "port": 8080,
     "sensor_interface" : "patient_monitoring_system/src/getdata.py",
     "model_interface": "patient_monitoring_system/src/models.json",
+    "controller_interface": "patient_monitoring_system/src/sent_msg.py",
     "sensors":[
         {
             "function":"getspo2",
@@ -21,6 +22,23 @@
             "sensor_type":"Temperature"
         }
     ],
+    "controllers":[
+        {
+            "function":"send_sms",
+            "args":[
+                {
+                    "name":"phone_number",
+                    "type":"string"
+                },
+                {
+                    "name":"message",
+                    "type":"string"
+                }
+            ],
+            "controller_type":"SMS"
+        }
+    ],
+    "models":["vital_check", "diabetes_check"],
     "health_check":{
         "url":"http://localhost:8080/health",
         "method":"GET",

@@ -18,6 +18,6 @@ def run(package, model_id,model_contract):
     logging.info('Moved requirements.txt')
     template = Template(pkg_resources.read_text('deployer.ai_deployer','dockerfile_template.j2'))
     with open(f'/tmp/{model_id}/Dockerfile', 'w') as f:
-        f.write(template.render(dir=model_contract['root_dir']))
+        f.write(template.render(contract=model_contract))
     logging.info('Generated Dockerfile')
     logging.info('Ready to build the model image')

@@ -11,13 +11,10 @@ servers = json.loads(open('platform_config.json').read())
 dynamic_servers = json.loads(open('dynamic_servers.json').read())
 
 
-def build(host,path,image_name,container_name,config_path):
+def build(host,image_name,container_name,config_path):
     logging.info('Connecing to ' + host)
     client = docker.DockerClient(base_url=host)
     logging.info('Connected to Docker')
-    # logging.info('Building ' + image_name)
-    # client.images.build(path=path, tag=image_name)
-    # logging.info('Built image: ' + image_name)
     logging.info('Pulling image ' + image_name)
     client.images.pull(image_name)
     logging.info('Pulled image ' + image_name)
@@ -34,13 +31,10 @@ def build(host,path,image_name,container_name,config_path):
         container_config_path = f'/{container_name}/config.json'
         if container_name == 'deployer' or container_name == 'monitor_logger' :
             client.containers.run(image_name,name=container_name, detach=True, network='host', volumes={'/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
-            config_path: {'bind': container_config_path, 'mode': 'rw'}})
-        elif container_name == "monitor_ha":
-            client.containers.run(image_name,name=container_name, detach=True, network='host', volumes={f"/home/{servers['master']['user']}/.ssh": {'bind': '/root/.ssh', 'mode': 'rw'},
-            config_path: {'bind': container_config_path, 'mode': 'rw'}})
+            config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
         else:
             client.containers.run(image_name,name=container_name, detach=True, network='host',
-                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}})
+                                  volumes={config_path: {'bind': container_config_path, 'mode': 'rw'}},restart_policy={'Name': 'on-failure', 'MaximumRetryCount': 3})
     except Exception as e:
         logging.info('Error: ' + str(e))
     logging.info('Started ' + container_name)
@@ -71,10 +65,13 @@ def restart_services():
     logging.info('Connected to Docker')
     services = ['deployer_master','monitor_ha','monitor_log_aggregator','load_balancer']
     for service in services:
-        container = client.containers.get(service)
-        logging.info('Restarting ' + service)
-        container.restart()
-        logging.info('Restarted ' + service)
+        try:
+            container = client.containers.get(service)
+            logging.info('Restarting ' + service)
+            container.restart()
+            logging.info('Restarted ' + service)
+        except Exception as e:
+            logging.info('Error: ' + str(e))
     logging.info('Updating haproxy config')
     cmd = 'python3 config_haproxy.py'
     subprocess.call(cmd, shell=True)
@@ -90,7 +87,7 @@ def start_service():
     generate_service_config()
     logging.info('Starting service')
     for service in services['services']:
-        image_name = f'{services["username"]}/{service["name"]}'
+        image_name = f'{services["username"]}/{service["name"]}:{services["version"]}'  
         # host = 'unix://var/run/docker.sock'
         if service['name'] == 'deployer' or service['name'] == 'monitor_logger'  or service['name'] == 'system_monitor':
             for worker in dynamic_servers['workers']:
@@ -105,7 +102,7 @@ def start_service():
                 logging.info('Copying config to worker')
                 subprocess.call(cmd, shell=True)
                 config_path = f'/home/{worker["user"]}/config.json'
-                build(host,service['path'],image_name,service['name'],config_path)
+                build(host,image_name,service['name'],config_path)
         
     logging.info('new servers added')
     restart_services()

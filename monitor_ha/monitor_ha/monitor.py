@@ -7,6 +7,7 @@ import docker
 import requests
 import json
 from kafka import KafkaProducer
+from paramiko import SSHException
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,15 +33,30 @@ db = client[ "repo" ]
 instances = db["instances"]
 logging.info('instance database created')
 
-def cleanup(container, container_id, instance_id):
-	logging.info("Cleaning up {}".format(container_id))
-	instances.delete_one({"instance_id":instance_id})
-	logging.info("Removing container from worker")
+thread_list = []
+
+def connect_cleanup_container(hostname, ip, container_id):
+	logging.info("Starting cleanup thread for {} in {}".format(container_id, hostname))
+	while True:
+		try:
+			client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+		except Exception as e:
+			logging.error("Could not connect to docker daemon, retrying")
+			logging.info("Vm cleanup thread retrying connection to docker client")
 	try:
+		container = client.containers.get(container_id)
 		container.stop()
 		container.remove()
 	except Exception as e:
 		logging.error(e)
+
+def cleanup(hostname, ip, container_id, instance_id):
+	logging.info("Cleaning up {}".format(container_id))
+	instances.delete_one({"instance_id":instance_id})
+	logging.info("Removing container from worker")
+	global thread_list
+	thread = threading.Thread(target=connect_cleanup_container, args=(hostname, ip, container_id,))
+	thread_list.append(thread)
 
 def recover(itype, app_info, instance_id):
 	if itype == "model":
@@ -66,10 +82,22 @@ def handler(app_info):
 	container_id = app_info["container_id"]
 	logging.info(ip)
 	logging.info(port)
-	try:
-		client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
-	except Exception as e:
-		logging.error("Could not connect to docker daemon")
+	retry_count = 0
+	while True:
+		try:
+			client = docker.DockerClient(base_url="ssh://{}@{}".format(hostname, ip))
+			break
+		except Exception as e:
+			retry_count += 1
+			if retry_count == 5:
+				logging.info("Container {} not running".format(container_id))
+				cleanup(hostname, ip, container_id, instance_id)
+				logging.info("Recovering {}".format(container_id))
+				recover(itype, app_info, instance_id)
+				logging.info("Recovery done!")
+			logging.error("Could not connect to docker daemon")
+			logging.info("Init thread, Retrying connection to docker client")
+	logging.info("Connected to daemon for {}, Starting monitoring".format(container_id))
 	while True:
 		try:
 			cont = client.containers.get(container_id)
@@ -77,12 +105,18 @@ def handler(app_info):
 			logging.info("{} {} {}".format(itype, container_id, cont_status))
 			if cont_status == "exited":
 				logging.info("Container {} not running".format(container_id))
-				cleanup(cont, container_id, instance_id)
+				cleanup(hostname, ip, container_id, instance_id)
+				logging.info("Recovering {}".format(container_id))
+				recover(itype, app_info, instance_id)
+				logging.info("Recovery done!")
+		except SSHException:
+				logging.info("Host unreachable for {}, rescheduling".format(container_id))
+				cleanup(hostname, ip, container_id, instance_id)
 				logging.info("Recovering {}".format(container_id))
 				recover(itype, app_info, instance_id)
 				logging.info("Recovery done!")
 		except Exception as e:
-			logging.error(e)	
+			logging.error(e)
 		document = db.instances.find_one({"instance_id": instance_id})
 		if document == None:
 			logging.info("Stopping monitoring for {}".format(container_id))
@@ -92,7 +126,7 @@ def handler(app_info):
 
 def run():
 	instance_cursor = instances.find({})
-	thread_list = []
+	global thread_list
 	for document in instance_cursor:
 		if document["status"] != "init" or document["status"] != "pending":
 			logging.info("Starting thread for {}".format(document))

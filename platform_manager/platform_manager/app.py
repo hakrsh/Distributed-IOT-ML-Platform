@@ -1,6 +1,7 @@
 import json
 import subprocess
 import threading
+import time
 from flask import request, render_template, jsonify
 import requests
 import uuid
@@ -79,27 +80,33 @@ def upload_model():
 
         # return response.decode('ascii')
 
+app_contract = None
+ApplicationID = None
 
 @app.route('/get-running-models', methods=['GET'])
 def get_running_models():
+    global app_contract
+    if app_contract is None:
+        return 'Secret key not set'
     instances = db.instances.find()
     data = []
     for instance in instances:
         if instance['type'] == 'model' and instance['status'] == 'running':
             logging.info('Model: ' + instance['model_id'])
             model_contract = db.models.find_one({'ModelId': instance['model_id']})['contract']
-            for model in model_contract['models']:
-                model_name = instance['model_name'] + '/' + model['api_endpoint']    
-                model_id = instance['model_id'] + '/' + model['api_endpoint']
-                data.append({'model_id': model_id, 'model_name': model_name})
+            if model_contract['secret_key'] == app_contract['secret_key']:
+                for model in model_contract['models']:
+                    model_name = instance['model_name'] + '/' + model['api_endpoint']    
+                    model_id = instance['model_id'] + '/' + model['api_endpoint']
+                    data.append({'model_id': model_id, 'model_name': model_name})
     return json.dumps(data)
-
 
 @app.route('/upload-app', methods=['POST', 'GET'])
 def upload_app():
+    global app_contract
+    global ApplicationID
     if request.method == 'GET':
-        running_models = json.loads(get_running_models())
-        return render_template('upload_app.html', models=running_models)
+        return render_template('upload_app_contract.html')
     if request.method == 'POST':
         ApplicationID = str(uuid.uuid4())[:8]
         ApplicationName = request.form.get('ApplicationName')
@@ -125,6 +132,22 @@ def upload_app():
         if not os.path.exists(f'/tmp/{ApplicationID}/{app_contract["requirements"]}'):
             return 'Application requirements not found'
         logging.info('Application zip validation passed...')
+        logging.info('Uploading application...')
+        file = ''
+        with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
+            file = fs.put(f, filename=ApplicationID + '.zip')
+        db.applications.insert_one(
+            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
+        logging.info('Application uploaded successfully')
+        clear('/tmp/' + ApplicationID)
+        running_models = json.loads(get_running_models())
+        return render_template('choose_models.html', models=running_models, app_contract=app_contract)
+        
+
+@app.route('/choose-models',methods=['GET','POST'])
+def choose_models():
+    global app_contract
+    if request.method == 'POST':
         logging.info('Binding models to application...')
         model_bindings = []
         i = 1
@@ -141,16 +164,11 @@ def upload_app():
             models[model['model_name']] = module_config['model_req_handler'] + \
                 '/' + model['model_id']
         app_contract['models'] = models
-        logging.info('Uploading application...')
-        file = ''
-        with open('/tmp/' + ApplicationID + '.zip', 'rb') as f:
-            file = fs.put(f, filename=ApplicationID + '.zip')
-        db.applications.insert_one(
-            {"ApplicationID": ApplicationID, "ApplicationName": ApplicationName, "app_contract": app_contract, "content": file})
-        logging.info('Application uploaded successfully')
-        clear('/tmp/' + ApplicationID)
-        return 'Application stored successfully'
-
+        logging.info('Updating application contract...')
+        db.applications.update_one({'ApplicationID': ApplicationID},{'$set': {'app_contract': app_contract}})
+        logging.info('Application contract updated successfully')
+        return 'Application uploaded successfully'
+           
 @app.route('/api/get-applications', methods=['GET'])
 def fetch_applications():
     applications = db.applications.find()
@@ -194,6 +212,29 @@ def view_readme(model_id):
         return 'No readme found'
     return render_readme(model['readme'])
 
+@app.route('/view-contract/<type>/<id>', methods=['GET'])
+def view_contract(type, id):
+    logging.info('Fetching contract for : ' + type + ' ' + id)
+    if type == 'model':
+        model = db.models.find_one({"ModelId": id})
+        if model is None:
+            return 'Model not found'
+        if model['contract'] is None:
+            return 'No contract found'
+        data = model['contract']
+    elif type == 'app':
+        application = db.applications.find_one({"ApplicationID": id})
+        if application is None:
+            return 'Application not found'
+        if application['app_contract'] is None:
+            return 'No contract found'
+        data = application['app_contract']
+    response = app.response_class(
+        response=json.dumps(data, indent=4),
+        mimetype='application/json'
+    )
+    return response
+
 @app.route('/get-model-dashboard', methods=['GET'])
 def get_model_dashboard():
     instances = db.instances.find()
@@ -204,7 +245,8 @@ def get_model_dashboard():
             data.append({'model_id': instance['model_id'], 'model_name': instance['model_name'],
                          'status': instance['status'], 'ip': instance['ip'],
                          'port': instance['port'], 'host': instance['hostname'],
-                         'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id']})
+                         'url': f'{module_config["platform_api"]}/view-readme/' + instance['model_id'],
+                         'contract': f'{module_config["platform_api"]}/view-contract/model/' + instance['model_id']})
     return render_template('model_dashboard.html', data=data)
 
 @app.route('/get-running-applications', methods=['GET'])
@@ -217,7 +259,8 @@ def get_running_applications():
             url = "http://" + instance['ip'] + ':' + str(instance['port'])
             data.append({'instance_id': instance['instance_id'],
                         'hostname': instance['hostname'], 'ip': instance['ip'], 'port': instance['port'],
-                         'url': url, 'app_name': instance['app_name'], 'status': instance['status']})
+                         'url': url, 'app_name': instance['app_name'], 'status': instance['status'],
+                         'contract': f'{module_config["platform_api"]}/view-contract/app/' + instance['application_id']})
     return render_template("app_dashboard.html", data=data)
 
 
@@ -231,6 +274,31 @@ def create_vm():
     threading.Thread(target=execute, args=(cmd,)).start()
     return 'VM creation on progress...'
 
+def worker_status_update():
+    while True:
+        workers = db.workers
+        for worker in json.loads(pkg_resources.read_binary('platform_manager', 'config.json'))['workers']:
+            try:
+                if requests.get(f'http://{worker["ip"]}:9898').status_code == 200:
+                    time.sleep(5)
+                    if workers.find_one({"ip": worker["ip"]}) is None:
+                        db.workers.insert_one({"ip": worker["ip"], "name": worker["name"], "status": "up"})
+                    else:
+                        db.workers.update_one({"ip": worker["ip"]}, {"$set": {"status": "up"}})
+            except:
+                if workers.find_one({"ip": worker["ip"]}) is None:
+                        db.workers.insert_one({"ip": worker["ip"], "name": worker["name"], "status": "down"})
+                else:
+                    db.workers.update_one({"ip": worker["ip"]}, {"$set": {"status": "down"}})
+        time.sleep(10)
+
+@app.route('/get-workers-status', methods=['GET'])
+def get_workers_status():
+    workers = db.workers.find()
+    data = []
+    for worker in workers:
+        data.append({'ip': worker['ip'], 'name': worker['name'], 'status': worker['status']})
+    return render_template('workers_status.html', workers=data)
 
 def start():
     app.run(host='0.0.0.0', port=5000)

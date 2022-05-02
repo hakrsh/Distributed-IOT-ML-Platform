@@ -1,5 +1,11 @@
+{% if contract.tensorflow_support == True %}
+FROM tensorflow/tensorflow
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 -y --no-install-recommends \
+&& pip install matplotlib mtcnn
+{% else %}
 FROM python:3
-ADD {{ dir }} {{ dir }}
+{% endif %}
+ADD {{ contract.root_dir }} {{ contract.root_dir }}
 ADD server.py .
 COPY requirements.txt .
 RUN pip install -r requirements.txt 

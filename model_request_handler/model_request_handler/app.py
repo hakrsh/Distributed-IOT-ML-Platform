@@ -38,7 +38,7 @@ def get_model(ModelId, endpoint):
     logging.info('ModelId: ' + ModelId)
     if ModelId in models:    
         url = models[ModelId] + '/' + endpoint
-        res = requests.post(url, json=request.json)
+        res = requests.post(url, data=request.data)
         return res.text
     else:
         return 'Model not found'

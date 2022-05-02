@@ -26,6 +26,9 @@
     "model_interface": {
       "type": "string"
     },
+    "controller_interface": {
+      "type": "string"
+    },
     "sensors": {
       "type": "array",
       "items": [
@@ -43,36 +46,55 @@
             "function",
             "sensor_type"
           ]
-        },
+        }
+      ]
+    },
+    "controllers": {
+      "type": "array",
+      "items": [
         {
           "type": "object",
           "properties": {
             "function": {
               "type": "string"
             },
-            "sensor_type": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "function",
-            "sensor_type"
-          ]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "function": {
-              "type": "string"
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "type"
+                  ]
+                }
+              ]
             },
-            "sensor_type": {
+            "controller_type": {
               "type": "string"
             }
           },
           "required": [
             "function",
-            "sensor_type"
+            "args",
+            "controller_type"
           ]
+        }
+      ]
+    },
+    "models": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
         }
       ]
     },
@@ -108,7 +130,10 @@
     "port",
     "sensor_interface",
     "model_interface",
+    "controller_interface",
     "sensors",
+    "controllers",
+    "models",
     "health_check",
     "requirements"
   ]

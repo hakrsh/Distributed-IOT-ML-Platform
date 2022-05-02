@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers Dashboard</title>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <!-- import css file -->
+    <link rel="stylesheet" href="../static/styles.css">
+
+</head>
+
+<body>
+
+    <h1 class="modelHeader">Workers Dashboard</h1>
+
+    <div class="container">
+        {% for worker in workers %}
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Worker Name: {{worker.name}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Status: {{ worker.status }}</h6>
+            </div>
+
+        </div>
+
+        <br>
+        {% endfor %}
+    </div>
+
+
+
+
+
+
+
+</body>
+
+</html>
