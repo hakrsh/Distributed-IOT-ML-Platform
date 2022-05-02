@@ -1,7 +1,6 @@
-{% if contract.tensorflow_support == True %}
+{% if contract.tensorflow_support == "yes" %}
 FROM tensorflow/tensorflow
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 -y --no-install-recommends \
-&& pip install matplotlib mtcnn
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 -y --no-install-recommends
 {% else %}
 FROM python:3
 {% endif %}
