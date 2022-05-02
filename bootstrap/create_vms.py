@@ -13,7 +13,7 @@ logging.basicConfig(filename='create_vm.log',level=logging.INFO,filemode='w')
 
 credential = AzureCliCredential()
 
-def create(subscription_id,vm_name,username,password,location):
+def create(subscription_id,vm_name,username,password,location,vm_size):
     logging.info("Starting...")
     logging.info("Creating Resource Group")
 
@@ -142,7 +142,7 @@ def create(subscription_id,vm_name,username,password,location):
                                                                             }
                                                                         },
                                                                         "hardware_profile": {
-                                                                            "vm_size": "Standard_DS1_v2"
+                                                                            "vm_size": vm_size
                                                                         },
                                                                         "os_profile": {
                                                                             "computer_name": VM_NAME,
@@ -170,12 +170,13 @@ def run():
     server_list = sys.argv[1]
     servers = json.loads(open(server_list).read())
     subscription_id = servers['subscription_id']
+    vm_size = servers['vm_size']
     if 'master' in servers:
         vm_name = servers['master']['user']
         username = servers['master']['user']
         password = servers['master']['pass']
         location = servers['master']['location']
-        ip = create(subscription_id,vm_name,username,password,location)
+        ip = create(subscription_id,vm_name,username,password,location,vm_size)
         logging.info('Master IP: ' + ip)
         servers['master']['ip'] = ip
     
@@ -184,7 +185,7 @@ def run():
         username = worker['user']
         password = worker['pass']
         location = worker['location']
-        ip = create(subscription_id,vm_name,username,password,location)
+        ip = create(subscription_id,vm_name,username,password,location,vm_size)
         logging.info('Worker IP: ' + ip)
         worker['ip'] = ip
     
