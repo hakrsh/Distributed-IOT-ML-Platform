@@ -2,6 +2,7 @@ from flask import Flask, request
 import requests
 import json
 import importlib.resources as pkg_resources
+import requests.exceptions
 
 module_config = json.loads(pkg_resources.read_binary('load_balancer', 'config.json'))
 
@@ -23,14 +24,23 @@ def hello(path):
         minsum = 200
         for ip in worker_ips:
             url = get_sys_usage_endpoint(ip)
-            resp = requests.get(url)
-            usage = resp.text.split()
-            sum = float(usage[0]) + float(usage[1])
-            print(usage)
-            if(sum < minsum):
-                target_ip = ip
-        resp = requests.post(f"http://{target_ip}:9898/{path}", json=request.get_json())
-        return resp.text,resp.status_code
+            try:
+                resp = requests.get(url)
+                resp.raise_for_status()  # Raises a HTTPError if the status is 4xx, 5xxx
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+                print(url,"Down")
+            except requests.exceptions.HTTPError:
+                print("4xx, 5xx")
+            else:
+                # print("All good!") # Proceed to do stuff with `r` 
+                usage = resp.text.split()
+                sum = float(usage[0]) + float(usage[1])
+                print(usage)
+                if(sum < minsum):
+                    target_ip = ip
+        if target_ip:
+            resp = requests.post(f"http://{target_ip}:9898/{path}", json=request.get_json())
+            return resp.text,resp.status_code
     else:
         return ""
     
