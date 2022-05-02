@@ -31,7 +31,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash >> bootstrap.log
         echo "Installed az-cli - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
         echo "Installing azure cli python..."
-        pip install azure-cli --upgrade >> bootstrap.log
+        pip install azure-cli azure-identity --upgrade >> bootstrap.log
         echo "Installed azure cli python - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
     fi
         az login
