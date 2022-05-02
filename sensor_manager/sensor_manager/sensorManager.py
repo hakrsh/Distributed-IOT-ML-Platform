@@ -5,7 +5,6 @@ import logging
 
 from io import BytesIO
 
-from PIL import Image
 from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
