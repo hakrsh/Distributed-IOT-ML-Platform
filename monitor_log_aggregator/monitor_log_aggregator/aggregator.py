@@ -92,8 +92,12 @@ def showlog():
     log_files = [f for f in files if f.endswith("logs.txt")]
     content = []
     for f in log_files:
+        temp = {}
+        temp["file_name"] = f
         with open(f,'r') as k:
-            content.append(k.read())
+            temp["content"] = k.read()
+            # content.append(k.read())
+        content.append(temp)
     return str(content)
 
 

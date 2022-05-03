@@ -64,7 +64,7 @@ def get_logs():
         for instance in instances:
             print(instance)
             print(client)
-            thread = threading.Thread(target=get_instance_data, args=(client,instance["container_id"]))
+            thread = threading.Thread(target=get_instance_data, args=(client,instance["instance_id"]))
             thread_list.append(thread)
             thread.start()
             for thread in thread_list:
