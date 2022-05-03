@@ -44,8 +44,7 @@ def get_controller_data():
         list_of_controllers = []
         for document in controllers_cursor:
             controllerinfo = {}
-            # controllerinfo["controller_id"] = document["topic_id"]
-            controllerinfo["controller_id"] = 1
+            controllerinfo["controller_id"] = document["controller_id"]
             controllerinfo["controller_type"] = document["Type"]
             controllerinfo["controller_location"] = document["Location"]
             list_of_controllers.append(controllerinfo)
@@ -119,6 +118,27 @@ def format_time(time):
     time = datetime.strptime(time, '%Y-%m-%d %H:%M:%S')
     return time
 
+def assign_random(app_id, s_loc, c_loc):
+    app_data = db.app_spec_data.find_one({"app_id":app_id})
+    sloc_data = db.temp_data.find_one({"app_id":app_id, "type":"sensor"})
+    sloc_data = sloc_data["data"][s_loc]
+    cloc_data = db.temp_data.find_one({"app_id":app_id, "type":"controller"})
+    cloc_data = cloc_data["data"][c_loc]
+    sensor_list = {}
+    for sensor in app_data["data"]["sensor"]:
+        stype = sensor["sensor_type"]
+        count = sensor["count"]
+        sensor_list[stype] = sloc_data[stype][:count]
+    controller_list = {}
+    for controller in app_data["data"]["controller"]:
+        ctype = controller["controller_type"]
+        count = controller["count"]
+        controller_list[ctype] = cloc_data[ctype][:count]
+    db.temp_data.delete_one({"app_id":app_id, "type":"sensor"})
+    db.temp_data.delete_one({"app_id":app_id, "type":"controller"})
+    db.app_spec_data.delete_one({"app_id":app_id})
+    return sensor_list, controller_list
+
 @app.route('/schedule', methods = ['POST'])
 def schedule():
     """
@@ -135,10 +155,18 @@ def schedule():
     app_id = request.form['app_name']
     start_time = request.form['starttime']
     end_time = request.form['endtime']
-    my_sensors = request.form.getlist('my_sensors')
-    my_controllers = request.form.getlist('my_controllers')
+    option_selected = request.form['selectoption']
+    if option_selected == 'specific':
+        my_sensors = request.form.getlist('my_sensors')
+        my_controllers = request.form.getlist('my_controllers')
+        logging.info("User selected data: " + str(app_id) + str(my_sensors) + str(start_time) + str(end_time))
+    else:
+        my_sensor_loc = request.form.getlist('sensor_locs')
+        my_controller_loc = request.form.getlist('controller_locs')
+        sensor_info, controller_info = assign_random(app_id, my_sensor_loc[0], my_controller_loc[0])
+        logging.info("User selected data: " + str(app_id) + str(sensor_info) + str(start_time) + str(end_time))
 
-    logging.info("User selected data: " + str(app_id) + str(my_sensors) + str(start_time) + str(end_time))
+    
     start_time = format_time(start_time)
     end_time = format_time(end_time)
     delta,time_to_execute = sh.get_scheduled_time(start_time)
@@ -148,14 +176,15 @@ def schedule():
     if end_time < start_time:
         error_msg = "End time is less than start time"
         return render_template("error.html", error_msg=error_msg)
-
-    sensor_info = {}
-    for s in my_sensors:
-        s_type, loc, s_id = s.split("-")
-        if s_type not in sensor_info.keys():
-            sensor_info[s_type] = [s_id]
-        else:
-            sensor_info[s_type].append(s_id)
+    
+    if option_selected == 'specific':
+        sensor_info = {}
+        for s in my_sensors:
+            s_type, loc, s_id = s.split("-")
+            if s_type not in sensor_info.keys():
+                sensor_info[s_type] = [s_id]
+            else:
+                sensor_info[s_type].append(s_id)
 
     req_func = []
     for app_dict in app_data:
@@ -186,14 +215,14 @@ def schedule():
                 return render_template("error.html", error_msg=error_msg)
 
     """Controller to function mapping"""
-
-    controller_info = {}
-    for s in my_controllers:
-        s_type, loc, s_id = s.split("-")
-        if s_type not in controller_info.keys():
-            controller_info[s_type] = [s_id]
-        else:
-            controller_info[s_type].append(s_id)
+    if option_selected == 'specific':
+        controller_info = {}
+        for s in my_controllers:
+            s_type, loc, s_id = s.split("-")
+            if s_type not in controller_info.keys():
+                controller_info[s_type] = [s_id]
+            else:
+                controller_info[s_type].append(s_id)
 
     app_controller_data = []
     for app_dict in app_data:
@@ -214,8 +243,6 @@ def schedule():
     controller_to_func_mapping =[]
     for controller_type,data in func_of_controllers.items():      
         for i in range(len(data)):
-            d = {}
-            # print(type(data), type(controller_info))
             if(len(controller_info[controller_type]) == len(func_of_controllers[controller_type])): 
                 data[i]["controller_id"] = controller_info[controller_type][i]
                 controller_to_func_mapping.append(data[i])
@@ -239,9 +266,7 @@ def schedule():
     return render_template ("deploy.html", time = start_time)
 
 
-@app.route('/get_app_contract',methods =["POST"])  
-def get_app_contract():
-    app_id = json.loads(request.get_data())["app_id"]
+def get_app_specific_data(app_id):
     data = refresh_data()
     app_data = data["app"]
     sensor_data = data["sensor"]
@@ -260,7 +285,6 @@ def get_app_contract():
         if(type_of_sensor in sensors_of_app):
             sensors_of_app[type_of_sensor][0] +=1
         else:
-
             sensors_list = []
             for type in list_of_sensors:
                 if(type[1] == type_of_sensor):
@@ -310,8 +334,81 @@ def get_app_contract():
     data_to_send = {}
     data_to_send['sensor'] = sensors_of_app_send
     data_to_send['controller'] = controllers_of_app_send
+    return data_to_send
+
+@app.route('/get_app_contract',methods = ["POST"])  
+def get_app_contract():
+    app_id = json.loads(request.get_data())["app_id"]
+    data_to_send = get_app_specific_data(app_id)
     return json.dumps(data_to_send)
 
+def get_data_by_loc(app_id, spec_data, app_spec_data, data_type):
+    data_by_loc = {}
+    for data in spec_data:
+        if data[data_type + "_location"] in data_by_loc:
+            if data[data_type + "_type"] in data_by_loc[data[data_type + "_location"]]:
+                data_by_loc[data[data_type + "_location"]][data[data_type + "_type"]].append(data[data_type + "_id"])
+            else:
+                data_by_loc[data[data_type + "_location"]][data[data_type + "_type"]] = []
+                data_by_loc[data[data_type + "_location"]][data[data_type + "_type"]].append(data[data_type + "_id"])
+        else:
+            data_by_loc[data[data_type + "_location"]] = {}
+            data_by_loc[data[data_type + "_location"]][data[data_type + "_type"]] = []
+            data_by_loc[data[data_type + "_location"]][data[data_type + "_type"]].append(data[data_type + "_id"])
+
+    db.temp_data.insert_one({"app_id":app_id, "type": data_type, "data": data_by_loc})
+    loc_details = []
+    for spec in app_spec_data:
+        for loc, details in data_by_loc.items():
+            if spec[data_type+"_type"] in data_by_loc[loc] and spec["count"] <= len(details[spec[data_type+"_type"]]):
+                if loc not in loc_details:
+                    loc_details.append(loc)
+    return loc_details
+    
+
+
+@app.route('/get_locations', methods = ["POST"])
+def get_locations():
+    app_id = json.loads(request.get_data())["app_id"]
+    data = refresh_data()
+    app_data = data["app"]
+    sensor_data = data["sensor"]
+    controller_data = data["controller"]
+
+    app_spec_data = {}
+    cur_app = {}
+    for app in app_data:
+        if app["ApplicationID"] == app_id:
+            cur_app = app
+    temp_data = {}
+    for sensor in cur_app["Contract"]["sensors"]:
+        if sensor["sensor_type"] not in temp_data:
+            temp_data[sensor["sensor_type"]] = 1
+        else:
+            temp_data[sensor["sensor_type"]] += 1
+    sens_data = []
+    for key, value in temp_data.items():
+        sens_data.append({"sensor_type":key, "count":value})
+    app_spec_data["sensor"] = sens_data
+
+    temp_data = {}
+    for sensor in cur_app["Contract"]["controllers"]:
+        if sensor["controller_type"] not in temp_data:
+            temp_data[sensor["controller_type"]] = 1
+        else:
+            temp_data[sensor["controller_type"]] += 1
+    sens_data = []
+    for key, value in temp_data.items():
+        sens_data.append({"controller_type":key, "count":value})
+    app_spec_data["controller"] = sens_data
+    db.app_spec_data.insert_one({"app_id":app_id, "data":app_spec_data})
+
+    sensor_locs = get_data_by_loc(app_id, sensor_data, app_spec_data["sensor"], "sensor")
+    controller_locs = get_data_by_loc(app_id, controller_data, app_spec_data["controller"], "controller")
+    loc_details = {}
+    loc_details["sensor_locs"] = sensor_locs
+    loc_details["controller_locs"] = controller_locs
+    return json.dumps(loc_details)
 
 def schedule_pending_tasks():
     pending_tasks = db.scheduleinfo.find({"instance_id":"blank"})
@@ -349,5 +446,4 @@ def start():
     pending_jobs.start()
     db_watch_thread = threading.Thread(target=sh.db_change_detector, args=())
     db_watch_thread.start()
-    app.run(debug = True, port = 8210, host='0.0.0.0')
-    
+    app.run(debug = False, port = 8210, host='0.0.0.0')
