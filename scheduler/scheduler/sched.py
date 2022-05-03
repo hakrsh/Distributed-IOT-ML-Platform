@@ -1,12 +1,9 @@
 import schedule
 import time
-import requests
 import datetime
-from scheduler import module_config, db, messenger
+from scheduler import db, messenger
 import logging
-import json
 from scheduler import db, client
-from dateutil import parser
 instance_db = client.repo
 
 logging.basicConfig(        format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
