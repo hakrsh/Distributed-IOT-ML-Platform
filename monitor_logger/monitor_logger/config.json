@@ -1,1 +1,19 @@
-{"kafka_ip": "20.223.233.77", "kafka_port": "9092", "mongo_server": "mongodb+srv://root:root@cluster0.4g04r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority", "sensor_api": "http://20.223.233.77:7000/", "sensor_reg_api": "http://20.223.233.77:7005/", "deployer_master": "http://20.223.233.77:9999/", "load_balancer": "http://localhost:9898/", "platform_api": "http://20.223.233.77:5000/", "scheduler": "http://20.223.233.77:8210/", "model_req_handler": "http://20.223.233.77:5050/", "workers": [{"name": "w0219", "ip": "20.234.8.148"}], "frequency": "10"}
+{
+    "kafka_ip": "20.239.59.62",
+    "kafka_port": "9092",
+    "mongo_server": "mongodb+srv://root:root@cluster0.pxsaz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "sensor_api": "http://20.239.59.62:7000/",
+    "sensor_reg_api": "http://20.239.59.62:7005/",
+    "deployer_master": "http://20.239.59.62:9999/",
+    "load_balancer": "http://localhost:9898/",
+    "platform_api": "http://20.239.59.62:5000/",
+    "scheduler": "http://20.239.59.62:8210/",
+    "model_req_handler": "http://20.239.59.62:5050/",
+    "workers": [
+        {
+            "name": "w77cb",
+            "ip": "20.24.77.22"
+        }
+    ],
+    "frequency": "10"
+}

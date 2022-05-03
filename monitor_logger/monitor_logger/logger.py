@@ -55,8 +55,8 @@ def get_instance_data(client,instance_id):
 def get_logs():
     try:
         client = docker.from_env()
-        ip = module_config["workers"][0]["ip"]
-        print(ip, name)
+        ip = module_config["host_ip"]
+        print(ip)
         logging.info("Connecting to VM")
         instances = db_instances.instances.find({"ip":ip})
         logging.info("Getting instance details from db")
@@ -118,7 +118,7 @@ def start():
     watcher.start()
     get_logs()
     scheduler = BlockingScheduler()
-    scheduler.add_job(get_logs, 'interval', seconds=module_config["frequency"])
+    scheduler.add_job(get_logs, 'interval', seconds = int(module_config["frequency"]))
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):

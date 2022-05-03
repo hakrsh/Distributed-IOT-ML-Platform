@@ -93,7 +93,6 @@ def schedule_a_task(start_time, end_time, query):
     A job will be scheduled to happen at that time(i.e., a function call will take place at that time)
 
     """
-    # time_to_execute = str(time.hour)+":"+str(time.minute)
     delta,time_to_execute = get_scheduled_time(start_time)
     if(delta=="Invalid time"):
         return "Invalid time"

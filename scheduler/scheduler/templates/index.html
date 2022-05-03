@@ -30,6 +30,34 @@
                 {% endfor %}
             </select>
         </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="selectoption" id="random" value="random" onclick = "getloc()">
+            <label class="form-check-label" for="random">
+                Select Random sensors and controllers based on location
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="selectoption" id="specific" value="specific" onclick = "getapp()">
+            <label class="form-check-label" for="specific">
+                Select specific sensors and controllers
+            </label>
+        </div>
+        <div class="form-group" id="sensor_locs">
+            <!-- <label for="my_locs">Location</label>
+            <select class="form-control form-control-lg" id="my_locs" name="my_locs" multiple>
+                {% for loc in locs %}
+                <option value="{{loc}}">{{loc}}</option>"
+                {% endfor %}
+            </select> -->
+        </div>
+        <div class="form-group" id="controller_locs">
+            <!-- <label for="my_locs">Location</label>
+            <select class="form-control form-control-lg" id="my_locs" name="my_locs" multiple>
+                {% for loc in locs %}
+                <option value="{{loc}}">{{loc}}</option>"
+                {% endfor %}
+            </select> -->
+        </div>
         <div class="form-group" id="sensors_list">
             <!-- <label for="sensor_loc">Sensor Type and Location</label>
             <select class="form-control form-control-lg" id="my_sensors" name="my_sensors" multiple>
@@ -60,8 +88,14 @@
 <script>
 
     document.getElementById("app_name").selectedIndex = -1;
-    document.getElementById('app_name').onchange = function () {
-        var app_id = this.value;
+    document.getElementById("random").checked = false;
+    document.getElementById("specific").checked = false;
+    //document.getElementById('app_name').onchange = function () {
+    //document.getElementById("specific").checked =  function(){
+    function getapp(){
+        var e = document.getElementById("app_name");
+        var app_id = e.options[e.selectedIndex].value;
+        //var app_id = this.value;
 
         // console.log(app_id)
         $.ajax({
@@ -75,6 +109,8 @@
 
                 $("#sensors_list").empty();
                 $("#controllers_list").empty();
+                $("#sensor_locs").empty();
+                $("#controller_locs").empty();
 
                 data = JSON.parse(data)
 
@@ -134,6 +170,50 @@
                         }
                     }
                 }
+            }
+        });
+    }
+    //document.getElementById("random").checked =  function(){
+    function getloc(){
+        var e = document.getElementById("app_name");
+        var app_id = e.options[e.selectedIndex].value;
+        $.ajax({
+            type: 'POST',
+            data: JSON.stringify({
+                'app_id': app_id,
+            }),
+            contentType: 'application/json; charset=utf-8',
+            url: "{{ url_for('get_locations') }}",
+            success: function (data) {
+                console.log("success")
+                $("#sensors_list").empty();
+                $("#controllers_list").empty();
+                $("#sensor_locs").empty();
+                $("#controller_locs").empty();
+                console.log(data)
+                data = JSON.parse(data)
+                sensor_locs = data['sensor_locs']
+                controller_locs = data['controller_locs']
+                console.log(controller_locs[0])
+                //$('#sensor_locs').append('<h3> Select Sensor Location </h1>');
+                $('#sensor_locs').append('<label for="sensor_locs">Sensor Location</label>' +
+                    '<select class="form-control form-control-lg" id="sensors_locs" name="sensor_locs">');
+                        console.log("here1")
+                        var id_s = "sensors_locs"
+                        console.log(sensor_locs)
+                        for (var j = 0; j < sensor_locs.length; j++) {
+                            $('#' + id_s).append(
+                                '<option value=' + sensor_locs[j] + '>' + sensor_locs[j] + '</option>');
+                        }
+                console.log("here")
+                //$('#controller_locs').append('<h3> Select Controller Location </h1>');
+                $('#controller_locs').append('<label for="controller_locs">Controller Location</label>' +
+                    '<select class="form-control form-control-lg" id="controllers_locs" name="controller_locs">');
+                        var id_s = "controllers_locs"
+                        for (var j = 0; j < controller_locs.length; j++) {
+                            $('#' + id_s).append(
+                                '<option value=' + controller_locs[j] + '>' + controller_locs[j] +' </option>');
+                        }
             }
         });
     }

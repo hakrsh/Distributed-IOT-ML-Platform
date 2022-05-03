@@ -29,25 +29,26 @@ def consume_log(topic,node_ip,node_port):
         print(consumer)
         logging.info("Starting the consumer")
         for msg in consumer:
-            # print("Registered User ={}".format(json.loads(msg.value)))
             print(msg.value,topic)
             file_name = topic + ".txt"
-            with open(file_name, "a") as f:
-                f.write(msg.value.decode('utf-8') + '\n')
-            # time.sleep(1)
-            # break
+            if "status" in topic:
+                with open(file_name, "a") as f:
+                    f.write(msg.value.decode('utf-8') + '\n')
+                    f.close()
+            else:
+                with open(file_name, "w") as f:
+                    f.write(msg.value.decode('utf-8') + '\n')
+                    f.close()
     except Exception as e:
         logging.error(e)
         print(e)
 
 def get_instance_data_from_db():
     logging.info("Getting topic names from db")
-    # cursor=[{'topic':'logTopic2','ip':'localhost','port':'9092'}]
     cursor = db_topics.topics.find({})
     for item in cursor:
         topic = item['topic_name']
         t = threading.Thread(target=consume_log,args=(topic,node_ip,node_port))
-        # t.daemon = True
         log_threads[topic] = t
         t.start()
 
@@ -55,7 +56,6 @@ def get_instance_data_from_db():
 def new_instance_added(topic):
     logging.info("Creating new consumer for new topic")
     t = threading.Thread(target=consume_log,args=(topic,node_ip,node_port))
-    # t.daemon = True
     log_threads[topic] = t
     t.start()
 
@@ -74,17 +74,16 @@ def db_watcher():
         if change["operationType"] == "insert":
             print(change["fullDocument"]["topic_name"])
             new_instance_added(change["fullDocument"]["topic_name"])
-        else:
-            print(change["fullDocument"]["instance_id"])
-            instance_deleted(change["fullDocument"]["instance_id"])
+        # else:
+        #     print(change["fullDocument"]["instance_id"])
+        #     instance_deleted(change["fullDocument"]["instance_id"])
         resume_token = change_stream.resume_token
 
 
 
 @app.route('/')
-# ‘/’ URL is bound with hello_world() function.
 def hello_world():
-    return 'Hello World'
+    return 'Welcome to logger aggregator'
 
 @app.route('/showlog')
 def showlog():
@@ -95,8 +94,6 @@ def showlog():
     for f in log_files:
         with open(f,'r') as k:
             content.append(k.read())
-    
-    # print(content)
     return str(content)
 
 
@@ -112,8 +109,6 @@ def showstatus():
     for f in status_files:
         with open(f,'r') as k:
             content.append(k.read())
-    
-    # print(content)
     return str(content)
 
 def start():
