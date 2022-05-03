@@ -177,42 +177,55 @@ def schedule():
         error_msg = "End time is less than start time"
         return render_template("error.html", error_msg=error_msg)
     
+    # if option_selected == 'specific':
+    #     sensor_info = {}
+    #     for s in my_sensors:
+    #         s_type, loc, s_id = s.split("-")
+    #         if s_type not in sensor_info.keys():
+    #             sensor_info[s_type] = [s_id]
+    #         else:
+    #             sensor_info[s_type].append(s_id)
+
+    # req_func = []
+    # for app_dict in app_data:
+    #     if(app_id == app_dict["ApplicationID"]):
+    #         app_name = app_dict["ApplicationName"]
+    #         req_func = app_dict["Contract"]["sensors"]
+    #         break
+    
+
+    # func_of_sensors = {}
+    # for sensor in req_func:
+    #     type_of_sensor = sensor["sensor_type"]
+    #     if(type_of_sensor in func_of_sensors):
+    #         func_of_sensors[type_of_sensor].append(sensor["function"])
+    #     else:
+    #         func_of_sensors[type_of_sensor] = []
+    #         func_of_sensors[type_of_sensor].append(sensor["function"])
+    # sensor_to_func_mapping =[]
+    # for sensor_type,funcs in func_of_sensors.items():      
+    #     for i in range(len(funcs)):
+    #         d = {}
+    #         if(len(sensor_info[sensor_type]) == len(func_of_sensors[sensor_type])):
+    #             d["sensor_id"] = sensor_info[sensor_type][i]
+    #             d["function"] = funcs[i]
+    #             sensor_to_func_mapping.append(d)
+    #         else:
+    #             error_msg = "select required number of sensors"
+    #             return render_template("error.html", error_msg=error_msg)
+    sensor_to_func_mapping = []
     if option_selected == 'specific':
         sensor_info = {}
         for s in my_sensors:
-            s_type, loc, s_id = s.split("-")
-            if s_type not in sensor_info.keys():
-                sensor_info[s_type] = [s_id]
-            else:
-                sensor_info[s_type].append(s_id)
-
-    req_func = []
-    for app_dict in app_data:
-        if(app_id == app_dict["ApplicationID"]):
-            app_name = app_dict["ApplicationName"]
-            req_func = app_dict["Contract"]["sensors"]
-            break
-    
-
-    func_of_sensors = {}
-    for sensor in req_func:
-        type_of_sensor = sensor["sensor_type"]
-        if(type_of_sensor in func_of_sensors):
-            func_of_sensors[type_of_sensor].append(sensor["function"])
-        else:
-            func_of_sensors[type_of_sensor] = []
-            func_of_sensors[type_of_sensor].append(sensor["function"])
-    sensor_to_func_mapping =[]
-    for sensor_type,funcs in func_of_sensors.items():      
-        for i in range(len(funcs)):
+            fun, loc, s_id = s.split("-")
             d = {}
-            if(len(sensor_info[sensor_type]) == len(func_of_sensors[sensor_type])):
-                d["sensor_id"] = sensor_info[sensor_type][i]
-                d["function"] = funcs[i]
-                sensor_to_func_mapping.append(d)
-            else:
-                error_msg = "select required number of sensors"
-                return render_template("error.html", error_msg=error_msg)
+            d["sensor_id"] = s_id
+            d["function"] = fun
+            sensor_to_func_mapping.append(d)
+
+
+    print(sensor_to_func_mapping)
+    print("//////////")
 
     """Controller to function mapping"""
     if option_selected == 'specific':
@@ -278,28 +291,47 @@ def get_app_specific_data(app_id):
     for app in app_data:
         if(app["ApplicationID"] == app_id):
             req_sensors = app["Contract"]["sensors"]
-    
+
     sensors_of_app = {}
     for sensor in req_sensors:
         type_of_sensor = sensor["sensor_type"]
-        if(type_of_sensor in sensors_of_app):
-            sensors_of_app[type_of_sensor][0] +=1
-        else:
-            sensors_list = []
-            for type in list_of_sensors:
-                if(type[1] == type_of_sensor):
-                    sensors_list.append([type[0],type[2]])
-
-            sensors_of_app[type_of_sensor] = [1,[]]
-            sensors_of_app[type_of_sensor][1] = sensors_list
-
-    sensors_of_app_send =[]
+        func = sensor["function"]
+        sens = []
+        for sensor in list_of_sensors:
+            if sensor[1] == type_of_sensor:
+                sens.append([sensor[0],sensor[1],sensor[2]])
+        sensors_of_app[func] = sens
+    sensors_of_app_send = []
     for k,v in sensors_of_app.items():
         d={}
         d["sensor_type"] = k
-        d["sensors_list"] = v[1]
-        d["count"] = v[0]
+        d["count"] = 1
+        d["sensors_list"] = v
         sensors_of_app_send.append(d)
+    print(sensors_of_app_send)
+    
+    # sensors_of_app = {}
+    # for sensor in req_sensors:
+    #     type_of_sensor = sensor["sensor_type"]
+    #     if(type_of_sensor in sensors_of_app):
+    #         sensors_of_app[type_of_sensor][0] +=1
+    #     else:
+    #         sensors_list = []
+    #         for type in list_of_sensors:
+    #             if(type[1] == type_of_sensor):
+    #                 sensors_list.append([type[0],type[2]])
+
+    #         sensors_of_app[type_of_sensor] = [1,[]]
+    #         sensors_of_app[type_of_sensor][1] = sensors_list
+
+    # sensors_of_app_send =[]
+    # for k,v in sensors_of_app.items():
+    #     d={}
+    #     d["sensor_type"] = k
+    #     d["sensors_list"] = v[1]
+    #     d["count"] = v[0]
+    #     sensors_of_app_send.append(d)
+
 
 
     req_controllers = []
