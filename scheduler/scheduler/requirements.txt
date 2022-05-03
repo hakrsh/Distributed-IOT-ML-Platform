@@ -10,3 +10,4 @@ kafka-python
 requests
 dnspython
 apscheduler
+python-dateutil
