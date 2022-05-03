@@ -126,15 +126,15 @@
                     var sensor_list = sensor[i].sensors_list
 
                     if (count == 1) {
-                        $('#sensors_list').append('<label for="sensor_loc">Sensor Type: ' + sensor_type + "<br>Select only " + count + " sensor" + '</label>\
+                        $('#sensors_list').append('<label for="sensor_loc">Function name: ' + sensor_type + "<br>" + '</label>\
                     <select class="form-control form-control-lg" id='+ i + '_sensor name="my_sensors" count=' + count + ' multiple>');
                         var id_s = i + "_sensor"
                         for (var j = 0; j < sensor_list.length; j++) {
                             $('#' + id_s).append(
-                                "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_type + "-" + sensor_list[j][1] + '</option>');
+                                "<option value=" + sensor_type + "-" + sensor_list[j][1] + '-' + sensor_list[j][0] + '>' + sensor_list[j][0] + "-" + sensor_list[j][1] + "-" + sensor_list[j][2] + '</option>');
                         }
                     } else {
-                        $('#sensors_list').append('<label for="sensor_loc">Sensor Type: ' + sensor_type + "<br>Select only " + count + " sensors" + '</label>\
+                        $('#sensors_list').append('<label for="sensor_loc">Function name: ' + sensor_type + "<br>Select only " + count + " sensors" + '</label>\
                     <select class="form-control form-control-lg" id='+ i + '_sensor name="my_sensors" count=' + count + ' multiple>');
                         var id_s = i + "_sensor"
                         for (var j = 0; j < sensor_list.length; j++) {
