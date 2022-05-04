@@ -44,14 +44,18 @@ def restart(image_name,container_name,config_path):
 
 images = []
 containers = []
-config_path = f'/home/{servers["master"]["user"]}/config.json'
+host = input('Enter host (master/worker): ')
+config_path = f'/home/{servers[host]["user"]}/config.json'
 for service in services['services']:
     images.append(f'{services["username"]}/{service["name"]}:{service["version"]}')
     containers.append(service['name'])
-print('Select the service to restart:')
-for i in range(len(images)):
-    print(str(i) + ': ' + containers[i])
-choice = int(input('Enter the number of the service to restart: '))
-restart(images[choice],containers[choice],config_path)
-    
-
+restart_all = input('Restart all containers? (y/n): ')
+if restart_all == 'y':
+    for image in images:
+        restart(image,image.split('/')[1].split(':')[0],config_path)
+else:
+    print('Select the service to restart:')
+    for i in range(len(images)):
+        print(str(i) + ': ' + containers[i])
+    choice = int(input('Enter the number of the service to restart: '))
+    restart(images[choice],containers[choice],config_path)
