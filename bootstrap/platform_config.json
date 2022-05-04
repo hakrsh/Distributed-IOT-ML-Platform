@@ -13,6 +13,6 @@
             "location": "northeurope"
         }
     ],
-    "subscription_id": "bd967179-560a-44d2-90bd-9363affb3830",
-    "mongo_server": "mongodb+srv://root:root@cluster0.4g04r.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+    "subscription_id": "",
+    "mongo_server": ""
 }
