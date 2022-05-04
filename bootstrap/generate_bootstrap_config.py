@@ -15,7 +15,7 @@ subscription_id = input("Enter subscription id: ")
 loc = input(f'Default location is {location} for vm creation Do you want to change it? (y/n): ')
 if loc == 'y':
     location = input("Enter location: ")
-mongo = input('Do you want to change mongo server? (y/n): ')
+mongo = input('Default mongo server is ' + mongo_server + ' Do you want to change it? (y/n): ')
 if mongo == 'y':
     mongo_server = input("Enter mongo server: ")
 passwd = input(f'Do you want to change the default password? (y/n): ')
@@ -29,7 +29,7 @@ for i in range(number_of_vms-1):
     worker = {
         "user": 'w'+str(uuid4())[:4],
         "ip": "",
-        "pass": password,
+        "passwd": password,
         "location": location,
     }
     workers.append(worker)
@@ -38,7 +38,7 @@ server = {
     "master": {
         "user": 'm'+str(uuid4())[:4],
         "ip": "",
-        "pass": password,
+        "passwd": password,
         "location": location
     },
     "workers": workers,

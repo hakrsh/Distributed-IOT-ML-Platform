@@ -19,5 +19,5 @@ fi
 for worker in servers['workers']:
     stub += "sshpass -p " + worker['pass'] + " ssh-copy-id -o StrictHostKeyChecking=no " + worker['user'] + "@" + worker['ip'] + "\n"
 
-with open('copy_ssh.sh', 'w') as f:
+with open('ssh.sh', 'w') as f:
     f.write(stub)

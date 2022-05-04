@@ -11,6 +11,12 @@
             "ip": "20.234.8.148",
             "pass": "Hackathon@2022",
             "location": "northeurope"
+        },
+        {
+            "user": "w0219",
+            "ip": "20.234.8.148",
+            "pass": "Hackathon@2022",
+            "location": "northeurope"
         }
     ],
     "subscription_id": "",

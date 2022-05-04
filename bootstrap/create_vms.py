@@ -174,7 +174,7 @@ def run():
     if 'master' in servers:
         vm_name = servers['master']['user']
         username = servers['master']['user']
-        password = servers['master']['pass']
+        password = servers['master']['passwd']
         location = servers['master']['location']
         ip = create(subscription_id,vm_name,username,password,location,vm_size)
         logging.info('Master IP: ' + ip)
@@ -183,7 +183,7 @@ def run():
     for worker in servers['workers']:
         vm_name = worker['user']
         username = worker['user']
-        password = worker['pass']
+        password = worker['passwd']
         location = worker['location']
         ip = create(subscription_id,vm_name,username,password,location,vm_size)
         logging.info('Worker IP: ' + ip)
