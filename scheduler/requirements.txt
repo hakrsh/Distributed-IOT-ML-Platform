@@ -1,0 +1,6 @@
+Flask==2.0.3
+schedule==1.1.0
+requests
+pymongo
+dnspython
+kafka-python
