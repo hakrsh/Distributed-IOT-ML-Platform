@@ -87,9 +87,9 @@ def get_running_models():
             logging.info('Model: ' + instance['model_id'])
             model_contract = db.models.find_one({'ModelId': instance['model_id']})['contract']
             if model_contract['secret_key'] == app_contract['secret_key']:
-                for model in model_contract['models']:
-                    model_name = instance['model_name'] + '/' + model['api_endpoint']    
-                    model_id = instance['model_id'] + '/' + model['api_endpoint']
+                for function in model_contract['functions']:
+                    model_name = instance['model_name'] + '/' + function['api_endpoint']    
+                    model_id = instance['model_id'] + '/' + function['api_endpoint']
                     data.append({'model_id': model_id, 'model_name': model_name})
     return json.dumps(data)
 

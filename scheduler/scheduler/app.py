@@ -11,12 +11,6 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 
-
-@app.route('/')
-def index():
-    return 'Platform manager running!'
-
-
 @app.route('/get-app-contract/<app_id>', methods=['GET'])
 def get_app_contract(app_id):
     sensors = json.loads(dumps(client.sensors.sensordetails.find()))
@@ -84,8 +78,8 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
-@app.route('/schedule', methods=['POST', 'GET'])
-def upload_app():
+@app.route('/', methods=['POST', 'GET'])
+def schedule():
     if request.method == 'GET':
         applications = json.loads(dumps(db.applications.find()))
         controllers = json.loads(
