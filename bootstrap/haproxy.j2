@@ -21,5 +21,5 @@ frontend deployer_service
 backend deployers
 	balance roundrobin
     {% for s in servers %}
-    server {{s.user}} {{s.ip}}:9898 check
+    server {{s.name}} {{s.ip}}:9898 check
 	{% endfor %}

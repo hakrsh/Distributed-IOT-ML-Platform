@@ -6,7 +6,7 @@ set -o nounset
 IFS=$(printf '\n\t')
 
 if [ ! -d /opt/kafka ]; then
-    sudo apt -qq update && sudo apt -qq install -y default-jre
+    sudo apt update && sudo apt install -y default-jre
     curl https://dlcdn.apache.org/kafka/3.1.0/kafka_2.13-3.1.0.tgz | tar xz 
     mv kafka_2.13-3.1.0 /opt/kafka
 
@@ -45,7 +45,9 @@ ExecStop=/opt/kafka/bin/kafka-server-stop.sh
 [Install]
 WantedBy=multi-user.target
 EOF
-    echo "advertised.listeners=PLAINTEXT://$(curl -s http://whatismyip.akamai.com/):9092" >> /opt/kafka/config/server.properties
+    kafka_ip=($(hostname -I))
+    # kafka_ip=$(curl -s http://whatismyip.akamai.com/)
+    echo "advertised.listeners=PLAINTEXT://$kafka_ip:9092" >> /opt/kafka/config/server.properties
     echo "listeners=PLAINTEXT://0.0.0.0:9092" >> /opt/kafka/config/server.properties
     
     systemctl daemon-reload

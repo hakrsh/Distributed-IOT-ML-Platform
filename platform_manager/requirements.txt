@@ -12,10 +12,6 @@ requests==2.27.1
 urllib3==1.26.9
 Werkzeug==2.0.3
 jsonschema
-azure-mgmt-compute
-azure-mgmt-network
-azure-mgmt-resource
-azure-identity
 docker
 paramiko
 jinja2

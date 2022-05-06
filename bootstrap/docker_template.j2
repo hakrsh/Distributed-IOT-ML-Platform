@@ -2,8 +2,9 @@ FROM python:3.8-slim
 COPY requirements.txt .
 COPY wait-for-it.sh .
 COPY wait-for-kafka.sh .
-{% if service.name == 'platform_manager' %}
+{% if service.name == 'platform_manager' and dynamic_scaling == 'yes' %}
 RUN apt-get update && apt-get install -y curl jq sshpass && curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN pip install azure-mgmt-compute azure-mgmt-network azure-mgmt-resource azure-identity
 {% else %}
 RUN apt-get update && apt-get install -y jq
 {% endif %}

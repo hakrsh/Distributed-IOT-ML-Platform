@@ -13,10 +13,11 @@ client.login(username=services['username'], password=services['password'])
 
 def prepare_build_context():
     logging.info('Setting up the context for building...')
+    dynamic_scaling = input('Would you like to enable dynamic scaling? (yes/no) ')
     for service in services['services']:
         dockerfile_path = '../' + service['name'] + '/Dockerfile'
         with open(dockerfile_path, 'w') as outfile:
-            outfile.write(dockerfile_template.render(service=service))
+            outfile.write(dockerfile_template.render(service=service, dynamic_scaling=dynamic_scaling))
         logging.info('Wrote dockerfile to ' + dockerfile_path)
         shutil.copy('wait-for-it.sh', '../' + '/' + service['name'] + '/wait-for-it.sh')
         shutil.copy('wait-for-kafka.sh', '../' + '/' + service['name'] + '/wait-for-kafka.sh')

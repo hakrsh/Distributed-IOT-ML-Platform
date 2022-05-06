@@ -4,14 +4,15 @@ from uuid import uuid4
 platform_config = json.loads(open("platform_config.json").read())
 subscription_id = platform_config["subscription_id"]
 location = platform_config["master"]["location"]
-password = platform_config["master"]["pass"]
+password = platform_config["master"]["passwd"]
 
 server = {
     "workers": [
         {
             "user": 'w'+str(uuid4())[:4],
+            "name": 'w'+str(uuid4())[:4],
             "ip": "",
-            "pass": password,
+            "passwd": password,
             "location": location,
         }
 
