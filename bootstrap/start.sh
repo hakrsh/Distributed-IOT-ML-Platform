@@ -65,7 +65,7 @@ python3 generate_hostfile.py platform_config.json
 
 if [ $azure == "true" ]; then
     echo "making Vms passwordless..." >> bootstrap.log
-    python3 make_vms_passwordless.py platform_config.json
+    python3 make_passwdless_ssh.py platform_config.json
     bash make_passwdless.sh
     echo "Vms passwordless - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log 
 fi
@@ -78,15 +78,14 @@ for host in $VMS ; do
     echo "added cronjob to $host" >> bootstrap.log
     echo "installing docker on $host" >> bootstrap.log
     scp install-docker.sh $host:~/ 
+    scp restart_services.py $host:~/ # for manual restart
     ssh $host 'bash install-docker.sh' >> bootstrap.log
+    ssh $host 'sudo apt-get install python3 python3-pip -y' >> bootstrap.log
+    ssh $host 'pip3 install docker ' >> bootstrap.log
     echo "installed docker on $host - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
 done
-master=($(cat hostinfo.txt))
-echo "installing docker sdk on $master" >> bootstrap.log
-ssh $master 'sudo apt-get update' >> bootstrap.log
-ssh $master 'sudo apt-get install python3 python3-pip sshpass -y' >> bootstrap.log
-ssh $master 'pip3 install docker ' >> bootstrap.log
 
+master=($(cat hostinfo.txt))
 echo "Installing kafka on master" >> bootstrap.log
 scp install-kafka.sh $master:~/ 
 ssh $master 'sudo bash install-kafka.sh' >> bootstrap.log
@@ -107,6 +106,7 @@ ssh $master 'sudo systemctl restart haproxy.service'
 
 if [ "$azure" == "true" ]; then
     echo "making passwordless access to workers from master" >> bootstrap.log
+    ssh $master 'sudo apt-get install sshpass -y' >> bootstrap.log
     python3 copy_ssh.py platform_config.json
     scp ssh.sh $master:~/ 
     ssh $master 'bash ssh.sh' >> bootstrap.log
@@ -119,6 +119,6 @@ scp platform_config.json $master:~/
 scp services.json $master:~/ 
 
 echo "Deploying containers..." >> bootstrap.log
-python3 build.py $load_balancer
-tail -n 1 deploy.log
+python3 deploy.py $load_balancer
+tail -n 1 bootstrap.log
 echo "Total time elapsed: $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log

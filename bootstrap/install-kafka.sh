@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -o errexit
 set -o nounset
@@ -45,9 +45,10 @@ ExecStop=/opt/kafka/bin/kafka-server-stop.sh
 [Install]
 WantedBy=multi-user.target
 EOF
+    IFS=' '
     kafka_ip=($(hostname -I))
     # kafka_ip=$(curl -s http://whatismyip.akamai.com/)
-    echo "advertised.listeners=PLAINTEXT://$kafka_ip:9092" >> /opt/kafka/config/server.properties
+    echo "advertised.listeners=PLAINTEXT://${kafka_ip}:9092" >> /opt/kafka/config/server.properties
     echo "listeners=PLAINTEXT://0.0.0.0:9092" >> /opt/kafka/config/server.properties
     
     systemctl daemon-reload

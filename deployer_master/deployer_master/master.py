@@ -131,33 +131,6 @@ def execute_pending():
             logging.info("Sent request to app service")
     logging.info("Executed all pending instances")
         
-
-# @app.route('/deployed', methods=['POST'])
-# def update_deployed_status():
-#     instance_id = request.json['instance_id']
-#     res = request.json['res']
-#     # update instance status
-#     db.instances.update_one({"instance_id": instance_id}, {"$set": {
-#                             "status": res['container_status'],
-#                             "container_id": res['container_id'],
-#                             "hostname": res['host_name'],
-#                             "ip": res['host_ip'],
-#                             "port": res['port']}})
-#     logging.info('Updated instance db status')
-#     return {"Status": "success"}
-
-
-# @app.route('/stopped', methods=['POST'])
-# def update_stopped_status():
-#     instance_id = request.json['instance_id']
-#     container_status = request.json['container_status']
-#     logging.info('InstanceID: ' + instance_id)
-#     logging.info('Container status: ' + container_status)
-#     # remove instance from db
-#     db.instances.delete_one({"instance_id": instance_id})
-#     logging.info('Removed instance from db')
-#     return {"Status": "success"}
-
 def get_load_thread(worker):
     ip = worker['ip']
     logging.info('Connecting to ' + ip)

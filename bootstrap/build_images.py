@@ -4,7 +4,7 @@ import logging
 from jinja2 import Template
 import shutil
 
-logging.basicConfig(filename='build.log', level=logging.INFO,filemode='w')
+logging.basicConfig(filename='bootstrap.log', level=logging.INFO)
 
 services = json.loads(open('services.json').read())
 dockerfile_template = Template(open('docker_template.j2').read())

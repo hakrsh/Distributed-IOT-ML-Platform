@@ -1,3 +1,5 @@
+# For manual service restart
+
 import docker
 import json
 import logging
@@ -51,11 +53,23 @@ for service in services['services']:
     containers.append(service['name'])
 restart_all = input('Restart all containers? (y/n): ')
 if restart_all == 'y':
-    for image in images:
+    if host == 'master':
+        for image in images:
+            if image == f'{services["username"]}/deployer:{service["version"]}':
+                continue
+            restart(image,image.split('/')[1].split(':')[0],config_path)
+    elif host == 'worker':
+        image = f'{services["username"]}/deployer:{service["version"]}'
         restart(image,image.split('/')[1].split(':')[0],config_path)
 else:
-    print('Select the service to restart:')
-    for i in range(len(images)):
-        print(str(i) + ': ' + containers[i])
-    choice = int(input('Enter the number of the service to restart: '))
-    restart(images[choice],containers[choice],config_path)
+    if host == 'master':
+        print('Select the service to restart:')
+        for i in range(len(images)):
+            print(str(i) + ': ' + containers[i])
+        choice = int(input('Enter the number of the service to restart: '))
+        restart(images[choice],containers[choice],config_path)
+    elif host == 'worker':
+        choice = input('Do u want to restart the deployer? (y/n): ')
+        if choice == 'y':
+            image = f'{services["username"]}/deployer:{service["version"]}'
+            restart(image,image.split('/')[1].split(':')[0],config_path)

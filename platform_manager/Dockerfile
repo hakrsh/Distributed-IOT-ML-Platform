@@ -3,7 +3,8 @@ COPY requirements.txt .
 COPY wait-for-it.sh .
 COPY wait-for-kafka.sh .
 
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install -y curl jq sshpass && curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+RUN pip install azure-mgmt-compute azure-mgmt-network azure-mgmt-resource azure-identity
 
 RUN pip install -r requirements.txt
 RUN cp /usr/share/zoneinfo/Asia/Kolkata /etc/localtime && \

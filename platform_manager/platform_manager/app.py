@@ -17,7 +17,6 @@ import importlib.resources as pkg_resources
 from platform_manager import messenger
 
 logging.basicConfig(level=logging.INFO)
-# messenger.create_topic('model_deploy_request')
 
 def clear(path):
     os.remove(path + '.zip')
@@ -72,13 +71,6 @@ def upload_model():
         messenger.send_message('to_deployer_master', {"type":"model","ModelId": ModelId, "model_name": model_name})
         logging.info('Model deployment request has been written to kafka topic to_deployer_master')
         return 'Model uploaded successfully'
-        # url = module_config['deployer_master'] + '/model'
-        # logging.info('Sending model to deployer')
-
-        # response = requests.post(
-        #     url, json={"ModelId": ModelId, "model_name": model_name}).content
-
-        # return response.decode('ascii')
 
 app_contract = None
 ApplicationID = None

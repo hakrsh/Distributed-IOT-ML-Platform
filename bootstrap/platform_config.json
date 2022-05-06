@@ -2,7 +2,7 @@
     "master": {
         "user": "ubuntu",
         "name": "master",
-        "ip": "10.206.186.18",
+        "ip": "10.206.186.94",
         "passwd": "Hackathon@2022",
         "location": "northeurope"
     },
@@ -10,14 +10,14 @@
         {
             "user": "ubuntu",
             "name": "worker1",
-            "ip": "10.206.186.192",
+            "ip": "10.206.186.92",
             "passwd": "Hackathon@2022",
             "location": "northeurope"
         },
         {
             "user": "ubuntu",
             "name": "worker2",
-            "ip": "10.206.186.5",
+            "ip": "10.206.186.114",
             "passwd": "Hackathon@2022",
             "location": "northeurope"
         }

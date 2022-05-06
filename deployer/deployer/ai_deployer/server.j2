@@ -8,7 +8,7 @@ def health():
     return '<h1>{{contract.name}} is healthy!</h1>', 200
 {% for function in contract.functions %}
 @app.route('/{{function.api_endpoint}}', methods=['GET', 'POST'])
-def {{function.name}}():
+def {{function.function_name}}():
     from {{function.module_path}} import {{function.function_name}}
     {% for method in function.methods %}
     if request.method == '{{method.method_type}}':
