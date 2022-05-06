@@ -17,22 +17,13 @@
     "tensorflow_support": {
       "type": "string"
     },
-    "models": {
+    "functions": {
       "type": "array",
       "items": [
         {
           "type": "object",
           "properties": {
-            "name": {
-              "type": "string"
-            },
             "module_path": {
-              "type": "string"
-            },
-            "model_file_type": {
-              "type": "string"
-            },
-            "model_file": {
               "type": "string"
             },
             "function_name": {
@@ -49,14 +40,10 @@
             },
             "methods": {
               "type": "array"
-              
             }
           },
           "required": [
-            "name",
             "module_path",
-            "model_file_type",
-            "model_file",
             "function_name",
             "function_input_type",
             "output_type",
@@ -71,21 +58,6 @@
     },
     "readme": {
       "type": "string"
-    },
-    "log_level": {
-      "type": "string"
-    },
-    "log_file": {
-      "type": "string"
-    },
-    "log_format": {
-      "type": "string"
-    },
-    "log_date_format": {
-      "type": "string"
-    },
-    "log_file_size": {
-      "type": "string"
     }
   },
   "required": [
@@ -94,13 +66,8 @@
     "root_dir",
     "name",
     "tensorflow_support",
-    "models",
+    "functions",
     "requirements",
-    "readme",
-    "log_level",
-    "log_file",
-    "log_format",
-    "log_date_format",
-    "log_file_size"
+    "readme"
   ]
 }

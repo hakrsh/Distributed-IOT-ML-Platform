@@ -6,14 +6,14 @@ def index():
 @app.route('/health')
 def health():
     return '<h1>{{contract.name}} is healthy!</h1>', 200
-{% for model in contract.models %}
-@app.route('/{{model.api_endpoint}}', methods=['GET', 'POST'])
-def {{model.name}}():
-    from {{model.module_path}} import {{model.function_name}}
-    {% for method in model.methods %}
+{% for function in contract.functions %}
+@app.route('/{{function.api_endpoint}}', methods=['GET', 'POST'])
+def {{function.name}}():
+    from {{function.module_path}} import {{function.function_name}}
+    {% for method in function.methods %}
     if request.method == '{{method.method_type}}':
         data = request.data
-        return {{model.function_name}}(data)    
+        return {{function.function_name}}(data)    
     {% endfor %}
 {% endfor %}
 if __name__ == '__main__':

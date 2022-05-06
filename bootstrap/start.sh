@@ -21,6 +21,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     python3 build_images.py
     echo "rebuilt docker images - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
 fi
+azure="false"
 read -p "Do you want to create new VMs? [y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -44,24 +45,25 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Created VMs - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
 fi
 
-echo "Please choose a load balancer"
-echo "1. HAProxy (Recommended!)"
-echo "2. IAS Group_3 Load Balancer"
-read -p "Enter your choice: " choice
-if [ $choice -eq 1 ]; then
-    load_balancer="haproxy"
-elif [ $choice -eq 2 ]; then
-    load_balancer="ias"
-else
-    load_balancer="haproxy"
-    echo "Invald choice. Defaulting to HAProxy" >> bootstrap.log
-fi
+# echo "Please choose a load balancer"
+# echo "1. HAProxy (Recommended!)"
+# echo "2. IAS Group_3 Load Balancer"
+# read -p "Enter your choice: " choice
+# if [ $choice -eq 1 ]; then
+#     load_balancer="haproxy"
+# elif [ $choice -eq 2 ]; then
+#     load_balancer="ias"
+# else
+#     load_balancer="haproxy"
+#     echo "Invald choice. Defaulting to HAProxy" >> bootstrap.log
+# fi
+load_balancer="haproxy"
 echo "Using $load_balancer as the load balancer" >> bootstrap.log
 
 echo "Preparing hostinfo.txt..." >> bootstrap.log
 python3 generate_hostfile.py platform_config.json
 
-if [ "$azure" == "true" ]; then
+if [ $azure == "true" ]; then
     echo "making Vms passwordless..." >> bootstrap.log
     python3 make_vms_passwordless.py platform_config.json
     bash make_passwdless.sh
