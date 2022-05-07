@@ -43,12 +43,6 @@ def connect_cleanup_container(hostname, ip, container_id):
 		except Exception as e:
 			logging.error("Could not connect to docker daemon, retrying")
 			logging.info("Vm cleanup thread retrying connection to docker client")
-	try:
-		container = client.containers.get(container_id)
-		container.stop()
-		container.remove()
-	except Exception as e:
-		logging.error(e)
 
 def cleanup(hostname, ip, container_id, instance_id):
 	logging.info("Cleaning up {}".format(container_id))
@@ -125,14 +119,15 @@ def handler(app_info):
 	logging.info("Exiting thread")
 
 def run():
-	instance_cursor = instances.find({})
 	global thread_list
-	for document in instance_cursor:
-		if document["status"] != "init" or document["status"] != "pending":
-			logging.info("Starting thread for {}".format(document))
-			thread = threading.Thread(target=handler, args=(document,))
-			thread_list.append(thread)
-			thread.start()
+
+	# instance_cursor = instances.find({})
+	# for document in instance_cursor:
+	# 	if document["status"] != "init" or document["status"] != "pending":
+	# 		logging.info("Starting thread for {}".format(document))
+	# 		thread = threading.Thread(target=handler, args=(document,))
+	# 		thread_list.append(thread)
+	# 		thread.start()
 
 	for change in instances.watch():
 		change_type = change['operationType']

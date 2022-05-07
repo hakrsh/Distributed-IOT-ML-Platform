@@ -1,15 +1,23 @@
 import json
+from sched import scheduler
 import threading
 from flask import request, render_template
 import uuid
-from scheduler import app, db, client, messenger
+from scheduler import app, db, client, kafka_server
 import logging
 from bson.json_util import dumps
 import time
-import schedule
+import schedule as sched
 from datetime import datetime
+from kafka import KafkaProducer
 
 logging.basicConfig(level=logging.INFO)
+producer = KafkaProducer(bootstrap_servers=kafka_server, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+logging.info('Connecting to kafka')
+
+def send(topic, message):
+    producer.send(topic, message)
+    sched.CancelJob
 
 @app.route('/get-app-contract/<app_id>', methods=['GET'])
 def get_app_contract(app_id):
@@ -19,7 +27,7 @@ def get_app_contract(app_id):
         sensor_ids = []
         for sensor_ in sensors:
             if c_sensor['sensor_type'] == sensor_['Type']:
-                sensor_ids.append(sensor_['topic_id']+","+sensor_['Type']+","+sensor_['Location'])
+                sensor_ids.append(sensor_['topic_id']+","+sensor_['Type']+","+sensor_['Location']+","+sensor_['Name'])
         c_sensor['sensor_ids'] = sensor_ids
     
     controllers = json.loads(dumps(client.sensors.controllerdetails.find()))
@@ -27,7 +35,7 @@ def get_app_contract(app_id):
         controller_ids = []
         for controller_ in controllers:
             if c_controller['controller_type'] == controller_['Type']:
-                controller_ids.append(controller_['controller_id']+","+controller_['Type']+","+controller_['Location'])
+                controller_ids.append(controller_['controller_id']+","+controller_['Type']+","+controller_['Location']+","+controller_['Name'])
         c_controller['controller_ids'] = controller_ids
 
     return json.dumps(contract)
@@ -43,17 +51,15 @@ def schedule_app_instance(query):
     logging.info("Scheduling instance")
     time = datetime.strptime(query["start_time"], '%Y-%m-%d %H:%M:%S')
     time_to_execute = "{:02d}:{:02d}".format(time.hour,time.minute)
-    schedule.every().day.at(time_to_execute).do(messenger.send_message, 'to_deployer_master', query)
-    logging.info("Wrote to kafka topic")
-    schedule.CancelJob
+    sched.every().day.at(time_to_execute).do(send, topic='to_deployer_master', message=query)
+    logging.info("App will be deployed at {}".format(time_to_execute))
 
 def stop_app_instance(query):
     logging.info("Stopping instance")
     time = datetime.strptime(query["end_time"], '%Y-%m-%d %H:%M:%S')
     time_to_execute = "{:02d}:{:02d}".format(time.hour,time.minute)
-    schedule.every().day.at(time_to_execute).do(messenger.send_message, 'to_deployer_master', query)
-    logging.info("Wrote to kafka topic")
-    schedule.CancelJob
+    sched.every().day.at(time_to_execute).do(send, topic='to_deployer_master', message=query)
+    logging.info("App will be stopped at {}".format(time_to_execute))
 
 def get_running_apps():
     logging.info('Starting db watcher')
@@ -75,7 +81,7 @@ def get_running_apps():
 
 def run_schedule():
     while True:
-        schedule.run_pending()
+        sched.run_pending()
         time.sleep(1)
 
 @app.route('/', methods=['POST', 'GET'])

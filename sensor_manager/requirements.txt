@@ -9,3 +9,4 @@ flask_pymongo==2.3.0
 kafka-python
 requests
 dnspython
+jsonschema

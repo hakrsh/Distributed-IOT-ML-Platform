@@ -1,6 +1,6 @@
 import json
 import shutil
-from deployer import module_config
+from deployer import kafka_server
 from jinja2 import Template
 import importlib.resources as pkg_resources
 import logging
@@ -16,7 +16,7 @@ def run(package, sensors, controllers, app_id,app_contract):
     logging.info('Generating sensor interface')
     template = Template(pkg_resources.read_text('deployer.app_deployer','sensor_template.j2'))
     with open(f'/tmp/{app_id}/{app_contract["sensor_interface"]}', 'w') as f:
-        f.write(template.render(sensors=sensors,sensor_api=module_config['sensor_api']))
+        f.write(template.render(sensors=sensors,kafka_server=kafka_server))
     logging.info('Generated ' + app_contract['sensor_interface'])
 
     logging.info('Generating controller interface')
@@ -27,7 +27,7 @@ def run(package, sensors, controllers, app_id,app_contract):
         controller['args_list'] = args[:-2]
     template = Template(pkg_resources.read_text('deployer.app_deployer','controller_template.j2'))
     with open(f'/tmp/{app_id}/{app_contract["controller_interface"]}', 'w') as f:
-        f.write(template.render(controllers=controllers,controller_api=module_config['sensor_api']))
+        f.write(template.render(controllers=controllers,kafka_server=kafka_server))
     logging.info('Generated ' + app_contract['controller_interface'])
 
     with open(f'/tmp/{app_id}/{app_contract["model_interface"]}', 'w') as f:

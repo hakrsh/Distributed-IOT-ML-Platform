@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Type": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Location": {
+      "type": "string"
+    },
+    "topic_id": {
+      "type": "string"
+    },
+    "query_frequency": {
+      "type": "integer"
+    },
+    "kafka_server": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "Type",
+    "Name",
+    "Location",
+    "topic_id",
+    "query_frequency",
+    "kafka_server"
+  ]
+}

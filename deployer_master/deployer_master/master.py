@@ -51,6 +51,7 @@ def deploy_model(message):
 
 
 def deploy_app(message):
+    logging.info("Deploying app " + str(message))
     application_id = message['ApplicationID']
     app_name = message['app_name']
     sched_id = message['sched_id']
@@ -80,6 +81,7 @@ def deploy_app(message):
     return res.text
 
 def stopInstance(message):
+    logging.info("Stopping instance " + str(message))
     instance_id = message['instance_id']
     logging.info("InstanceID: " + instance_id)
     instance = db.instances.find_one({"instance_id": instance_id})

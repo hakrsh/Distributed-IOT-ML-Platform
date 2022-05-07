@@ -1,8 +1,4 @@
-import requests
-import json
-{% for sensor in sensors %}
-def {{sensor.function}}():
-    url = "{{sensor_api}}/data/{{sensor.sensor_id}}"
-    response = requests.get(url)
-    return response.content
-{% endfor %}
+from kafka import KafkaConsumer
+consumer = KafkaConsumer({{sensor.sensor_id}}, group_id={{sensor.sensor_id}}, bootstrap_servers=[{{kafka_server}}], auto_offset_reset='earliest', enable_auto_commit=True)
+for message in consumer:
+    return message.value

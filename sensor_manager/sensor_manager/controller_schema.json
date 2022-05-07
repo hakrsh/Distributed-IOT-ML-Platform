@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Type": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Location": {
+      "type": "string"
+    },
+    "controller_id": {
+      "type": "string"
+    },
+    "kafka_server": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "Type",
+    "Name",
+    "Location",
+    "controller_id",
+    "kafka_server"
+  ]
+}

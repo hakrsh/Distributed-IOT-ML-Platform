@@ -13,7 +13,7 @@
     </head>
     <body>
         <h1 style="margin: 50px;">Scheduler UI</h1>
-        <form action="/schedule" method="post" style="margin: 50px;">
+        <form action="/" method="post" style="margin: 50px;">
             <div class="form-group">
                 <label for="app_name">Application name</label>
                 <select class="form-control form-control-lg" id="app_name" name="app_name">
@@ -69,7 +69,7 @@
                     '<option selected>Choose sensors...</option>' 
                 for (var j = 0; j < sensors[i]["sensor_ids"].length; j++) {
                     sensor_data = sensors[i]["sensor_ids"][j].split(",");
-                    html += '<option value="' + sensor_data[0] + '">' + sensor_data[1] + '-' + sensor_data[2] +'</option>'
+                    html += '<option value="' + sensor_data[0] + '">' + sensor_data[1] + '-' + sensor_data[2] + '-' + sensor_data[3] + '</option>'
                 }
                 html += '</select></div></div>';
                 $("#sensors_list").append(html);
@@ -86,7 +86,7 @@
                     '<option selected>Choose controllers...</option>' 
                 for (var j = 0; j < controllers[i]["controller_ids"].length; j++) {
                     controller_data = controllers[i]["controller_ids"][j].split(",");
-                    html += '<option value="' + controller_data[0] + '">' + controller_data[1] + '-' + controller_data[2] +'</option>'
+                    html += '<option value="' + controller_data[0] + '">' + controller_data[1] + '-' + controller_data[2] + '-' + controller_data[3] +'</option>'
                 }
                 html += '</select></div></div>';    
                 $("#controllers_list").append(html);
