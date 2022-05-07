@@ -1,0 +1,61 @@
+{
+    "version": "1.0.0",
+    "secret_key": "top_secret",
+    "root_dir": "class_monitoring",
+    "name": "Class Monitoring",
+    "tensorflow_support": "yes",
+    "functions": [
+        {
+            "module_path": "class_monitoring.attendance_checker.attendance_checker",
+            "function_name": "count_students",
+            "function_input_type": "ByteArray",
+            "output_type": "integer",
+            "api_endpoint": "attendance-checker",
+            "methods": [
+                {
+                    "method_type": "POST",
+                    "input_type": "json",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": [
+                            {
+                                "name": "image",
+                                "type": "ByteArray"
+                            }
+                        ]
+                    },
+                    "response": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        {
+            "module_path": "class_monitoring.attentiveness_checker.attentiveness_checker",
+            "function_name": "get_attention",
+            "function_input_type": "ByteArray",
+            "output_type": "integer",
+            "api_endpoint": "attentiveness-checker",
+            "methods": [
+                {
+                    "method_type": "POST",
+                    "input_type": "json",
+                    "input_schema": {
+                        "type": "object",
+                        "properties": [
+                            {
+                                "name": "image",
+                                "type": "ByteArray"
+                            }
+                        ]
+                    },
+                    "response": {
+                        "type": "string"
+                    }
+                }
+            ]
+        }
+    ],
+    "requirements": "class_monitoring/requirements.txt",
+    "readme": "class_monitoring/README.md"
+}

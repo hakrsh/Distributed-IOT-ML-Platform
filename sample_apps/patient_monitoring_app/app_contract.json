@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "secret_key": "top_secret",
+    "secret_key": "patient_monitoring_model_secret",
     "root_dir": "patient_monitoring_system",
     "name": "patient_monitoring_system",
     "cmd": "cd patient_monitoring_system/src && python3 app.py",
@@ -27,18 +27,18 @@
             "function":"send_sms",
             "args":[
                 {
-                    "name":"phone_number",
+                    "name":"phone",
                     "type":"string"
                 },
                 {
-                    "name":"message",
+                    "name":"msg",
                     "type":"string"
                 }
             ],
             "controller_type":"SMS"
         }
     ],
-    "models":["vital_check", "diabetes_check"],
+    "models":["vitals_check","diabetes_check"],
     "health_check":{
         "url":"http://localhost:8080/health",
         "method":"GET",

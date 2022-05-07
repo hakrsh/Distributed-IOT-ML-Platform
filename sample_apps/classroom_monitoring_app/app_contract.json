@@ -1,0 +1,54 @@
+{
+    "version": "1.0.0",
+    "secret_key": "top_secret",
+    "root_dir": "classroom_monitoring_system",
+    "name": "classroom_monitoring_system",
+    "cmd": "cd classroom_monitoring_system/src && python3 app.py",
+    "port": 8080,
+    "sensors":[
+        {
+            "function":"getcam1",
+            "sensor_type":"cam"
+        },
+        {
+            "function":"getcam2",
+            "sensor_type":"cam"
+        }
+    ],
+    "controllers":[
+        {
+            "function":"send_sms",
+            "args":[
+                {
+                    "name":"phone",
+                    "type":"string"
+                },
+                {
+                    "name":"msg",
+                    "type":"string"
+                }
+            ],
+            "controller_type":"SMS"
+        },
+        {
+            "function":"turn_on_light",
+            "args":[
+                {
+                    "name":"signal",
+                    "type":"int"
+                }
+            ],
+            "controller_type":"light"
+        }
+    ],
+    "models":["attendance_check","attentiveness_checker"],
+    "health_check":{
+        "url":"http://localhost:8080/health",
+        "method":"GET",
+        "timeout":5
+    },
+    "sensor_interface" : "classroom_monitoring_system/src/getdata.py",
+    "model_interface": "classroom_monitoring_system/src/models.json",
+    "controller_interface": "classroom_monitoring_system/src/controller.py",
+    "requirements": "requirements.txt"
+}
