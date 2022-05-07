@@ -22,6 +22,5 @@
             "location": "northeurope"
         }
     ],
-    "subscription_id": "",
-    "mongo_port": 27021
+    "subscription_id": ""
 }

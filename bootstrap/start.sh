@@ -81,24 +81,21 @@ for host in $VMS ; do
     ssh $host 'sudo apt-get install python3 python3-pip -y' >> bootstrap.log
     ssh $host 'pip3 install docker ' >> bootstrap.log
     echo "installed docker on $host - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
+    echo "Copying platform_config.json and services.json to $host" >> bootstrap.log
+    scp platform_config.json $host:~/ 
+    scp services.json $host:~/ 
 done
 
 master=($(cat hostinfo.txt))
 echo "Installing kafka on master" >> bootstrap.log
 scp install-kafka.sh $master:~/ 
 ssh $master 'sudo bash install-kafka.sh' >> bootstrap.log
-echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
 
-echo "Installing mongo on master" >> bootstrap.log
-# scp install-mongo.sh $master:~/
-# ssh $master 'sudo bash install-mongo.sh' >> bootstrap.log
-scp docker-compose.yml $master:~/
-scp rs-init.sh $master:~/
-scp startdb.sh $master:~/
-ssh $master 'chmod +x rs-init.sh'
-ssh $master 'chmod +x startdb.sh'
-ssh $master 'bash startdb.sh' >> bootstrap.log
-echo "Installed mongo on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
+echo "Installing mongodb on master" >> bootstrap.log
+scp install-mongo.sh $master:~/
+ssh $master 'sudo bash install-mongo.sh' >> bootstrap.log
+echo "Installed mongodb on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
 
 echo "Installing HAProxy" >> bootstrap.log
 ssh $master 'sudo apt-get install haproxy -y' >> bootstrap.log
@@ -118,10 +115,6 @@ echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minut
 if [ $azure == "true" ]; then
     scp -r ~/.azure $master:~/ 
 fi
-
-echo "Copying platform_config.json and services.json to master" >> bootstrap.log
-scp platform_config.json $master:~/ 
-scp services.json $master:~/ 
 
 echo "Deploying containers..." >> bootstrap.log
 python3 deploy.py $load_balancer

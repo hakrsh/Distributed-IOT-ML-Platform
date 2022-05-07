@@ -4,8 +4,11 @@ import logging
 import sys
 import subprocess
 
+if len((sys.argv)) < 2:
+    print('Usage: deploy.py <load_bala>')
+    sys.exit(1)
 logging.basicConfig(filename='bootstrap.log', level=logging.INFO, format='%(asctime)s: %(message)s')
-logging.info('Starting deploy')
+logging.info('Starting deploy script')
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
 servers = json.loads(open('platform_config.json').read())
