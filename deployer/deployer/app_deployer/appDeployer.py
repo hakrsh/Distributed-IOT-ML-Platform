@@ -12,7 +12,6 @@ def run(package, sensors, controllers, app_id,app_contract):
     with zipfile.ZipFile(package, 'r') as zip_ref:
         zip_ref.extractall('/tmp/'+app_id)
     logging.info('Extracted package: ' + package)
-    image_name = app_contract['name']
     logging.info('Generating sensor interface')
     template = Template(pkg_resources.read_text('deployer.app_deployer','sensor_template.j2'))
     with open(f'/tmp/{app_id}/{app_contract["sensor_interface"]}', 'w') as f:
@@ -41,4 +40,3 @@ def run(package, sensors, controllers, app_id,app_contract):
         f.write(template.render(contract=app_contract))
     logging.info('Generated Dockerfile')
     logging.info('Ready to build the app image')
-    return image_name

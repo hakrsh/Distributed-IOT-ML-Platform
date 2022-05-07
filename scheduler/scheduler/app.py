@@ -1,5 +1,4 @@
 import json
-from sched import scheduler
 import threading
 from flask import request, render_template
 import uuid
@@ -93,7 +92,10 @@ def schedule():
         sensors = json.loads(dumps(client.sensors.sensordetails.find()))
         return render_template('index.html', app_list=applications, controller_ids=controllers, sensor_ids=sensors)
     if request.method == 'POST':
-        app_id = request.form['app_name']
+        app_id = request.form['app_id']
+        app_name = request.form['app_name']
+        if db.instances.find_one({'app_name': app_name}) is not None:
+            return 'App name already exists'
         app_contract = json.loads(get_app_contract(app_id))
         controllers = app_contract['controllers']
         start_time = format_time(request.form['starttime'])
@@ -131,7 +133,7 @@ def schedule():
         query = {
             "type": "app",
             "ApplicationID": app_id,
-            "app_name": app_contract['name'],
+            "app_name": app_name,
             "sensor_ids": sensor_bindings,
             "controller_ids": controllers,
             "sched_id": sched_id,

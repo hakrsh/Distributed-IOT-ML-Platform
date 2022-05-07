@@ -1,4 +1,7 @@
 from kafka import KafkaConsumer
-consumer = KafkaConsumer({{sensor.sensor_id}}, group_id={{sensor.sensor_id}}, bootstrap_servers=[{{kafka_server}}], auto_offset_reset='earliest', enable_auto_commit=True)
-for message in consumer:
-    return message.value
+{% for sensor in sensors %}
+def {{sensor.sensor_name}}():
+    consumer = KafkaConsumer('{{sensor.sensor_id}}', group_id='{{sensor.sensor_id}}', bootstrap_servers=['{{kafka_server}}'], auto_offset_reset='earliest', enable_auto_commit=True)
+    for message in consumer:
+        return message.value
+{% endfor %}

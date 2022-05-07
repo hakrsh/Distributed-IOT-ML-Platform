@@ -43,33 +43,33 @@ def deploy_model():
     return {"InstanceID": instance_id, "Status": "pending"}
 
 
-def deploy_app_thread(application_id, sensors, controllers, instance_id,job_id):
+def deploy_app_thread(application_id, app_name, sensors, controllers, instance_id,job_id):
     application = db.applications.find_one({"ApplicationID": application_id})
     with open(f'/tmp/{instance_id}.zip', 'wb') as f:
         f.write(fs.get(application['content']).read())
     logging.info('Got application: ' + application_id + ' from database')
-    image_name = appDeployer.run(
+    appDeployer.run(
         f'/tmp/{instance_id}.zip', sensors, controllers, instance_id, application['app_contract'])
     threading.Thread(target=Deploy, kwargs={'dockerfile_path': f'/tmp/{instance_id}',
-                     'image_tag': image_name, 'instance_id': instance_id, 'package': instance_id,'job_id':job_id}).start()
+                     'image_tag': app_name, 'instance_id': instance_id, 'package': instance_id,'job_id':job_id}).start()
 
 
 @app.route('/app', methods=['POST'])
 def deploy_app():
     application_id = request.json['ApplicationID']
+    app_name = request.json['app_name'].lower()
     sensors = request.json['sensor_ids']
     controllers = request.json['controller_ids']
     sched_id = request.json['sched_id']
-    logging.info("ApplicationID: " + application_id)
     instance_id = request.json['InstanceId']
-    logging.info("Creating deployment record")
+    logging.info("Creating deployment record: " + app_name)
     job_id = str(uuid.uuid4())[:8]
-    db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "sensor_ids": sensors, "controller_ids": controllers, "sched_id": sched_id, "job_id": job_id})
+    db.jobs.insert_one({"type": "app","status": "pending", "instance_id": instance_id, "application_id": application_id, "app_name":app_name, "sensor_ids": sensors, "controller_ids": controllers, "sched_id": sched_id, "job_id": job_id})
     logging.info("Job created")
     db.instances.update_one({"instance_id": instance_id}, {"$set": {"status": "pending"}})
     logging.info("Instance status updated")
     threading.Thread(target=deploy_app_thread, args=(
-        application_id, sensors, controllers, instance_id,job_id)).start()
+        application_id, app_name, sensors, controllers, instance_id,job_id)).start()
     return {"InstanceID": instance_id,"sched_id":sched_id, "Status": "pending"}
 
 

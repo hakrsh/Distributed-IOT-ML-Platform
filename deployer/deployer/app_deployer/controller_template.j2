@@ -1,12 +1,12 @@
 import requests
 import json
 from kafka import KafkaProducer
-producer = KafkaProducer(bootstrap_servers={{kafka_server}}, value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+producer = KafkaProducer(bootstrap_servers=['{{kafka_server}}'], value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 {% for controller in controllers %}
 def {{controller.function}}({{controller.args_list}}):
     data = {}
     {% for arg in controller.args %}
     data["{{arg.name}}"] = {{arg.name}}
     {% endfor %}
-    producer.send({{controller.controller_id}}, data)
+    producer.send('{{controller.controller_id}}', data)
 {% endfor %}
