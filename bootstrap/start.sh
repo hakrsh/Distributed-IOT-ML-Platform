@@ -63,12 +63,10 @@ echo "Using $load_balancer as the load balancer" >> bootstrap.log
 echo "Preparing hostinfo.txt..." >> bootstrap.log
 python3 generate_hostfile.py platform_config.json
 
-if [ $azure == "true" ]; then
-    echo "making Vms passwordless..." >> bootstrap.log
-    python3 make_passwdless_ssh.py platform_config.json
-    bash make_passwdless.sh
-    echo "Vms passwordless - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log 
-fi
+echo "making Vms passwordless..." >> bootstrap.log
+python3 make_passwdless_ssh.py platform_config.json
+bash make_passwdless.sh
+echo "Vms passwordless - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log 
 
 declare -a VMS=$(cat hostinfo.txt)
 IFS=' '
@@ -92,8 +90,14 @@ ssh $master 'sudo bash install-kafka.sh' >> bootstrap.log
 echo "Installed kafka on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 
 echo "Installing mongo on master" >> bootstrap.log
-scp install-mongo.sh $master:~/
-ssh $master 'sudo bash install-mongo.sh' >> bootstrap.log
+# scp install-mongo.sh $master:~/
+# ssh $master 'sudo bash install-mongo.sh' >> bootstrap.log
+scp docker-compose.yml $master:~/
+scp rs-init.sh $master:~/
+scp startdb.sh $master:~/
+ssh $master 'chmod +x rs-init.sh'
+ssh $master 'chmod +x startdb.sh'
+ssh $master 'bash startdb.sh' >> bootstrap.log
 echo "Installed mongo on master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds"
 
 echo "Installing HAProxy" >> bootstrap.log
@@ -104,13 +108,14 @@ ssh $master 'sudo mv haproxy.cfg /etc/haproxy/haproxy.cfg'
 ssh $master 'sudo systemctl enable haproxy.service'
 ssh $master 'sudo systemctl restart haproxy.service'
 
-if [ "$azure" == "true" ]; then
-    echo "making passwordless access to workers from master" >> bootstrap.log
-    ssh $master 'sudo apt-get install sshpass -y' >> bootstrap.log
-    python3 copy_ssh.py platform_config.json
-    scp ssh.sh $master:~/ 
-    ssh $master 'bash ssh.sh' >> bootstrap.log
-    echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
+echo "making passwordless access to workers from master" >> bootstrap.log
+ssh $master 'sudo apt-get install sshpass -y' >> bootstrap.log
+python3 copy_ssh.py platform_config.json
+scp ssh.sh $master:~/ 
+ssh $master 'bash ssh.sh' >> bootstrap.log
+echo "Made passwordless access to workers from master - $(($SECONDS / 60)) minutes and $(($SECONDS % 60)) seconds" >> bootstrap.log
+
+if [ $azure == "true" ]; then
     scp -r ~/.azure $master:~/ 
 fi
 

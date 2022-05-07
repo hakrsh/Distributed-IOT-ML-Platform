@@ -4,7 +4,7 @@ import docker
 import json
 import logging
 
-logging.basicConfig(filename='restart.log', level=logging.INFO,filemode='w')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s: %(message)s')
 logging.info('Starting restart script')
 logging.info('Reading config files')
 servers = json.loads(open('platform_config.json').read())

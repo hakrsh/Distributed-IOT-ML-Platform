@@ -21,6 +21,10 @@ if passwd == 'y':
 size = input(f'Do you want to change the default vm size ({vm_size})? (y/n): ')
 if size == 'y':
     vm_size = input("Enter vm size: ")
+mongo_port = 27017
+change_port = input(f'Do you want to change the default mongo port ({mongo_port})? (y/n): ')
+if change_port == 'y':
+    mongo_port = int(input("Enter mongo port: "))
 workers = []
 for i in range(number_of_vms-1):
     worker = {
@@ -42,7 +46,8 @@ server = {
     },
     "workers": workers,
     "subscription_id": subscription_id,
-    "vm_size": vm_size
+    "vm_size": vm_size,
+    "mongo_port": mongo_port
 }
 with(open("platform_config.json", "w")) as f:
     json.dump(server, f)

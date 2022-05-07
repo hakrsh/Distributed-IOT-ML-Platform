@@ -29,11 +29,6 @@
             "version": "1.0.0"
         },
         {
-            "name":"sensor_request_handler",
-            "path": "../sensor_request_handler",
-            "version": "1.0.0"
-        },
-        {
             "name":"model_request_handler",
             "path": "../model_request_handler",
             "version": "1.0.0"

@@ -9,7 +9,7 @@ from azure.identity import AzureCliCredential
 import os
 import json
 import sys
-logging.basicConfig(filename='bootstrap.log',level=logging.INFO)
+logging.basicConfig(filename='bootstrap.log', level=logging.INFO, format='%(asctime)s: %(message)s')
 
 credential = AzureCliCredential()
 

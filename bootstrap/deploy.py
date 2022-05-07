@@ -4,7 +4,7 @@ import logging
 import sys
 import subprocess
 
-logging.basicConfig(filename='bootstrap.log', level=logging.INFO)
+logging.basicConfig(filename='bootstrap.log', level=logging.INFO, format='%(asctime)s: %(message)s')
 logging.info('Starting deploy')
 logging.info('Reading config files')
 services = json.loads(open('services.json').read())
@@ -65,7 +65,6 @@ def generate_service_config():
         "kafka_ip": master_ip,
         "kafka_port": "9092",
         "mongo_server": master_ip+":27017",
-        "sensor_api": "http://" + master_ip + ":7000/",
         "sensor_reg_api": "http://" + master_ip + ":7005/",
         "deployer_master": "http://" + master_ip + ":9999/",
         "load_balancer": "http://localhost:9899/",

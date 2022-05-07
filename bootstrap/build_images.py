@@ -4,12 +4,14 @@ import logging
 from jinja2 import Template
 import shutil
 
-logging.basicConfig(filename='bootstrap.log', level=logging.INFO)
+logging.basicConfig(filename='bootstrap.log', level=logging.INFO, format='%(asctime)s: %(message)s')
 
 services = json.loads(open('services.json').read())
 dockerfile_template = Template(open('docker_template.j2').read())
 client = docker.from_env()
+logging.info('Logging to DockerHub...')
 client.login(username=services['username'], password=services['password'])
+logging.info('Login successful')
 
 def prepare_build_context():
     logging.info('Setting up the context for building...')
