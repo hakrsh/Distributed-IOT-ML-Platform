@@ -13,15 +13,15 @@
 ## How to deploy the platform
 ### Azure deployment
 ```
-git clone git@github.com:harikn77/IOT-ML-Platform.git
-cd IOC-ML-Platform/bootstrap
+git clone https://github.com/harikn77/IOT-ML-Platform.git
+cd IOT-ML-Platform/bootstrap
 sudo bash start.sh
 ```
 ### Local deployment
 
 1. Run the following command in the terminal:
 ```
-git clone git@github.com:harikn77/IOT-ML-Platform.git
+git clone https://github.com/harikn77/IOT-ML-Platform.git
 multipass launch -c 4 -m 2G -d 10G --name master
 multipass launch -c 4 -d 10G --name worker1
 multipass launch -c 4 -d 10G --name worker2
@@ -46,7 +46,7 @@ sudo systemctl restart sshd
 4. Update `platform_config.json`
 5. Run the following command in the terminal:
 ```
-cd IOC-ML-Platform/bootstrap
+cd IOT-ML-Platform/bootstrap
 sudo bash start.sh
 ```
 ### Todo
