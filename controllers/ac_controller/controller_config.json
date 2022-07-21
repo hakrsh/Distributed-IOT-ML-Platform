@@ -1,0 +1,7 @@
+{
+    "Type": "light",
+    "Name": "light1",
+    "Location": "sh1",
+    "controller_id": "",
+    "kafka_server": "10.139.212.128"
+}

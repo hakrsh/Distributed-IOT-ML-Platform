@@ -3,6 +3,20 @@ import random
 import time
 import json
 from flask import Flask, render_template, request
+import json
+from kafka import KafkaConsumer
+import logging
+import uuid
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s: %(message)s')
+
+logging.info('Loading sensor config')
+controller_config = json.loads(open('controller_config.json').read())
+if controller_config['controller_id'] == '':
+    logging.info('Generating sensor id')
+    controller_config['controller_id'] = str(uuid.uuid4())[:8]
+    with open('controller_config.json', 'w') as f:
+        f.write(json.dumps(controller_config))
 
 app = Flask(__name__)
 
@@ -26,5 +40,4 @@ def put_data():
 
 if __name__ == '__main__':
 	app.run(port=7779, host='0.0.0.0')
-
 

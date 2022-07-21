@@ -93,7 +93,7 @@ def schedule():
         return render_template('index.html', app_list=applications, controller_ids=controllers, sensor_ids=sensors)
     if request.method == 'POST':
         app_id = request.form['app_id']
-        app_name = request.form['app_name']
+        app_name = request.form['instance_name']
         if db.instances.find_one({'app_name': app_name}) is not None:
             return 'App name already exists'
         app_contract = json.loads(get_app_contract(app_id))

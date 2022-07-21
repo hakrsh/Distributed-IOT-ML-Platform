@@ -75,7 +75,7 @@ def deploy_app(message):
                              "port": ""})
     logging.info("Created deployment record")
     res = requests.post(f'{module_config["load_balancer"]}/app', json={
-                        'ApplicationID': application_id, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id,'controller_ids':controller_ids})
+                        'ApplicationID': application_id,'app_name':app_name, 'InstanceId': instance_id, 'sensor_ids': sensor_ids,'sched_id':sched_id,'controller_ids':controller_ids})
     logging.info("Sent request to app service")
     messenger.send_message('from_deployer_master', res.text)
     return res.text

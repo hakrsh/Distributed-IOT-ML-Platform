@@ -4,5 +4,5 @@
     "Location": "sh1",
     "topic_id": "2698d31d",
     "query_frequency": 1,
-    "kafka_server": "10.206.186.65:9092"
+    "kafka_server": "10.139.212.128"
 }

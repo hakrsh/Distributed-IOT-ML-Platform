@@ -2,7 +2,7 @@
     "master": {
         "user": "ubuntu",
         "name": "master",
-        "ip": "10.206.186.65",
+        "ip": "10.139.212.128",
         "passwd": "asxz",
         "location": "northeurope"
     },
@@ -10,14 +10,7 @@
         {
             "user": "ubuntu",
             "name": "worker1",
-            "ip": "10.206.186.45",
-            "passwd": "asxz",
-            "location": "northeurope"
-        },
-        {
-            "user": "ubuntu",
-            "name": "worker2",
-            "ip": "10.206.186.215",
+            "ip": "10.139.212.207",
             "passwd": "asxz",
             "location": "northeurope"
         }

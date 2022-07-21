@@ -10,6 +10,5 @@ if [ ! -f ~/.ssh/id_rsa ]; then
     ssh-keygen -q -N '' -t rsa -f ~/.ssh/id_rsa
 fi
 
-sshpass -p asxz ssh-copy-id -o StrictHostKeyChecking=no ubuntu@10.206.186.65
-sshpass -p asxz ssh-copy-id -o StrictHostKeyChecking=no ubuntu@10.206.186.45
-sshpass -p asxz ssh-copy-id -o StrictHostKeyChecking=no ubuntu@10.206.186.215
+sshpass -p asxz ssh-copy-id -o StrictHostKeyChecking=no ubuntu@10.139.212.128
+sshpass -p asxz ssh-copy-id -o StrictHostKeyChecking=no ubuntu@10.139.212.207
