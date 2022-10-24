@@ -49,8 +49,3 @@ sudo systemctl restart sshd
 cd IOT-ML-Platform/bootstrap
 sudo bash start.sh
 ```
-### Todo
-- [ ] monitoring
-- [ ] notification
-- [ ] fault tolerance
-- [ ] logging
