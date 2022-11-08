@@ -11,3 +11,5 @@ def get_free_port():
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         if sock.connect_ex(('127.0.0.1', port)): # returns 0 if connection is successful -> port is not free
             return port
+        else:
+            sock.close()
