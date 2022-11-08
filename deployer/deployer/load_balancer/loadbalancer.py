@@ -9,7 +9,7 @@ def get_free_port():
     while True:
         port = random.randint(32768, 61000)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if sock.connect_ex(('127.0.0.1', port)): # returns 0 if connection is successful -> port is not free
+        if sock.connect_ex(('127.0.0.1', port)): # returns non-zero if connection is unsuccessful -> port is free
             return port
         else:
             sock.close()
