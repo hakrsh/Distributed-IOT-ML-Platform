@@ -11,13 +11,14 @@
 * docker [https://docker.com/]
 
 ## How to deploy the platform
-### Azure deployment
+There are 2 ways to deploy. For testing purpose I recommend to do the Local deployment. Don't waste Azure Credits!
+### 1. Azure deployment
 ```
 git clone https://github.com/harikn77/IOT-ML-Platform.git
 cd IOT-ML-Platform/bootstrap
 sudo bash start.sh
 ```
-### Local deployment
+### 2. Local deployment
 
 1. Run the following command in the terminal:
 ```
